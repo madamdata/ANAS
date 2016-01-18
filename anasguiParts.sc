@@ -285,8 +285,10 @@ LabelKnob {
 	}
 }
 
+// Basically a clone of LabelKnob.
+// @TODO make LFOKnob a subclass of LabelKnob
 LFOKnob {
-	var parent, left, top, string, <>oscPanel, <>scale, <>spec, <>default, <>knob1, <>onSwitch, <>typeSelector, <>inSelector, param, composite, knob1label, <>modList, <>isOn, <>oscType, keyRoutine;
+	var parent, left, top, string, <>oscPanel, <>scale, <>spec, <>default, <>knob1, <>onSwitch, <>typeSelector, <>inSelector, param, composite, knob1label, <>modList, <>isOn, <>oscType, <>midiFunc, mapped, keyRoutine;
 	*new {
 		arg parent, left, top, string, oscPanel, scale = 1, spec = [0,1].asSpec, default = 0.5;
 		^super.newCopyArgs(parent, left, top, string, oscPanel, scale, spec, default).initLFOKnob;
@@ -326,6 +328,19 @@ LFOKnob {
 				[0,1], {oscPanel.focusOn((oscPanel.focus + 4).mod(oscPanel.focusList.size))},
 			);
 			true;
+		});
+    // Midi map by clicking
+    knob1.mouseDownAction_({|xx, xxx, xxxx, mod|
+			switch(mod,
+				131072, { // Shift click to learn
+					("mapping "++oscPanel.nDef.key.asString++" "++string).postln;
+					this.learn;
+				},
+				524288, { // Alt click to deMap
+					this.deMap;
+				}, // Command shift click to rebuild
+				655360, {this.resetSelectors;oscPanel.rebuild},
+			);
 		});
 		knob1.action = {|knob| oscPanel.nDef.set(("knob"++param.asString).asSymbol, spec.map(knob.value))};
 		knob1.value = default;
@@ -384,6 +399,36 @@ LFOKnob {
 
 	}
 
+  // Midi mapping (methods copied from LabelKnob)
+  // Map to knob
+  mapToKnob {
+		arg whichKnob;
+		midiFunc.free;
+		midiFunc = MIDIFunc.cc({|cv|
+			this.doAction(cv/127);
+			{knob1.value_(cv/127)}.defer;
+		}, whichKnob);
+		mapped = 1;
+		{knob1.background_(knob1.background.blend(Color.white,0.3));}.defer;
+	}
+  // Learn a midi mapping
+  learn {
+		midiFunc.free;
+		midiFunc = MIDIFunc.cc({|cv|
+			this.doAction(cv/127);
+			{knob1.value_(cv/127)}.defer;
+		});
+		midiFunc.learn;
+		{knob1.background_(knob1.background.blend(Color.white,0.3));}.defer;
+	}
+  // Demap a midi mapping
+  deMap {
+		midiFunc.free;
+		midiFunc = nil;
+		mapped = 0;
+		{knob1.background_(Color.new255(120, 10, 80, 190))}.defer;
+	}
+
 	save {
 		var saveList = Dictionary.new;
 		saveList.putPairs([
@@ -395,6 +440,7 @@ LFOKnob {
 			\typeSelector, typeSelector.value,
 			\inSelector, inSelector.value,
 			\modList, modList,
+      \msgNum, if(midiFunc.notNil, {midiFunc.msgNum}), //if this knob is mapped, save the ccNum it is mapped to.
 		]);
 		^saveList;
 
@@ -420,7 +466,10 @@ LFOKnob {
 			inSelector.selector.background = (~colourList.at(inSelector.selector.item.asSymbol) ?? {Color.new255(200, 200, 200, 200)}).blend(Color.grey, 0.5)
 		}.defer;
 
-
+    if(midiFunc.notNil, {this.deMap}); //if there is already a midifunc, free it.
+    if (loadList.at(\msgNum).notNil, { // Map midi messages to knob
+			this.mapToKnob(loadList.at(\msgNum));
+		});
 		}
 
 
