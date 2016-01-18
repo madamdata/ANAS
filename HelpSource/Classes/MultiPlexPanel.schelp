@@ -1,0 +1,157 @@
+TITLE:: MultiPlexPanel
+summary:: A modulatable multiplex module for ANAS.
+categories:: Undocumented classes
+related:: Classes/AnasGui, Classes/DelayPanel, Classes/FilterPanel, Classes/OscPanel, Classes/ADSRPanel
+
+DESCRIPTION::
+image::anasMultiPlex.png::
+MultiPlexPanel is a multiplex unit for ANAS that allows you to fade between different inputs.
+
+The top four drop-down boxes select inputs.
+
+The strong::fade knob:: allows you to fade between the four inputs. The behavior of the fade knob changes depending on the number of inputs. A tiny demon inside the computer reacts to the knob with a mixing board. They don't take much CPU, but sometimes they get creative. Sometimes it's better to just work with what you're given.
+
+The strong::volume knob:: adjusts the volume of the output.
+
+The strong::LFO:: is a built-in oscillator that motivates - I mean, modulates the fade knob soft::demon::. Press the button to toggle between "off" and "on." Select the shape of the LFO with the drop-down box. Change the LFO speed with the knob. Modulate the LFO speed with the drop-down box at the bottom.
+
+The three drop-down boxes below the fade and volume knobs allow you to modulate the knobs.
+
+The four toggle buttons at the bottom of the module allow you to send the output to the four link::classes/OutPanel::s.
+
+note:: Feedback is tasty, but much like spice, should be used sparingly. ::
+
+CLASSMETHODS::
+
+METHOD:: new
+(describe method here)
+
+ARGUMENT:: parent
+(describe argument here)
+
+ARGUMENT:: left
+(describe argument here)
+
+ARGUMENT:: top
+(describe argument here)
+
+ARGUMENT:: nDef
+(describe argument here)
+
+ARGUMENT:: outs
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+
+INSTANCEMETHODS::
+
+METHOD:: labelKnob3
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: labelKnob2
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: outputButtons
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: label2
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: nDef
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: save
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: selectors
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: initMultiPlex
+(describe method here)
+
+ARGUMENT:: parent
+(describe argument here)
+
+ARGUMENT:: left
+(describe argument here)
+
+ARGUMENT:: top
+(describe argument here)
+
+ARGUMENT:: nDef
+(describe argument here)
+
+ARGUMENT:: outs
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: composite
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: rebuild
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: outs
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: label
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: selector
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: inputList
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: labelKnob1
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: load
+(describe method here)
+
+ARGUMENT:: loadList
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: outList
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+
+EXAMPLES::
+
+code::
+(some example code)
+::

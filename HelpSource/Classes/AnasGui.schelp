@@ -1,0 +1,176 @@
+TITLE:: AnasGui
+summary:: a simulated modular synthesizer
+categories:: Duck-based synthesis
+related:: Classes/OscPanel, Classes/DelayPanel, Classes/FilterPanel, Classes/MultiPlexPanel, Classes/ADSRPanel
+
+image::ANASlogo.png::
+DESCRIPTION::
+ANAS is a simulated modular synthesizer.
+Code by thumbthumb aka Adam Adhiyatma (they, them). December 2015.
+Version number: 0.947.
+
+thanks to:
+
+Chris Brown
+
+David Cummings(agargara), who wrote many of the helpfiles
+
+all of the electronic composers / performers at Mills College
+
+the flock of mallard ducks in temporary residence at the pond in Mills College, who have provided healing, companionship, and invaluable debugging support. This synthesizer is named after them.
+(Mallard duck : emphasis::anas platyrhynchos::)
+
+subsection:: A Tour of the Modules
+numberedlist::
+## link::classes/OscPanel::
+## link::classes/FilterPanel::
+## link::classes/ADSRPanel::
+## link::classes/DelayPanel::
+## link::classes/MultiPlexPanel::
+## link::classes/SamplerPanel::
+## link::classes/OutPanel::
+
+::
+
+subsection:: MIDI Mapping
+To map a knob, shift-click on it and move the control device that you want to control that knob. ANAS will learn the MIDI control number.
+To de-map, alt-click on the knob.
+Mappings save with your presets.
+
+subsection:: Saving presets and recordings
+To save a preset, type a file name into the text field to the right of the save button and hit enter. Don't forget to hit enter! Otherwise, your preset will be saved as "nil". Then, click "save".
+The same procedure applies to the "record" button, except that you must click it again to stop recording.
+
+subsection:: Keyboard Control
+ANAS has an extensive series of keyboard shortcuts designed for efficient patching and optimised for one-handed use - so your other hand is free to use the trackpad, turn controller knobs, wave at the audience, etc.
+
+All of the knobs on the screen are selectable with a series of key presses. You work your way from the outermost selection (the whole window) to the panels to the individual knobs.
+For instance, to select the "freq" knob in the Osc2 panel, you would press:
+
+TAB(reset selection to window) --> 2 (select Osc2 Panel) --> 1 (select "freq" knob)
+
+Now that "freq" is selected, you should see it highlighted with a red circle. You can now shift the knob with the arrow keys - left and right go up and down by octaves, up and down by semitones - and hold shift for fine-grained control.
+
+Here is a table of global shortcuts that work no matter what is selected:
+table::
+## Tab				|| Return selection to outermost window
+## Cmd + q 		    || Minimize or maximize window
+## Cmd + Enter      || Toggle sampler record
+## Opt(alt) + Enter || Toggle sampler overdub
+::
+
+Here is a table of keyboard shortcuts for the Window and Panel selection layers:
+table::
+## Selection Layer ->  || Window 				   || Panel
+##numbers 0 to 5    || select top-row panels    || select top-row knobs
+##shift + (0-5)		   || select bottom-row panels || select bottom-row knobs and text fields
+##shift + 6            || select multiplex panel   || n/a
+##numbers 7,8,9,0	   || select output panels     || n/a
+##q, w, e, r 		   || n/a				       || toggle output buttons
+##a 				   || n/a					   || For panels with an input row, enter Input Selection mode (input selectors will be highlighted. This works the same way as Input Selection for knobs - see below for details.
+##f 				   || n/a					   || (OscPanel) toggle Audio/LFO button
+##s, d 				   || n/a    			 	   || (OscPanel) scroll through oscillator types
+	##x, c				   || n/a					   || (OscPanel) scroll through distortion types
+::
+
+Here is a table of keyboard shortcuts for Knobs:
+
+table::
+##left, right || increase/decrease octave for frequency, or large step for any other parameter
+##up, down  || increase/decrease semitone for frequency, or small step for any other parameter
+##shift + arrow keys || same as without shift, but smaller steps. Good for tuning.
+## w,a,s,d || move to next/previous knob or next/previous row
+## number keys, shift + number keys || Input Selection - see below.
+## space bar || rebuild panel
+## r || reset knob and all inputs
+## f || (LFO knob) toggle LFO on or off
+##x, c || (LFO knob) scroll through LFO shapes
+::
+
+strong::Input Selection Mode::
+
+	When you have a panel's input selectors highlighted, or you have a knob selected, you can set that knob or panel's inputs with key presses. Using the number keys and shift keys, you can select a panel in the same way you would select it from the Window layer - e.g. 1 would be Osc1, shift + 1 would be Del1 and so on.
+
+Each key press sets the next sequential input. So pressing 1, shift+2, and 4 in order would set that knob or panel's inputs to Osc1, ADSR1, and Osc4. You will not see any GUI changes until you hit spacebar! This rebuilds the panel, resets the selection to the first input selector, and commits changes. You can also hit spacebar before going through all of the inputs to only set the first few.
+
+Here is a composition I wrote that can be played entirely with key commands. Enter each line as quickly as you can while still being accurate. Leave some time in between lines - use your ear.
+
+	Tab 1 f d d	Tab shift+1 a 1 space q 1 3 space
+
+	Tab 4 f d d d d 1 left d right right right right Tab 3 1 4 space d right
+
+	Tab 1 1 4 space
+
+	right
+
+	right
+
+	Tab 3 1 right
+
+	Tab 2 c d q
+
+	1 2 2 space
+
+
+subsection:: Language-level control
+ANAS is closely integrated with the SuperCollider language. Almost all of its functions can be called from the language - further documentation pending.
+
+strong::Setting Parameters::
+
+Each of the panels controls one link::classes/Ndef::, whose key is the same as the name of the panel in lowercase letters. Hence, the Ndef for the Osc1 panel would be Ndef(\osc1).
+Any knob parameter can be set with the argument name "knob(parameter)". The argument name is the word "knob" added to whatever the label of the knob is. Hence, a knob labeled "freq" will control an argument called "knobfreq" that can be set via the language.
+warning:: as of version 0.9, the knobs are fairly inconsistent as to whether they send scaled (e.g. 40hz - 20000hz) or unscaled (0-1) data to the Ndefs. I am working on making it consistent.::
+
+strong::Loading presets ::
+
+Presets can be loaded from the language using the following syntax:
+
+code:: a = AnasGui.new;
+a.load(yourPresetName);
+::
+
+CLASSMETHODS::
+
+METHOD:: new
+Make a new instance of an Anas synthesizer. I recommend only having one running - I've never tried running multiple instances of it.
+
+
+argument::loadPath
+A link::classes/PathName:: containing the path name for a folder where your presets will be saved. If this is the first time you're running ANAS, make a new folder.
+
+argument:: recordPath
+A link::classes/PathName:: containing the path name for a folder where audio recordings will be stored.
+Warning:: This should not be the same folder as the presets folder. If it is, ANAS will try to load your recordings as presets and all hell will break loose.::
+
+returns:: an instance of AnasGui.
+
+
+INSTANCEMETHODS::
+
+
+METHOD:: load
+Loads a preset file.
+
+ARGUMENT:: file
+A file name.
+
+
+METHOD:: fileName
+Set the name for saving subsequent presets.
+
+ARGUMENT:: name
+A file name for saving.
+
+METHOD:: save
+Saves a preset to a file. You must set the filename first with .fileName_ .
+
+
+
+
+
+
+EXAMPLES::
+
+code::
+(some example code)
+::

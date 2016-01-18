@@ -1,0 +1,232 @@
+TITLE:: OscPanel
+summary:: A switchable, modulatable Oscillator module for ANAS.
+categories:: Undocumented classes
+related:: Classes/AnasGui, Classes/DelayPanel, Classes/FilterPanel, Classes/MultiPlexPanel, Classes/ADSRPanel
+
+DESCRIPTION::
+image::anasOscillator.png::
+OscPanel is the oscillator unit for ANAS. It is switchable between the usual oscillator types found on analog synthesizers: square, saw, sine, step noise and slope noise, white noise and pink noise. In addition, it includes DSaw and DPulse, two custom oscillators which are essentially wrappers for Saw and Pulse with link::classes/MoogFF:: filters and analog drift.
+
+In order to "patch" another module into any of the parameters in OscPanel, simply click on one of the drop-down menus underneath the knobs and select the module that will be used as a modulation source for that knob's parameter.
+
+Not all of the knobs work for all of the oscillators (see diagram). As of version 0.9, tone is not modulatable: patching things into the tone knob will have no effect.
+
+In addition to the usual analog oscillator functions, OscPanel implements a limited polyphony:
+you can enter a series of of interval values in semitones into the note array field separated by spaces to generate a chord. For instance, entering "0 3 7 10" will give you a minor 7th chord. This chord can be transposed by entering a semitone number in the transposition field.
+
+note:: Changing the transposition works via a set message, and is pretty quick - you can use a Pbind to change it as quickly as the language will allow. Changing the note array, however, works by redefining the entire Ndef, and while you can also change it with a routine or pattern, the node must be rebuilt every time. As a result, this is a relatively slow process and will bug if you try to do it more than once every 0.1 seconds or so, depending on your machine.::
+
+CLASSMETHODS::
+
+METHOD:: new
+(describe method here)
+
+ARGUMENT:: parent
+(describe argument here)
+
+ARGUMENT:: left
+(describe argument here)
+
+ARGUMENT:: top
+(describe argument here)
+
+ARGUMENT:: nDef
+(describe argument here)
+
+ARGUMENT:: outs
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+
+INSTANCEMETHODS::
+
+METHOD:: distortSelector
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: labelKnob5
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: label2
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: labelKnob1
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: noteArray
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: selector2
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: label
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: saveList
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: noteArrayField
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: initOscPanel
+(describe method here)
+
+ARGUMENT:: parent
+(describe argument here)
+
+ARGUMENT:: left
+(describe argument here)
+
+ARGUMENT:: top
+(describe argument here)
+
+ARGUMENT:: nDef
+(describe argument here)
+
+ARGUMENT:: outs
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: distort
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: labelKnob4
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: labelKnob3
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: load
+(describe method here)
+
+ARGUMENT:: loadList
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: left
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: transposeField
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: type
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: top
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: composite
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: outputButtons
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: save
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: outs
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: selector1
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: parent
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: fadeTime
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: oscType
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: nDef
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: rebuild
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: labelKnob2
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: freqButton
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: transpose
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: labelKnob6
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: labelKnob7
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+
+EXAMPLES::
+
+code::
+(some example code)
+::
