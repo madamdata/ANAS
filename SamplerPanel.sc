@@ -1,5 +1,5 @@
 SamplerPanel {
-	var parent, left, top, <>nDef, outs, <composite, <label, <label2, <>labelKnob1, <>labelKnob2, <>labelKnob3, <>samplePlot, <>specs, outputButtons, selectors, <>inputList, samplePath, sampleList, sampleMenu, <>bufs, <>whichSample, <recordButton, <overdubButton, <resetButton, <>fileName, saveField, saveButton, interpolationButton, <>currentBuffer, <>signalArray, <>startTime, <>endTime, <sr, <>loopFrames, oscFunc, oscFunc2,
+	var parent, left, top, <>nDef, outs, <composite, <label, <label2, <>labelKnob1, <>labelKnob2, <>labelKnob3, <>samplePosLabelKnob, <>samplePlot, <>specs, outputButtons, selectors, <>inputList, samplePath, sampleList, sampleMenu, <>bufs, <>whichSample, <recordButton, <overdubButton, <resetButton, <>fileName, saveField, saveButton, interpolationButton, <>currentBuffer, <>signalArray, <>startTime, <>endTime, <sr, <>loopFrames, oscFunc, oscFunc2,
 	<focusList, <focus, standardAction, setInputAction, keyRoutine, whichPanel;
 
 	*new {
@@ -127,6 +127,8 @@ SamplerPanel {
 		labelKnob1 = LabelKnob.new(composite, 2, 37, "Rate", this, 1, specs.at(\Rate), specs.at(\Rate).unmap(1));
 		labelKnob2 = LabelKnob.new(composite, 49, 37, "Volume", this, 1, specs.at(\Volume));
 		labelKnob3 = LabelKnob.new(composite, 96, 37, "writeMix", this, 1, default: 1);
+    samplePosLabelKnob = LabelKnob.new(composite, 143, 37, "Pos", this, 1, [-1,1].asSpec, 0.5, 2);
+    samplePosLabelKnob.knob1.toolTip = "Position offset from the GUI start position (offset is -1 to 1)";
 		samplePlot = SampleSlider.new(composite, Rect(2, 180, 188, 64), Color.new255(200, 150, 150, 0.5), Color.new255(200, 200, 200, 100), nDef);
 		recordButton = RecordButton.new(composite, Rect(2, 135, 47, 55), "rec", this,
 			[Color.new255(200,70,90,180), Color.new255(210,50,40,255)]
@@ -191,8 +193,8 @@ SamplerPanel {
 
 	rebuild {
 	Ndef(\sampler, {
-			arg buffer = bufs[0], numFrames, knobRate = 1, knobVolume = 0.8, knobwriteMix = 1, recordOn = 0, startPos = 0, endPos = 1, t_reset = 0, interpolation=4;
-			var inputs = Silent.ar, sig, phase, writer, rateIn = 0, volumeIn = 0, phasePhase, readHead, record, resetIn = Silent.ar, start, recordIn = Silent.ar, rtrigIn = Silent.ar, rtrigOff;
+			arg buffer = bufs[0], numFrames, knobRate = 1, knobPos = 0, knobVolume = 0.8, knobwriteMix = 1, recordOn = 0, startPos = 0, endPos = 1, t_reset = 0, interpolation=4;
+			var inputs = Silent.ar, sig, phase, writer, rateIn = 0, volumeIn = 0, posIn=0, phasePhase, readHead, record, resetIn = Silent.ar, start, recordIn = Silent.ar, rtrigIn = Silent.ar, rtrigOff, length;
 			//numFrames = BufFrames.kr(buffer);
 			labelKnob1.modList.do({|item|
 				rateIn = rateIn + Ndef(item);
@@ -207,7 +209,15 @@ SamplerPanel {
 			resetButton.inputList.do({|item|
 			resetIn = resetIn + Ndef(item);
 			});
-			start = startPos * numFrames;
+      samplePosLabelKnob.modList.do{
+        |item|
+        posIn = posIn + Ndef(item);
+      };
+      posIn = posIn.max(0).min(1);
+      posIn = posIn + knobPos + startPos;
+      length = endPos - startPos; // Get length
+      start = posIn * numFrames; // use knob startPos instead of startPos
+      endPos = posIn + length; // Change endPos based on knob startPos
 			phase = Phasor.ar(t_reset + resetIn, BufRateScale.kr(buffer) * rateIn, start, endPos * numFrames, start);
 			//phaseIn = Select.ar(recordOn, [DC.ar(1), phase]); //turns record head on and off
 			inputList.do({|item|
@@ -273,6 +283,7 @@ SamplerPanel {
 			\labelKnob1, labelKnob1.save,
 			\labelKnob2, labelKnob2.save,
 			\labelKnob3, labelKnob3.save,
+      \samplePosLabelKnob, samplePosLabelKnob.save,
 			\currentBuffer, currentBuffer,
 			\sampleMenu, sampleMenu.value,
 			\inputList, inputList,
@@ -295,6 +306,7 @@ SamplerPanel {
 		labelKnob1.load(loadList.at(\labelKnob1) ?? {nil});
 		labelKnob2.load(loadList.at(\labelKnob2) ?? {nil});
 		labelKnob3.load(loadList.at(\labelKnob3) ?? {nil});
+    samplePosLabelKnob.load(loadList.at(\samplePosLabelKnob) ?? {nil});
 		currentBuffer = (loadList.at(\currentBuffer) ?? {\temp});
 			this.setBuf(currentBuffer);
 			this.refresh;
@@ -311,7 +323,6 @@ SamplerPanel {
 		}.defer;
     // I was too lazy to make another pair of variables for interpolation, so...
     // Interpolation 0 -> 4, 1 -> 1
-    ("Setting interpolation to: "+(4-((loadList.at(\interpolationButton) ?? {0})*3))).postln;
     nDef.set(\interpolation, (4-((loadList.at(\interpolationButton) ?? {0})*3)));
 
 		outputButtons.do({|item, index|
