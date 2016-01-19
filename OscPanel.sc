@@ -68,12 +68,14 @@ OscPanel {
 			["lock", Color.red.blend(Color.white, 0.5), Color.new255(210, 90, 210, 180)],
 		]);
 		lockButton.action_({|button| lock = button.value});
+		lockButton.toolTip_("When active, this button prevents the entire panel from loading presets. \n All other unlocked panels will change when a preset is loaded.");
 		resetButton = Button.new(composite, Rect(155, 228, 35, 15));
 		resetButton.font_(Font("Helvetica", 11));
 		resetButton.states_([
 			["reset", Color.grey.blend(Color.white, 0.5), Color.new255(40, 10, 0, 180)]
 		]);
 		resetButton.action_({this.reset});
+		resetButton.toolTip_("Resets this panel to its default state");
 		outputButtons = Array.newClear(outs.size);
 		outs.do({|whichOut, index|
 			outputButtons[index] = OutputButton.new(composite, 2+((110/outs.size)*index), 263, (110/outs.size), nDef, whichOut);
@@ -99,6 +101,7 @@ OscPanel {
 			this.rebuild;
 		});
 		noteArrayField.background_(Color.new255(200, 140, 130, 95));
+		noteArrayField.toolTip_("Enter notes in semitones, separated by spaces - e.g. '0 3 7 10 14'");
 		transposeField = TextField.new(composite, Rect(155, 245, 35, 16));
 		transposeField.background = Color.new255(200, 110, 70, 130);
 		transposeField.mouseDownAction_({|item| item.string = ""});

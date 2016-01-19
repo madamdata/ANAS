@@ -1,16 +1,14 @@
-ADSRPanel {
-	var parent, left, top, <>nDef, outs, <composite, <label, <label2, <>labelKnob1, <>labelKnob2, <>labelKnob3, <>labelKnob4, <>labelKnob5, <>labelKnob6, <>inputList, selectors, specs;
+ADSRPanel : ANASPanel {
+	var <>labelKnob1, <>labelKnob2, <>labelKnob3, <>labelKnob4, <>labelKnob5, <>labelKnob6,  selectors, specs;
 
 	*new {
-	arg parent, left, top, nDef, outs;
-		^super.newCopyArgs(parent, left, top, nDef, outs).initADSRPanel;
+	arg parent, bounds, nDef, outs;
+		^super.newCopyArgs(parent, bounds, nDef, outs).initADSRPanel;
 
 	}
 
 	initADSRPanel {
-		composite = CompositeView.new(parent, Rect(left, top, 192, 300));
-		composite.background = ~colourList.at(nDef.key) ?? {Color.new255(50, 50, 50, 50)};
-		inputList = \none!4;
+		this.initANASPanel;
 		specs = [
 			ControlSpec(0.003, 5.5, \exp), //attack spec
 			ControlSpec(0.003, 5.5, \exp), //decay spec
@@ -47,6 +45,7 @@ ADSRPanel {
 				this.rebuild;
 		};
 		});
+		focusList = [labelKnob1, labelKnob2, labelKnob3, labelKnob4, labelKnob5, labelKnob6];
 
 		Ndef(nDef.key.asSymbol, {
 			arg knobAtk, knobDec, knobSus, knobRel, knobLevel;
@@ -62,6 +61,68 @@ ADSRPanel {
 			sig;
 		});
 		this.rebuild;
+		//key control -------
+		standardAction = {|v,c,m,u,k|
+			var keys = [m, k];
+			switch(keys,
+				[0, 49], {
+					this.rebuild;
+					keyRoutine.reset;
+					{
+						selectors.do({|item, index|
+							item.value_(~moduleList.indexOf(inputList[index]));
+							item.selector.background = (~colourList.at(item.selector.item.asSymbol) ?? {~colourList.at(\none)}).blend(Color.grey, 0.3);
+						});
+					}.defer;
+				},
+				[1048576, 18], {selectors[0].valueAction_(1)},
+				[1048576, 19], {selectors[0].valueAction_(2)},
+				[0,18], {this.focusOn(0)},
+				[0,19], {this.focusOn(1)},
+				[0,20], {this.focusOn(2)},
+				[0,21], {this.focusOn(3)},
+				[131072,18], {this.focusOn(4)},
+				[131072,19], {this.focusOn(5)},
+				[131072,20], {this.focusOn(6)},
+				[0, 0], {
+					composite.keyDownAction_(setInputAction);
+					selectors.do({|item| item.selector.background_(Color.red)});
+				},
+			);
+			nDef.key.asString.postln;
+			true;
+		};
+		setInputAction = {|v,c,m,u,k|
+			var keys = [m,k];
+			switch(keys,
+				[0, 49], {
+					this.rebuild;
+					keyRoutine.reset;
+					composite.keyDownAction_(standardAction);
+					{
+						selectors.do({|item, index|
+							item.value_(~moduleList.indexOf(inputList[index]));
+							item.selector.background = (~colourList.at(item.selector.item.asSymbol) ?? {~colourList.at(\none)}).blend(Color.grey, 0.3);
+						});
+					}.defer;
+				},
+				[0, 50], {whichPanel = \same; keyRoutine.next},
+				[0, 12], {whichPanel = \none; keyRoutine.next},
+				[0, 18], {whichPanel = \osc1; keyRoutine.next},
+				[0, 19], {whichPanel = \osc2; keyRoutine.next},
+				[0, 20], {whichPanel = \osc3; keyRoutine.next},
+				[0, 21], {whichPanel = \osc4; keyRoutine.next},
+				[0,23], {whichPanel = \osc5; keyRoutine.next},
+				[131072, 18], {whichPanel = \del1; keyRoutine.next},
+				[131072, 19], {whichPanel = \adsr1; keyRoutine.next},
+				[131072, 20], {whichPanel = \adsr2; keyRoutine.next},
+				[131072, 21], {whichPanel = \filt1; keyRoutine.next},
+				[131072, 23], {whichPanel = \sampler; keyRoutine.next},
+				[131072, 22], {whichPanel = \mult1; keyRoutine.next},
+			);
+			true;
+		};
+		composite.keyDownAction_(standardAction);
 
 	}
 

@@ -114,3 +114,6 @@ Pdef(\script2,
 	)
 ).play;
 )
+ADSRPanel
+~a.in1.labelKnob1.save
+

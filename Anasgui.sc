@@ -19,7 +19,7 @@ AnasGui {
 	}
 
 	*initClass {
-		version = "ANAS v0.952";
+		version = "ANAS v0.96";
 		this.loadEventTypes;
 		anasFolder = PathName(AnasGui.filenameSymbol.asString.dirname);
 		anasDir = PathName(AnasGui.filenameSymbol.asString.dirname.dirname);
@@ -206,7 +206,7 @@ AnasGui {
 					\in1, Color.new255(200, 50, 50, 180),
 				]);
 				composite = CompositeView.new(window, Rect(2, 2, 1100, 695));
-				composite.canFocus_(true).keyDownAction_({|v,c,m,u,k| //keyboard control
+				composite.canFocus_(true).keyDownAction_({|v,c,m,u,k| //keyboard control - selecting panels
 					var keys = [m, k];
 					[v,keys].postln;
 					switch(keys,
@@ -221,6 +221,7 @@ AnasGui {
 						[131072,21], {filt1.composite.focus(true); this.updateFocus},
 						[131072,23], {sampler.composite.focus(true); this.updateFocus},
 						[131072,22], {mult1.composite.focus(true); this.updateFocus},
+						[131072,26], {in1.composite.focus(true); this.updateFocus},
 						[0, 26], {out1.composite.focus(true); this.updateFocus},
 						[0, 28], {out2.composite.focus(true); this.updateFocus},
 						[0, 25], {out3.composite.focus(true); this.updateFocus},
@@ -252,8 +253,8 @@ AnasGui {
 				moduleObjects[4] = osc5 = OscPanel.new(composite, 802, 35, Ndef(\osc5), ~outPuts, clock);
 				moduleObjects[5] = del1 = DelayPanel.new(composite, 10, 340, Ndef(\del1), ~outPuts);
 				moduleObjects[6] = mult1 = MultiPlexPanel.new(composite, 10, 490, Ndef(\mult1), ~outPuts);
-				moduleObjects[7] = adsr1 = ADSRPanel.new(composite, 208, 340, Ndef(\adsr1), ~outPuts);
-				moduleObjects[8] = adsr2 = ADSRPanel.new(composite, 406, 340, Ndef(\adsr2), ~outPuts);
+				moduleObjects[7] = adsr1 = ADSRPanel.new(composite, Rect(208, 340, 192, 300), Ndef(\adsr1), ~outPuts);
+				moduleObjects[8] = adsr2 = ADSRPanel.new(composite, Rect(406, 340, 192, 300), Ndef(\adsr2), ~outPuts);
 				moduleObjects[9] = filt1 = FilterPanel.new(composite, 604, 340, Ndef(\filt1), ~outPuts);
 				moduleObjects[10] = sampler = SamplerPanel.new(composite, 802, 340, Ndef(\sampler), ~outPuts);
 				moduleObjects[11] = in1 = InputPanel.new(composite, Rect(1000, 645, 100, 100), Ndef(\in1));

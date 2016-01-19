@@ -6,14 +6,12 @@ related:: Classes/OscPanel, Classes/DelayPanel, Classes/FilterPanel, Classes/Mul
 image::ANASlogo.png::
 DESCRIPTION::
 ANAS is a simulated modular synthesizer.
-Code by thumbthumb aka Adam Adhiyatma (they, them). December 2015.
-Version number: 0.947.
+Code by thumbthumb aka Adam Adhiyatma (they, them) & David Cummings. December 2015.
+Version number: 0.96.
 
 thanks to:
 
 Chris Brown
-
-David Cummings(agargara), who wrote many of the helpfiles
 
 all of the electronic composers / performers at Mills College
 
@@ -128,6 +126,43 @@ Presets can be loaded from the language using the following syntax:
 code:: a = AnasGui.new;
 a.load(yourPresetName);
 ::
+
+subsection:: Change log
+
+	0.96 Sampler panel improved, input panel added, tooltips added. FilterPanel no longer has individual modulation inputs for each filter knob. Interpolation selector added.
+
+	0.95 Clock sync added.
+
+	0.948 sampler now has a triggerable reset button and triggerable record and overdub.
+
+	0.947 keyboard shortcuts improved and extended; GUI looks a little prettier.
+
+	0.94 Sampler Panel will save now, almost full functionality. Output panels now have settable fadeTime and mute buttons.Colour scheme tweaked.
+KEYBOARD CONTROL!!! helpfile soon to come.
+
+	0.93 OscPanel gui updates, reset button, lock button that prevents loading, version number now accessible via AnasGui.version
+LabelKnobs now have a variable number of selectors, in case you need to build a module that doesn't need 3 mod parameters. Hopefully that doesn't bork all your save files, but I think it should work.
+oscPanel now lives in its own .sc file, rather than inside anasguiParts.sc.
+
+
+	0.92 configuration button, now depends on ANASconfig file in the extensions folder.
+
+	0.91 convenience launcher /recompile panel
+
+	0.9 Incomplete sampler panel and folder structure
+
+	0.85 Delay panel LFO implemented.
+
+	0.845 Folder system implemented. **You may have to put all your presets into a subfolder inside your existing save folder!**
+
+	0.84 MIDI control learning and saving. Basic MIDI keyboard input (unfinished). Shift + Click on a GUI knob, then turn the midi controller knob to map it. Alt + click to demap.
+
+
+	0.83 Transposition is now possible. Added a lo-hi filter and dependency on DFM1 Ugen. Helpfiles in progress.
+
+	0.82 Modulatable ADSR
+
+	0.81 Fixed preset loading bug
 
 CLASSMETHODS::
 
