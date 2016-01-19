@@ -1,5 +1,5 @@
 SamplerPanel {
-	var parent, left, top, <>nDef, outs, <composite, <label, <label2, <>labelKnob1, <>labelKnob2, <>labelKnob3, <>samplePlot, <>specs, outputButtons, selectors, <>inputList, samplePath, sampleList, sampleMenu, <>bufs, <>whichSample, <recordButton, <overdubButton, <resetButton, <>fileName, saveField, saveButton, <>currentBuffer, <>signalArray, <>startTime, <>endTime, <sr, <>loopFrames, oscFunc, oscFunc2,
+	var parent, left, top, <>nDef, outs, <composite, <label, <label2, <>labelKnob1, <>labelKnob2, <>labelKnob3, <>samplePlot, <>specs, outputButtons, selectors, <>inputList, samplePath, sampleList, sampleMenu, <>bufs, <>whichSample, <recordButton, <overdubButton, <resetButton, <>fileName, saveField, saveButton, interpolationButton, <>currentBuffer, <>signalArray, <>startTime, <>endTime, <sr, <>loopFrames, oscFunc, oscFunc2,
 	<focusList, <focus, standardAction, setInputAction, keyRoutine, whichPanel;
 
 	*new {
@@ -167,6 +167,20 @@ SamplerPanel {
 			sampleMenu.items = sampleList;
 			{0.1.wait; temp.write(samplePath.fullPath +/+ fileName, "WAV", "int16", numFrames:loopFrames, completionMessage: {(fileName ++ " saved").postln})}.fork;
 		});
+    // Button to turn interpolation on/off
+    interpolationButton = Button.new(composite, Rect(151, 270, 40, 15));
+    interpolationButton.toolTip="Turn this on to make your life more C O O L (turns interpolation off, try using at low rates)";
+		interpolationButton.states_([
+      ["Boring", Color.fromHexString("222222"), Color.fromHexString("F0F0F0")],
+      ["C O O L", Color.black, Color.fromHexString("D690DA")],]);
+		interpolationButton.action_({
+      arg thisButton;
+      switch(thisButton.value,
+        0, {nDef.set(\interpolation, 4); this.rebuild},
+        1, {nDef.set(\interpolation, 1); this.rebuild},
+      );
+		});
+    interpolationButton.font = Font("Arial", 10, true);
 		focusList = [labelKnob1, labelKnob2, labelKnob3];
 		//oscFunc for record triggering.
 		oscFunc = OSCFunc.newMatching({{recordButton.valueAction_(1)}.defer}, '/record');
@@ -177,7 +191,7 @@ SamplerPanel {
 
 	rebuild {
 	Ndef(\sampler, {
-			arg buffer = bufs[0], numFrames, knobRate = 1, knobVolume = 0.8, knobwriteMix = 1, recordOn = 0, startPos = 0, endPos = 1, t_reset = 0;
+			arg buffer = bufs[0], numFrames, knobRate = 1, knobVolume = 0.8, knobwriteMix = 1, recordOn = 0, startPos = 0, endPos = 1, t_reset = 0, interpolation=4;
 			var inputs = Silent.ar, sig, phase, writer, rateIn = 0, volumeIn = 0, phasePhase, readHead, record, resetIn = Silent.ar, start, recordIn = Silent.ar, rtrigIn = Silent.ar, rtrigOff;
 			//numFrames = BufFrames.kr(buffer);
 			labelKnob1.modList.do({|item|
@@ -207,7 +221,7 @@ SamplerPanel {
 			recordIn = (recordIn > 0);
 			recordIn = (recordIn + record).max(0).min(1);
 			readHead = BufRd.ar(1, buffer, phase, interpolation:1); //the writer works by continually rewriting old data into the buffer, mixed with new data. It has to write uninterpolated old data so the file doesn't get slowly degraded through repeated interpolation.
-			sig = BufRd.ar(1, buffer, phase, 1, interpolation:4);
+			sig = BufRd.ar(1, buffer, phase, 1, interpolation:interpolation);
 			writer = BufWr.ar(
 				inputs*knobwriteMix*recordIn + (readHead*(1-(knobwriteMix*recordIn))),
 				buffer,
@@ -268,8 +282,8 @@ SamplerPanel {
 			\rVal, samplePlot.rVal,
 			\recordButton, recordButton.save,
 			\overdubButton, overdubButton.save,
-			\resetButton, resetButton.save
-
+			\resetButton, resetButton.save,
+      \interpolationButton, interpolationButton.value,
 		]);
 
 		^saveList;
@@ -293,7 +307,13 @@ SamplerPanel {
 				});
 			});
 			sampleMenu.value_(loadList.at(\sampleMenu) ?? {0});
+      interpolationButton.value=(loadList.at(\interpolationButton) ?? {0});
 		}.defer;
+    // I was too lazy to make another pair of variables for interpolation, so...
+    // Interpolation 0 -> 4, 1 -> 1
+    ("Setting interpolation to: "+(4-((loadList.at(\interpolationButton) ?? {0})*3))).postln;
+    nDef.set(\interpolation, (4-((loadList.at(\interpolationButton) ?? {0})*3)));
+
 		outputButtons.do({|item, index|
 			var isOn = ((loadList.at(\outputButton)??{0!4}).asArray[index]) ?? {0};
 			{item.value_(isOn)}.defer;
