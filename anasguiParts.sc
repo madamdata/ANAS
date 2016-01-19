@@ -270,11 +270,13 @@ LabelKnob {
 		loadList = loadList ?? {Dictionary.new};
 		modList = loadList.at(\modList) ?? {[\none, \none, \none]};
 		oscPanel.nDef.set(("knob"++param.asString).asSymbol, (spec.map(loadList.at(\knob) ?? {default})));
+		if (~midiLock == 0, { //don't load MIDI mapping if midilock is on
 		if(midiFunc.notNil, {this.deMap}); //if there is already a midifunc, free it.\
 		if (loadList.at(\msgNum).notNil, {
 			this.mapToKnob(loadList.at(\msgNum));
 		});
-		{
+		});
+		{ //update GUI
 			knob1.value = loadList.at(\knob) ?? {default};
 			selectors.do({|item, index|
 				item.value_(loadList.at(("selector"++(index+1)).asSymbol) ?? {0});
@@ -466,11 +468,13 @@ LFOKnob {
 			inSelector.selector.background = (~colourList.at(inSelector.selector.item.asSymbol) ?? {Color.new255(200, 200, 200, 200)}).blend(Color.grey, 0.5)
 		}.defer;
 
-    if(midiFunc.notNil, {this.deMap}); //if there is already a midifunc, free it.
-    if (loadList.at(\msgNum).notNil, { // Map midi messages to knob
+		if (~midiLock == 0, {//don't load MIDI mappings if midilock is on.
+		if(midiFunc.notNil, {this.deMap}); //if there is already a midifunc, free it.
+		if (loadList.at(\msgNum).notNil, { // Map midi messages to knob
 			this.mapToKnob(loadList.at(\msgNum));
 		});
-		}
+		});
+	}
 
 
 

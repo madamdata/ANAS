@@ -114,6 +114,6 @@ Pdef(\script2,
 	)
 ).play;
 )
-ADSRPanel
+DelayPanel
 ~a.in1.labelKnob1.save
 

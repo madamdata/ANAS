@@ -11,7 +11,7 @@ pattern control
 // Hi, I'm David.
 AnasGui {
 	classvar <>launcher, launchButton, recompileButton, closeButton, configButton, configWindow, reopenButton, pathFields, configText, saveConfigButton, <version, paths, <anasFolder, <anasDir, <>loadPath, <>recordPath;
-	var <>loadPath, <>recordPath, <>window, <clock, <>osc1, <>osc2, <>osc3, <>osc4, <>osc5, <>out1, <>out2, <>out3, <>out4, <>del1, <>mult1, <>adsr1, <>adsr2, <>filt1, <>midipanel, <>sampler, <>in1, <>patterns, composite, <>saveList, <>savePath, <>whichFolder, <>fileName, fileNameField, saveButton, recordButton, openRecordingsButton, recordFileName, <>recordPanel, <>loadMenu, <>menuEntries, <>folderMenu, <>folderEntries, <>loadPathFolders, <>moduleList, <>saves, img, header, closeButton, <moduleObjects;
+	var <>loadPath, <>recordPath, <>window, <clock, <>osc1, <>osc2, <>osc3, <>osc4, <>osc5, <>out1, <>out2, <>out3, <>out4, <>del1, <>mult1, <>adsr1, <>adsr2, <>filt1, <>midipanel, <>sampler, <>in1, <>patterns, composite, <>saveList, <>savePath, <>whichFolder, <>fileName, fileNameField, saveButton, recordButton, openRecordingsButton, recordFileName, <>recordPanel, <>loadMenu, <>menuEntries, <>folderMenu, <>folderEntries, <>loadPathFolders, <>moduleList, <>saves, img, header, closeButton, <moduleObjects, <midiLockButton;
 	*new {
 
 		^super.new.initAnasGui;
@@ -183,6 +183,7 @@ AnasGui {
 				window.alwaysOnTop = true;
 				window.background = Color.new255(255, 200, 210, 200);
 				window.onClose = {Ndef.clear};
+				~midiLock = 0;
 				~colourList = Dictionary.newFrom([ //this is how each panel and input selector knows what colour it is.
 					\none, Color.new255(105, 65, 110, 140),
 					\osc1, Color.new255(205,50,140, 140),
@@ -312,6 +313,12 @@ AnasGui {
 					this.load(menuEntries.at(menu.value));
 				});
 				loadMenu.allowsReselection = true;
+				midiLockButton = Button.new(composite, Rect(1000, 5, 80, 20));
+				midiLockButton.states_([
+					["MIDI unlocked", Color.white, Color.new255(50, 50, 50, 200)],
+					["MIDI locked", Color.white, Color.new255(200, 40, 40, 150)]
+				]).font_(Font("Helvetica", 11, true));
+				midiLockButton.action_({|button| ~midiLock = button.value});
 		}.defer;
 			0.5.wait;
 		[osc1, osc2, osc3, osc4, osc5, del1, mult1, adsr1, filt1, out1, out2, out3, out4].do{|item| item.rebuild;};
