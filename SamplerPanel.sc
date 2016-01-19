@@ -127,7 +127,7 @@ SamplerPanel {
 		labelKnob1 = LabelKnob.new(composite, 2, 37, "Rate", this, 1, specs.at(\Rate), specs.at(\Rate).unmap(1));
 		labelKnob2 = LabelKnob.new(composite, 49, 37, "Volume", this, 1, specs.at(\Volume));
 		labelKnob3 = LabelKnob.new(composite, 96, 37, "writeMix", this, 1, default: 1);
-		samplePlot = SampleSlider.new(composite, Rect(2, 180, 188, 40), Color.new255(200, 150, 150, 0.5), Color.new255(200, 200, 200, 100), nDef);
+		samplePlot = SampleSlider.new(composite, Rect(2, 180, 188, 64), Color.new255(200, 150, 150, 0.5), Color.new255(200, 200, 200, 100), nDef);
 		recordButton = RecordButton.new(composite, Rect(2, 135, 47, 55), "rec", this,
 			[Color.new255(200,70,90,180), Color.new255(210,50,40,255)]
 		);
