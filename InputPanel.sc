@@ -20,6 +20,7 @@ InputPanel : ANASPanel {
 		inputTypeSelector.font_(Font("Helvetica", 10));
 		labelKnob1 = LabelKnob.new(composite, 55, 2, "gain", this, 0.8, [0,2].asSpec, default:1, numSelectors: 0);
 		thingsToSave.putPairs([\inputTypeSelector, inputTypeSelector, \inputType, inputType,\labelKnob1, labelKnob1]);
+		focusList = [labelKnob1];
 		this.rebuild;
 
 	}

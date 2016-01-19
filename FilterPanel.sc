@@ -11,7 +11,7 @@ FilterKnob {
 		default = default ?? {0.5!2};
 		spec = spec ?? {ControlSpec(0, 1)};
 		modList = [\none];
-		composite = CompositeView.new(parent, Rect(left, top, 47*scale, 80*scale));
+		composite = CompositeView.new(parent, Rect(left, top, 47*scale, 67*scale));
 		composite.background_(Color.new255(85, 55, 155, 50));
 		knob1label = StaticText.new(composite, Rect(2*scale, 2*scale, 40*scale, 15*scale));
 		knob1label.align = \left;
@@ -55,7 +55,6 @@ FilterKnob {
 			oscPanel.nDef.set(("filt"++filtNum++"freq".asString).asSymbol, label.value.asFloat);
 			{knob2.value = freqSpec.unmap(label.value.asFloat)}.defer;
 		});
-		inSelector = InputSelector.new(composite, 1, 64);
 	}
 
 	save {
@@ -64,7 +63,6 @@ FilterKnob {
 		saveList.putPairs([
 			\knob1, knob1.value,
 			\knob2, knob2.value,
-			\inSelector, inSelector.value,
 		]);
 		^saveList;
 	}
@@ -130,10 +128,10 @@ FilterPanel {
 		labelKnob2 = FilterKnob.new(composite, 49, 37, "filt2", this, 1, spec, freqSpec, 2, [1,100]);
 		labelKnob3 = FilterKnob.new(composite, 96, 37, "filt3", this, 1, spec, freqSpec, 3, [1,250]);
 		labelKnob4 = FilterKnob.new(composite, 143, 37, "filt4", this, 1, spec, freqSpec,  4, [1,625]);
-		labelKnob5 = FilterKnob.new(composite, 2, 120, "filt5", this, 1, spec, freqSpec, 5, [1, 1562]);
-		labelKnob6 = FilterKnob.new(composite, 49, 120, "filt6", this, 1, spec, freqSpec, 6, [1, 3506]);
-		labelKnob7 = FilterKnob.new(composite, 96, 120, "filt7", this, 1, spec, freqSpec, 7, [1, 9465]);
-		labelKnob8 = FilterKnob.new(composite, 143, 120, "filt8", this, 1, spec, freqSpec, 8, [1, 14000]);
+		labelKnob5 = FilterKnob.new(composite, 2, 104, "filt5", this, 1, spec, freqSpec, 5, [1, 1562]);
+		labelKnob6 = FilterKnob.new(composite, 49, 104, "filt6", this, 1, spec, freqSpec, 6, [1, 3506]);
+		labelKnob7 = FilterKnob.new(composite, 96, 104, "filt7", this, 1, spec, freqSpec, 7, [1, 9465]);
+		labelKnob8 = FilterKnob.new(composite, 143, 104, "filt8", this, 1, spec, freqSpec, 8, [1, 14000]);
 		labelKnob9 = LabelKnob.new(composite, 96, 203, "global", this, 1, globalSpec);
 		labelKnob10 = HiLoKnob.new(composite, 143, 203, "LoHi", this, 1);
 		selectors = 0!4;
