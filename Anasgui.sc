@@ -423,6 +423,7 @@ AnasGui {
 			\adsr2, adsr2.save,
 			\filt1, filt1.save,
 			\sampler, sampler.save,
+			\in1, in1.save,
 			\out1, out1.save,
 			\out2, out2.save,
 			\out3, out3.save,
@@ -451,6 +452,7 @@ AnasGui {
 		adsr2.load(loadList.at(\adsr2)??{nil});
 		filt1.load(loadList.at(\filt1)??{nil});
 		sampler.load(loadList.at(\sampler)??{nil});
+		in1.load(loadList.at(\in1)??{nil});
 		out1.load(loadList.at(\out1) ??{nil});
 		out2.load(loadList.at(\out2)??{nil});
 		out3.load(loadList.at(\out3)??{nil});

@@ -17,11 +17,16 @@ ANASPanel {
 
 
 	save {
-
+		var saveList = Dictionary.new;
+		thingsToSave.keysValuesDo({|key, value|
+			saveList.put(key, value.save);
+		});
+		^saveList.postln;
 	}
 
 	load {
-
+		arg loadList;
+		loadList = loadList ?? {Dictionary.new};
 
 	}
 

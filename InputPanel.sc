@@ -1,5 +1,5 @@
 InputPanel : ANASPanel {
-	var <inputType, <inputTypeSelector, labelKnob1;
+	var <inputType, <inputTypeSelector, <labelKnob1;
 
 	*new {
 		arg parent, bounds, nDef;
@@ -8,7 +8,7 @@ InputPanel : ANASPanel {
 
 	initInputPanel {
 		this.initANASPanel;
-		thingsToSave = 0!3;
+		thingsToSave = Dictionary.new;
 		inputType = \audio;
 		nDef.mold(1, \audio);
 		inputTypeSelector = PopUpMenu.new(composite, Rect(2, 20, 50, 15));
@@ -19,6 +19,7 @@ InputPanel : ANASPanel {
 		});
 		inputTypeSelector.font_(Font("Helvetica", 10));
 		labelKnob1 = LabelKnob.new(composite, 55, 2, "gain", this, 0.8, [0,2].asSpec, default:1, numSelectors: 0);
+		thingsToSave.putPairs([\inputTypeSelector, inputTypeSelector, \inputType, inputType,\labelKnob1, labelKnob1]);
 		this.rebuild;
 
 	}
@@ -34,6 +35,26 @@ InputPanel : ANASPanel {
 			);
 			sig;
 		});
+	}
+
+	save {
+		var saveList = Dictionary.new;
+		saveList.putPairs([
+			\inputTypeSelector, inputTypeSelector.value,
+			\inputType, inputType,
+			\labelKnob1, labelKnob1.save
+		]);
+		^saveList;
+
+	}
+
+	load {
+		arg loadList;
+		loadList = loadList ?? {Dictionary.new};
+		inputType = loadList.at(\inputType) ?? {\audio};
+		{inputTypeSelector.value_(loadList.at(\inputTypeSelector) ?? {0})}.defer;
+		labelKnob1.load(loadList.at(\labelKnob1));
+		this.rebuild;
 
 	}
 }
