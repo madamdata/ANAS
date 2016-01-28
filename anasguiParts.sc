@@ -520,7 +520,7 @@ InputSelector {
 }
 
 FadeField {
-	var parent, bounds, <>nDef, fontSize, field;
+	var parent, bounds, <>nDef, fontSize, <field;
 	*new {
 		arg parent, bounds, nDef, fontSize = 11;
 		^super.newCopyArgs(parent, bounds, nDef, fontSize).initFadeField;

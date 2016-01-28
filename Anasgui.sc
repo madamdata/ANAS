@@ -11,7 +11,7 @@ pattern control
 // Hi, I'm David.
 AnasGui {
 	classvar <>launcher, launchButton, recompileButton, closeButton, configButton, configWindow, reopenButton, pathFields, configText, saveConfigButton, <version, paths, <anasFolder, <anasDir, <>loadPath, <>recordPath;
-	var <>loadPath, <>recordPath, <>window, <clock, <>osc1, <>osc2, <>osc3, <>osc4, <>osc5, <>out1, <>out2, <>out3, <>out4, <>del1, <>mult1, <>adsr1, <>adsr2, <>filt1, <>midipanel, <>sampler, <>in1, <>patterns, composite, <>saveList, <>savePath, <>whichFolder, <>fileName, fileNameField, saveButton, recordButton, openRecordingsButton, recordFileName, <>recordPanel, <>loadMenu, <>menuEntries, <>folderMenu, <>folderEntries, <>loadPathFolders, <>moduleList, <>saves, img, header, closeButton, <moduleObjects, <midiLockButton;
+	var <>loadPath, <>recordPath, <>window, <clock, <>osc1, <>osc2, <>osc3, <>osc4, <>osc5, <>out1, <>out2, <>out3, <>out4, <>del1, <>mult1, <>adsr1, <>adsr2, <>filt1, <>midipanel, <>sampler, <>in1, <in2, <>patterns, composite, <>saveList, <>savePath, <>whichFolder, <>fileName, fileNameField, saveButton, recordButton, openRecordingsButton, recordFileName, <>recordPanel, <>loadMenu, <>menuEntries, <>folderMenu, <>folderEntries, <>loadPathFolders, <>moduleList, <>saves, img, header, closeButton, <moduleObjects, <midiLockButton;
 	*new {
 
 		^super.new.initAnasGui;
@@ -46,6 +46,7 @@ AnasGui {
 			Server.local.quit;
 			//Server.local.options.outDevice = "Soundflower (64ch)";
 			Server.local.options.outDevice = "Built-in Output";
+			//Server.local.options.device = "Scarlett 2i4 USB";
 			Server.local.options.numOutputBusChannels_(2);
 			Server.local.options.hardwareBufferSize_(512);
 			Server.local.options.blockSize_(512);
@@ -239,13 +240,13 @@ AnasGui {
 				header.backgroundImage_(img, 10, 0.5); */
 
 				//modules
-				moduleObjects = 0!16;
+				moduleObjects = 0!17;
 				~updateInputSelectors = Condition.new(false);
-				clock = ClockPanel.new(composite, Rect(1000, 35, 98, 120), Ndef(\clock), this);
-				moduleObjects[12] = out1 = OutPanel.new(composite, 1000, 160, Ndef(\out1));
-				moduleObjects[13] = out2 = OutPanel.new(composite, 1000, out1.bottom, Ndef(\out2));
-				moduleObjects[14] = out3 = OutPanel.new(composite, 1000, out2.bottom, Ndef(\out3));
-				moduleObjects[15] = out4 = OutPanel.new(composite, 1000, out3.bottom, Ndef(\out4));
+				clock = ClockPanel.new(composite, Rect(1000, 35, 98, 70), Ndef(\clock), this);
+				moduleObjects[13] = out1 = OutPanel.new(composite, 1000, 100, Ndef(\out1));
+				moduleObjects[14] = out2 = OutPanel.new(composite, 1000, out1.bottom, Ndef(\out2));
+				moduleObjects[15] = out3 = OutPanel.new(composite, 1000, out2.bottom, Ndef(\out3));
+				moduleObjects[16] = out4 = OutPanel.new(composite, 1000, out3.bottom, Ndef(\out4));
 				~outPuts = [out1, out2, out3, out4];
 				moduleObjects[0] = osc1 = OscPanel.new(composite, 10, 35, Ndef(\osc1), ~outPuts, clock);
 				moduleObjects[1] = osc2 = OscPanel.new(composite, 208, 35, Ndef(\osc2), ~outPuts, clock);
@@ -258,7 +259,8 @@ AnasGui {
 				moduleObjects[8] = adsr2 = ADSRPanel.new(composite, Rect(406, 340, 192, 300), Ndef(\adsr2), ~outPuts);
 				moduleObjects[9] = filt1 = FilterPanel.new(composite, 604, 340, Ndef(\filt1), ~outPuts);
 				moduleObjects[10] = sampler = SamplerPanel.new(composite, 802, 340, Ndef(\sampler), ~outPuts);
-				moduleObjects[11] = in1 = InputPanel.new(composite, Rect(1000, 645, 100, 100), Ndef(\in1));
+				moduleObjects[11] = in1 = InputPanel.new(composite, Rect(1000, 590, 100, 100), Ndef(\in1));
+				moduleObjects[12] = in2 = InputPanel.new(composite, Rect(1000, 645, 100, 100), Ndef(\in2));
 				midipanel = MIDIPanel.new(composite, 10, 645);
 				patterns = 0!4;
 				patterns[0] = PatternPanel.new(composite, 208, 645, Ndef(\pattern1), this);

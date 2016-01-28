@@ -95,6 +95,8 @@ OscPanel {
 		});
 		freqButton.font_(Font("Helvetica", 10));
 		fadeTime = FadeField.new(composite,Rect(155,263,35,15), nDef, 11);
+		fadeTime.field.toolTip_("Use this field to set the Ndef's fade time in seconds.\n Fade time will be applied whenever you change an input source, the oscillator type,\n the note array field, or the distortion type. It will not be applied for transpose, knob movements, or setting outputs.\n
+To fade output sends in, use the fadetime field on the output panel instead.");
 		noteArrayField = TextField.new(composite, Rect(2, 245, 152, 16));
 		noteArrayField.action_({|item|
 			noteArray = item.value.tr($ , $/).split.asFloat;

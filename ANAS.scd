@@ -7,7 +7,6 @@ AnasGui.version
 //http://soundcloud.com/dj-thumbthumb
 
 /*
-
 There is now a helpfile!
 select this ---> AnasGui
 and press Cmd + D to take a look at it.
@@ -114,6 +113,5 @@ Pdef(\script2,
 	)
 ).play;
 )
-DelayPanel
-~a.in1.labelKnob1.save
+
 
