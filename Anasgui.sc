@@ -10,7 +10,7 @@ pattern control
 
 // Hi, I'm David.
 AnasGui {
-	classvar <>launcher, launchButton, recompileButton, closeButton, configButton, configWindow, reopenButton, pathFields, configText, saveConfigButton, <version, paths, <anasFolder, <anasDir, <>loadPath, <>recordPath;
+	classvar <>launcher, launchButton, recompileButton, closeButton, configButton, configWindow, reopenButton, pathFields, configText, saveConfigButton, <version, <config, <anasFolder, <anasDir, <>loadPath, <>recordPath;
 	var <>loadPath, <>recordPath, <>window, <clock, <>osc1, <>osc2, <>osc3, <>osc4, <>osc5, <>out1, <>out2, <>out3, <>out4, <>del1, <>mult1, <>adsr1, <>adsr2, <>filt1, <>midipanel, <>sampler, <>in1, <in2, <>patterns, composite, <>saveList, <>savePath, <>whichFolder, <>fileName, fileNameField, saveButton, recordButton, openRecordingsButton, recordFileName, <>recordPanel, <>loadMenu, <>menuEntries, <>folderMenu, <>folderEntries, <>loadPathFolders, <>moduleList, <>saves, img, header, closeButton, <moduleObjects, <midiLockButton;
 	*new {
 
@@ -19,15 +19,15 @@ AnasGui {
 	}
 
 	*initClass {
-		version = "ANAS v0.96";
+		version = "ANAS v0.963";
 		this.loadEventTypes;
 		anasFolder = PathName(AnasGui.filenameSymbol.asString.dirname);
 		anasDir = PathName(AnasGui.filenameSymbol.asString.dirname.dirname);
 		if (File.exists(anasDir.fullPath +/+ "ANASconfig"), {
 			//if config file exists, load save and recording paths
-			paths = Object.readArchive(anasDir.fullPath +/+ "ANASconfig");
-			loadPath = PathName(paths.at(\loadPath));
-			recordPath = PathName(paths.at(\recordingsPath));
+			config = Object.readArchive(anasDir.fullPath +/+ "ANASconfig");
+			loadPath = PathName(config.at(\loadPath));
+			recordPath = PathName(config.at(\recordingsPath));
 		},
 		{ //if not, prompt the user to configure.
 			StartUp.add(
@@ -36,72 +36,7 @@ AnasGui {
 		}
 		);
 		Window.closeAll;
-		launcher = Window.new("ANASLauncher", Rect(895, 30, 360, 20), border:false);
-		launcher.background = Color.new255(150, 90, 110, 105);
-		launcher.front.alwaysOnTop_(true);
-		launchButton = Button.new(launcher, Rect(2, 2, 94, 15));
-		launchButton.states_([["Start ANAS", Color.black, Color.new255(210, 180, 180, 140)]]);
-		launchButton.action_({
-			//code to start the synth.
-			Server.local.quit;
-			//Server.local.options.outDevice = "Soundflower (64ch)";
-			Server.local.options.outDevice = "Built-in Output";
-			//Server.local.options.device = "Scarlett 2i4 USB";
-			Server.local.options.numOutputBusChannels_(2);
-			Server.local.options.hardwareBufferSize_(512);
-			Server.local.options.blockSize_(512);
-			Server.local.latency = 0.05;
-			Server.local.waitForBoot({
-				//replace the paths below with your own path for a save folder and a recordings folder. (don't make them the same folder)
-				//b = Buffer.read(Server.local,"/Users/adamadhiyatma/Music/SuperCollider Recordings/livesamples/Anas/Samples/STE-093BellRapid.wav", 0, -1);
-				~a = AnasGui.new(loadPath,recordPath)
-			});
-		});
-		Platform.case(\osx, {
-			recompileButton = Button.new(launcher, Rect(98, 2, 94, 15));
-			recompileButton.states_([["Recompile", Color.black, Color.new255(240, 100, 200, 150)]]);
-			recompileButton.action_({
-				thisProcess.recompile;
-			});
-		});
-		configButton = Button.new(launcher, Rect(194, 2, 94, 15));
-		configButton.states_([["Configure", Color.black, Color.new255(150, 100, 210)]]);
-		configButton.action_({
-			//configuration window
-			configWindow = Window.new("ANAS Configuration", Rect(800, 100, 400, 140));
-			configWindow.front.background_(Color.new255(170, 120, 210, 190));
-			pathFields = 0!2;
-			configText = 0!3;
-			configText[0] = StaticText.new(configWindow, Rect(5,5, 390, 25)).background_(Color(1,1,1,0));
-			configText[0].stringColor_(Color.white).font_(Font("Helvetica", 11));
-			configText[0].string = "1. Drag your save folder into this text box, or enter a path:";
-			pathFields[0] = TextField.new(configWindow, Rect(5, 30, 390, 25)).background_(Color(1,1,1,0.2));
-			configText[1] = StaticText.new(configWindow, Rect(5,57, 390, 25)).background_(Color(1,1,1,0));
-			configText[1].stringColor_(Color.white).font_(Font("Helvetica", 11));
-			configText[1].string = "2. Drag your recordings folder into this text box, or enter a path:";
-			pathFields[1] = TextField.new(configWindow, Rect(5, 80, 390, 25)).background_(Color(1,1,1,0.3));
-			saveConfigButton = Button.new(configWindow, Rect(150, 110, 100, 25));
-			configText[2] = StaticText.new(configWindow, Rect(5, 110, 150, 25)).background_(Color(1,1,1,0));
-			configText[2].stringColor_(Color.white).font_(Font("Helvetica", 11));
-			configText[2].string = "3. Click here to save -->";
-			saveConfigButton.states_([["Save and close", Color.white, Color.new255(110, 80, 200)]]);
-			saveConfigButton.action_({
-				var saveArray = Dictionary.newFrom([
-					\loadPath, pathFields[0].value,
-					\recordingsPath, pathFields[1].value
-				]);
-				saveArray.writeArchive(anasDir.fullPath +/+ "ANASconfig");
-				configWindow.close;
-				thisProcess.recompile;
-			});
 
-		});
-		reopenButton = Button.new(launcher, Rect(290, 2, 50, 15));
-		reopenButton.states_([["Reopen", Color.black, Color.new255(100, 130, 220, 180)]]);
-		reopenButton.action_({~a.window.visible = true;});
-		closeButton = Button.new(launcher, Rect(343, 2, 15, 15));
-		closeButton.states_([["x", Color.white, launcher.background]]);
-		closeButton.action_({launcher.close});
 		//if there's nothing in the save folder, make a subfolder
 		if (loadPath.notNil, {
 			if (loadPath.folders.size == 0, {
@@ -109,6 +44,7 @@ AnasGui {
 			});
 		});
 		{0.5.wait; (version ++ " installed").postln;}.fork;
+		launcher = ANASLauncher.new;
 	}
 
 	*openLauncher {

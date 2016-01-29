@@ -681,7 +681,8 @@ ClockPanel {
 	initClockPanel {
 		bpm = 120;
 		clock = TempoClock.new(bpm/60, 4);
-		composite = CompositeView.new(parent, bounds).background_(Color.new255(150,150,150,150));
+		composite = CompositeView.new(parent, bounds);
+		composite.background_(Color.new255(150,150,150,150));
 		blinker = CompositeView.new(composite, Rect(2,2,15,15)).background_(Color.new255(100,100,100,125));
 		bpmField = TextField.new(composite, Rect(2, 20, 94, 25)).background_(Color.new255(150, 100, 100, 160));
 		bpmField.stringColor_(Color.white);
