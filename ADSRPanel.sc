@@ -174,7 +174,12 @@ ADSRPanel : ANASPanel {
 			});
 			relIn = LinLin.ar(relIn, -1, 1, 0.3, 1.7);
 			relIn = (knobRel * relIn);
-			env = EnvGen.ar(Env.adsr(atkIn, decIn, susIn, relIn), trig) * knobLevel.lag(0.08);
+			labelKnob5.modList.do({|item|
+				levelIn = levelIn + Ndef(item);
+			});
+			levelIn = Latch.ar(LinLin.ar(levelIn, -1, 1, 0.1,1.9), trig);
+			levelIn = (levelIn * knobLevel.lag(0.08)).min(1.3);
+			env = EnvGen.ar(Env.adsr(atkIn, decIn, susIn, relIn), trig) * levelIn;
 			sig = env * 2 - 1;
 			sig;
 		});

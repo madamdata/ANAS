@@ -496,7 +496,7 @@ InputSelector {
 		selector.stringColor = Color.new255(220, 220, 250, 240);
 		selector.background = Color.new255(200, 180, 180, 10);
 		selector.allowsReselection = true;
-		selector.toolTip_("Use this drop-down menu to select a modulation source for the knob or panel it's attached to.");
+		selector.toolTip_("Use this drop-down menu to select a modulation source for the knob or panel it's attached to. \n If it is on the top of a panel, this menu selects audio or trigger inputs for that panel.");
 		Routine({
 			~updateInputSelectors.wait;
 			{selector.items = ~moduleList.collect({|item| item.asString})}.defer;

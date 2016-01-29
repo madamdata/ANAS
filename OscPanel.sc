@@ -94,6 +94,10 @@ OscPanel {
 
 		});
 		freqButton.font_(Font("Helvetica", 10));
+		freqButton.toolTip_("This button switches the frequency range of the oscillator. \n
+AUDIO: 40 - 12000 hz \n
+LFO: 0.1-55hz \n
+SYNC: Multiples and divisions of the clock time. NOTE: as of v1.0, only LFSaw is phase resettable");
 		fadeTime = FadeField.new(composite,Rect(155,263,35,15), nDef, 11);
 		fadeTime.field.toolTip_("Use this field to set the Ndef's fade time in seconds.\n Fade time will be applied whenever you change an input source, the oscillator type,\n the note array field, or the distortion type. It will not be applied for transpose, knob movements, or setting outputs.\n
 To fade output sends in, use the fadetime field on the output panel instead.");
@@ -103,7 +107,7 @@ To fade output sends in, use the fadetime field on the output panel instead.");
 			this.rebuild;
 		});
 		noteArrayField.background_(Color.new255(200, 140, 130, 95));
-		noteArrayField.toolTip_("Enter notes in semitones, separated by spaces - e.g. '0 3 7 10 14'");
+		noteArrayField.toolTip_("For polyphony, enter notes in semitones, separated by spaces - e.g. '0 3 7 10 14' \n Applies fade time.");
 		transposeField = TextField.new(composite, Rect(155, 245, 35, 16));
 		transposeField.background = Color.new255(200, 110, 70, 130);
 		transposeField.mouseDownAction_({|item| item.string = ""});
@@ -112,12 +116,14 @@ To fade output sends in, use the fadetime field on the output panel instead.");
 			transpose = item.value.asFloat;
 			Ndef(nDef.key).set(\transpose, item.value.asFloat);
 		});
+		transposeField.toolTip_("Type in a number here to offset the frequency of this oscillator by \n that number of semitones. Fast compared to the note array field and does not apply\n fade time.");
 		oscType = PopUpMenu.new(composite, Rect(2, 280, 105, 17));
 		oscType.items_(["DSaw", "DPulse", "LFSaw", "Sine", "LFPulse", "LFNoise0", "LFNoise1", "LFNoiseA", "WhiteNoise", "PinkNoise"]);
 		oscType.action_({|selector|
 			type = selector.item.asSymbol;
 			this.rebuild;
 		});
+		oscType.toolTip_("Use this menu to select the oscillator type.");
 		oscType.allowsReselection = true;
 		oscType.background = ~colourList.at(nDef.key).blend(Color.grey, 0.4);
 		distortSelector = PopUpMenu.new(composite, Rect(109, 280, 81, 17));

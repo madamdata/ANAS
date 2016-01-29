@@ -276,6 +276,7 @@ AnasGui {
 				fileNameField = TextField.new(composite, Rect(720, 5, 100, 25));
 				fileNameField.background = Color.new255(100, 100, 100, 50);
 				fileNameField.action_({|field| fileName = field.value});
+				fileNameField.toolTip_("Type the name of the preset you wish to save in here and PRESS ENTER before saving.");
 				saveButton = Button.new(composite, Rect(660, 5, 55, 25));
 				saveButton.background = Color.new255(50, 100, 180, 200);
 				saveButton.states = [["Save", Color.black, Color.new255(155,155, 185, 2000)]];
@@ -302,6 +303,7 @@ AnasGui {
 				recordPanel = TextField.new(composite, Rect(320, 5, 100, 23));
 				recordPanel.background = Color.new255(80, 80, 80, 150);
 				recordPanel.action_({|panel| recordFileName = panel.value.asString});
+				recordPanel.toolTip_("Type the name of the recording you wish to save here and PRESS ENTER before recording.");
 				folderMenu = PopUpMenu.new(composite, Rect(430, 5, 100, 25));
 				folderMenu.items = folderEntries;
 				folderMenu.action_({|menu|
