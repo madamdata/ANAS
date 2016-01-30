@@ -376,6 +376,9 @@ AnasGui {
 			\out2, out2.save,
 			\out3, out3.save,
 			\out4, out4.save,
+			\pattern1, patterns[0].save,
+			\pattern2, patterns[1].save,
+			\pattern3, patterns[2].save,
 		]);
 		saves.put(fileName.asSymbol, saveList);
 		savePath = PathName.new(whichFolder.fullPath ++ fileName);
@@ -405,6 +408,9 @@ AnasGui {
 		out2.load(loadList.at(\out2)??{nil});
 		out3.load(loadList.at(\out3)??{nil});
 		out4.load(loadList.at(\out4)??{nil});
+		patterns[0].load(loadList.at(\pattern1));
+		patterns[1].load(loadList.at(\pattern2));
+		patterns[2].load(loadList.at(\pattern3));
 		[clock, osc1, osc2, osc3, osc4, osc5, del1, mult1, adsr1, filt1, sampler, out1, out2, out3, out4].do{|item| item.rebuild;};
 		//clock.reSyncAll;
 		//[osc1, osc2, osc3, osc4, osc5, del1, mult1, adsr1, filt1, out1, out2, out3, out4].do{|item| item.rebuild;};

@@ -1,5 +1,5 @@
 PatternPanel {
-		var parent, left, top, nDef, <anasGui, <>syncSource, <>valPat, <>durPat, <legatoPat, <lagPat,<composite, patternField, patternField2,patternField3,patternField4, typeSelector, <syncSelector, <>syncOn, <>currentDur, <>prevDur, <condition, <type, <adsr, adsrSelector;
+		var parent, left, top, <nDef, <anasGui, <>syncSource, <>valPat, <>durPat, <legatoPat, <lagPat,<composite, patternField, patternField2,patternField3,patternField4, typeSelector, <syncSelector, <>syncOn, <>currentDur, <>prevDur, <condition, <type, <adsr, adsrSelector;
 
 	*new {
 		arg parent, left, top, nDef, anasGui;
@@ -45,10 +45,12 @@ PatternPanel {
 			this.rebuild;
 		});
 		syncSelector = PopUpMenu.new(composite, Rect(152, 21, 38, 18)).background_(~colourList.at(\none));
-		syncSelector.items_(["1", "2", "3", "4"]).stringColor_(Color.white);
+		syncSelector.items_(["none", "1", "2", "3", "4"]).stringColor_(Color.white);
 		syncSelector.action_({|selector|
-			syncSource = anasGui.patterns[selector.value];
-			syncOn = 1;
+			if (selector.value==0, {syncOn = 0}, {
+				syncSource = anasGui.patterns[selector.value];
+				syncOn = 1;
+			});
 		}).allowsReselection_(true);
 		adsrSelector = PopUpMenu.new(composite, Rect(152, 40, 38, 18));
 		adsrSelector.items_(["adsr1", "adsr2"]);
@@ -106,10 +108,9 @@ PatternPanel {
 				switch(type,
 					\note, {
 						nDef.set(\lag, lagPat.next);
-						nDef.set(\input, (valPat.next - 12).midiratio.explin(0.1, 2.5, -1, 1, \min));
+						nDef.set(\input, ((valPat.next??{12}) - 12).midiratio.explin(0.1, 2.5, -1, 1, \min));
 						adsr.set(\hold, (legatoPat.next * currentDur));
 						adsr.set(\t_pgate, 1);
-						if (nDef.key == \pattern1, {"hi".postln;});
 					},
 					\freq, {
 						nDef.set(\lag, lagPat.next);
@@ -138,5 +139,48 @@ PatternPanel {
 		});
 
 	}
+
+	save {
+		var saveList = Dictionary.new;
+		saveList.putPairs([
+			\valPat, patternField.value,
+			\durPat, patternField2.value,
+			\legatoPat, patternField3.value,
+			\lagPat, patternField4.value,
+			\syncSelector, syncSelector.value,
+			\syncOn, syncOn,
+			\typeSelector, typeSelector.value,
+			\type, type,
+			\adsrSelector, adsrSelector.value,
+			\adsr, adsr.asCompileString,
+		]);
+		^saveList;
+	}
+
+	load {
+		arg loadList;
+		loadList = loadList ?? {Dictionary.newFrom([\valPat, "Pn(0)", \durPat, "Pn(0.3)", \legatoPat, "Pn(0.3)", \lagPat, "Pn(0)", \adsr, "Ndef('adsr1')"])};
+
+		//valPat = Pdefn((nDef.key.asString ++ "val").asSymbol).asStream;
+
+		type = loadList.at(\type) ?? {\freq};
+		adsr = loadList.at(\adsr).interpret;
+		syncOn = loadList.at(\syncOn) ?? {0};
+		{
+			patternField.value_(loadList.at(\valPat));
+			patternField2.value_(loadList.at(\durPat));
+			patternField3.value_(loadList.at(\legatoPat));
+			patternField4.value_(loadList.at(\lagPat));
+			syncSelector.value_(loadList.at(\syncSelector));
+			typeSelector.value_(loadList.at(\typeSelector));
+		}.defer;
+		Pdefn((nDef.key.asString ++ "dur").asSymbol, (loadList.at(\durPat)).interpret);
+		Pdefn((nDef.key.asString ++ "legato").asSymbol, (loadList.at(\legatoPat)).interpret);
+		Pdefn((nDef.key.asString ++ "lag").asSymbol, (loadList.at(\lagPat)).interpret);
+		Pdefn((nDef.key.asString ++ "val").asSymbol, (loadList.at(\valPat)).interpret);
+		this.rebuild;
+
+	}
+
 
 }
