@@ -10,7 +10,7 @@ InputPanel : ANASPanel {
 		this.initANASPanel;
 		thingsToSave = Dictionary.new;
 		label2 = StaticText.new(composite, Rect(2, 2, 50, 10));
-		label2.string_("Input").stringColor_(Color.new(1,1,1,0.8)).font_(Font("Helvetica", 12));
+		label2.string_(nDef.key.asString).stringColor_(Color.new(1,1,1,0.8)).font_(Font("Helvetica", 12));
 		inputType = \audio;
 		nDef.mold(1, \audio);
 		inputTypeSelector = PopUpMenu.new(composite, Rect(2, 20, 50, 15));

@@ -682,21 +682,25 @@ ClockPanel {
 		bpm = 120;
 		clock = TempoClock.new(bpm/60, 4);
 		composite = CompositeView.new(parent, bounds);
-		composite.background_(Color.new255(150,150,150,150));
-		blinker = CompositeView.new(composite, Rect(2,2,15,15)).background_(Color.new255(100,100,100,125));
-		bpmField = TextField.new(composite, Rect(2, 20, 94, 25)).background_(Color.new255(150, 100, 100, 160));
-		bpmField.stringColor_(Color.white);
+		composite.background_(Color.new255(150,150,220,185));
+		blinker = CompositeView.new(composite, Rect(2,2,20,20)).background_(Color.new255(100,100,100,125));
+		bpmField = TextField.new(composite, Rect(23, 1, 50, 22));
+		bpmField.background_(Color.new255(190, 100, 50, 140));
+		bpmField.stringColor_(Color.white).string_("BPM").align_(\center);
+		bpmField.mouseDownAction_({bpmField.string = ""});
 		bpmField.action_({|field| bpm = field.value.asFloat; clock.tempo = bpm/60; nDef.set(\bpm, bpm)});
 		clock.sched(0, {
 			{
-				{blinker.background_(Color.red)}.defer;
+				{blinker.background_(Color.new255(210, 30, 30, 190))}.defer;
 				(12/bpm).wait;
 				{blinker.background_(Color.new255(100,100,100,125))}.defer;
 			}.fork;
 			1;
 		});
-		syncButton = Button.new(composite, Rect(2, 50, 15, 15));
+		syncButton = Button.new(composite, Rect(72, 1, 27, 22));
+		syncButton.states_([["S", Color.white, Color.new255(100, 100, 150, 140)]]);
 		syncButton.action_({this.reSyncAll});
+
 		this.rebuild;
 
 	}

@@ -19,7 +19,7 @@ AnasGui {
 	}
 
 	*initClass {
-		version = "ANAS v0.963";
+		version = "ANAS v0.965";
 		this.loadEventTypes;
 		anasFolder = PathName(AnasGui.filenameSymbol.asString.dirname);
 		anasDir = PathName(AnasGui.filenameSymbol.asString.dirname.dirname);
@@ -115,7 +115,7 @@ AnasGui {
 			this.initNdefs; //initialize Ndefs - sets up some dummy ndef things with the appropriate audio rate inputs. for some reason it bugs out if I don't do this.
 			0.3.wait;
 			{ //gui code - must be deferred
-				window = Window.new(\anasGui, Rect(250, 200, 1105, 700));
+				window = Window.new(\anasGui, Rect(250, 200, 1105, 730));
 				window.front;
 				window.alwaysOnTop = true;
 				window.background = Color.new255(255, 200, 210, 200);
@@ -143,7 +143,7 @@ AnasGui {
 					\pattern2, Color.new255(150, 0, 150, 140),
 					\in1, Color.new255(200, 50, 50, 180),
 				]);
-				composite = CompositeView.new(window, Rect(2, 2, 1100, 695));
+				composite = CompositeView.new(window, Rect(2, 2, 1100, 725));
 				composite.canFocus_(true).keyDownAction_({|v,c,m,u,k| //keyboard control - selecting panels
 					var keys = [m, k];
 					[v,keys].postln;
@@ -178,8 +178,8 @@ AnasGui {
 				//modules
 				moduleObjects = 0!17;
 				~updateInputSelectors = Condition.new(false);
-				clock = ClockPanel.new(composite, Rect(1000, 35, 98, 70), Ndef(\clock), this);
-				moduleObjects[13] = out1 = OutPanel.new(composite, 1000, 100, Ndef(\out1));
+				clock = ClockPanel.new(composite, Rect(1000, 5, 98, 25), Ndef(\clock), this);
+				moduleObjects[13] = out1 = OutPanel.new(composite, 1000, 35, Ndef(\out1));
 				moduleObjects[14] = out2 = OutPanel.new(composite, 1000, out1.bottom, Ndef(\out2));
 				moduleObjects[15] = out3 = OutPanel.new(composite, 1000, out2.bottom, Ndef(\out3));
 				moduleObjects[16] = out4 = OutPanel.new(composite, 1000, out3.bottom, Ndef(\out4));
@@ -209,21 +209,21 @@ AnasGui {
 				[\pattern1, \pattern2, \pattern3, \pattern4, \noteBus];
 				~updateInputSelectors.test_(true).signal; //now that ~moduleList is fully populated, signal all input selector to update their lists.
 				//controls at the top of the window
-				fileNameField = TextField.new(composite, Rect(720, 5, 100, 25));
+				fileNameField = TextField.new(composite, Rect(720, 3, 100, 25));
 				fileNameField.background = Color.new255(100, 100, 100, 50);
 				fileNameField.action_({|field| fileName = field.value});
 				fileNameField.toolTip_("Type the name of the preset you wish to save in here and PRESS ENTER before saving.");
-				saveButton = Button.new(composite, Rect(660, 5, 55, 25));
+				saveButton = Button.new(composite, Rect(660, 3, 55, 25));
 				saveButton.background = Color.new255(50, 100, 180, 200);
 				saveButton.states = [["Save", Color.black, Color.new255(155,155, 185, 2000)]];
 				saveButton.action_({this.save; (fileName.asString ++ " saved").postln;});
-				openRecordingsButton = Button.new(composite, Rect(200, 5, 60, 25));
+				openRecordingsButton = Button.new(composite, Rect(200, 3, 60, 25));
 				openRecordingsButton.states_([["RECFOLDER", Color.white, Color.new255(30, 30, 150, 150)]]).font_(Font("Helvetica", 10));
 				openRecordingsButton.action_({
 					this.class.recordPath.fullPath.openOS;
 					window.visible = false;
 				});
-				recordButton = Button.new(composite, Rect(260, 5, 55, 25));
+				recordButton = Button.new(composite, Rect(260, 3, 55, 25));
 				recordButton.font = Font("Helvetica", 11);
 				recordButton.states = [
 					["record", Color.white, Color.new255(155, 35, 35, 150)],
@@ -236,24 +236,24 @@ AnasGui {
 					}, {button.font = Font("Helvetica", 11); Server.local.stopRecording});
 
 				});
-				recordPanel = TextField.new(composite, Rect(320, 5, 100, 23));
+				recordPanel = TextField.new(composite, Rect(320, 3, 100, 23));
 				recordPanel.background = Color.new255(80, 80, 80, 150);
 				recordPanel.action_({|panel| recordFileName = panel.value.asString});
 				recordPanel.toolTip_("Type the name of the recording you wish to save here and PRESS ENTER before recording.");
-				folderMenu = PopUpMenu.new(composite, Rect(430, 5, 100, 25));
+				folderMenu = PopUpMenu.new(composite, Rect(430, 3, 100, 25));
 				folderMenu.items = folderEntries;
 				folderMenu.action_({|menu|
 					menu.value.postln;
 					whichFolder = loadPathFolders[menu.value];
 					this.updateMenuEntries;
 				});
-				loadMenu = PopUpMenu.new(composite, Rect(530, 5, 130, 25));
+				loadMenu = PopUpMenu.new(composite, Rect(530, 3, 130, 25));
 				loadMenu.items = menuEntries;
 				loadMenu.action_({|menu|
 					this.load(menuEntries.at(menu.value));
 				});
 				loadMenu.allowsReselection = true;
-				midiLockButton = Button.new(composite, Rect(1000, 5, 80, 20));
+				midiLockButton = Button.new(composite, Rect(880, 3, 80, 20));
 				midiLockButton.states_([
 					["MIDI unlocked", Color.white, Color.new255(50, 50, 50, 200)],
 					["MIDI locked", Color.white, Color.new255(200, 40, 40, 150)]

@@ -15,6 +15,7 @@ ANASLauncher {
 		launchButton.action_({
 			//code to start the synth.
 			Server.local.quit;
+			Server.scsynth;
 			Server.local.options.outDevice = (AnasGui.config.at(\outDevice).postln);
 			Server.local.options.inDevice = (AnasGui.config.at(\inDevice).postln);
 			Server.local.options.numOutputBusChannels_(2);
