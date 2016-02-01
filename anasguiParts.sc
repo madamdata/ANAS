@@ -71,13 +71,26 @@ OutputButton {
 }
 
 LabelKnob {
-	var parent, left, top, <>string, oscPanel, scale, <>spec, <>default, <>numSelectors, <composite, <>knob1, <>knob1label, <>action, param, <>selector1, <>selector2, <>selector3, <>selectors, <>saveList, <>modList, <>midiFunc, <>mapped, <keyRoutine, <whichPanel;
+	var parent, left, top, <>string, oscPanel, scale, <>spec, <>default, <>numSelectors, <composite, <>knob1, <>knob1label, <>action, param, <>selector1, <>selector2, <>selector3, <>selectors, <>saveList, <>modList, <>midiFunc, <>mapped, <keyRoutine, <whichPanel, <automationList, prevTime, <recording, <automationRoutine, startTime, <player;
 	*new {
 		arg parent, left, top, string, oscPanel, scale = 1, spec = ControlSpec(0,1), default = 0.5, numSelectors = 3;
 		^super.newCopyArgs(parent, left, top, string, oscPanel, scale, spec, default, numSelectors).initLabelKnob;
 	}
 
 	initLabelKnob {
+		automationList = List.new;
+		automationRoutine = Routine {
+			loop {
+				automationList.do({|item|
+					if (item[0].notNil, {
+					item[0].wait;
+					this.doAction(item[1]);
+					}, {1.wait; "automationList is empty! Error.".postln;});
+				})
+			}
+		};
+		startTime = 0;
+		recording = 0;
 		spec = spec ?? {ControlSpec(0, 1)};
 		mapped = 0;
 		param = string.asSymbol;
@@ -149,10 +162,24 @@ LabelKnob {
 				[0,2], {oscPanel.focusOn((oscPanel.focus + 1).mod(oscPanel.focusList.size))},
 				[0,13], {oscPanel.focusOn((oscPanel.focus - 4).mod(oscPanel.focusList.size))},
 				[0,1], {oscPanel.focusOn((oscPanel.focus + 4).mod(oscPanel.focusList.size))},
+				[262144,0], {"ctrl down".postln;}
 			);
 			true;
 		});
+
+		knob1.keyUpAction_({|a,b,c,d,e,f|
+			var keys = f;
+			//keys.postln;
+			switch (f,
+				//on ctrl - UP, turn recording off, begin automating.
+				16777250, {
+					if (recording == 1, {this.startAutomation},{"blp".postln});
+					recording = 0;"ctrl UP".postln;
+				}
+			)
+		});
 		knob1.mouseDownAction_({|xx, xxx, xxxx, mod|
+			mod.postln;
 			switch(mod,
 				131072, {
 					("mapping "++oscPanel.nDef.key.asString++" "++string).postln;
@@ -162,6 +189,19 @@ LabelKnob {
 					this.deMap;
 				},
 				655360, {this.resetSelectors;oscPanel.rebuild},
+
+				262144, { // on ctrl-click, start a new automation list, store start time, and reset prevTime.
+					automationList = List.new;
+					startTime = Main.elapsedTime;
+					prevTime = 0;
+					"recording automation".postln;
+					recording = 1;
+				},
+				393216, {//on ctrl-shift click, kill all automation, reset automation list, make sure recording is off.
+					automationRoutine.stop;
+					recording = 0;
+					"stopping".postln;
+				}
 			);
 		});
 
@@ -183,7 +223,18 @@ LabelKnob {
 	doAction {
 		arg value;
 		oscPanel.nDef.set(("knob"++param.asString).asSymbol, spec.map(value));
+		if (recording == 1, {
+			var delta = (Main.elapsedTime - startTime - prevTime);
+			var when = Main.elapsedTime - startTime;
+			automationList.add([delta, value]);
+			prevTime = when;
+		});
 
+	}
+
+	startAutomation {
+		automationRoutine.reset;
+		automationRoutine.play;
 	}
 
 	setAction {

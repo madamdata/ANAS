@@ -1,5 +1,5 @@
 ADSRPanel : ANASPanel {
-	var <>labelKnob1, <>labelKnob2, <>labelKnob3, <>labelKnob4, <>labelKnob5, <>labelKnob6,  selectors, specs;
+	var <>labelKnob1, <>labelKnob2, <>labelKnob3, <>labelKnob4, <>labelKnob5, <>labelKnob6, <>labelKnob7, selectors, specs;
 
 	*new {
 	arg parent, bounds, nDef, outs;
@@ -14,6 +14,7 @@ ADSRPanel : ANASPanel {
 			ControlSpec(0.003, 5.5, \exp), //decay spec
 			ControlSpec(0,1), //sustain spec
 			ControlSpec(0.003, 7, \exp), //release spec
+			ControlSpec(-7,7);
 		];
 		/*label = StaticText.new(composite, Rect(0, 0, 190, 20));
 		label.string = ("" ++ nDef.key.asString.toUpper);
@@ -33,6 +34,7 @@ ADSRPanel : ANASPanel {
 		labelKnob4 = LabelKnob.new(composite, 143, 37, "Rel", this, 1, specs[3]);
 		labelKnob5 = LabelKnob.new(composite, 2, 134, "Level", this);
 		labelKnob6 = LFOKnob.new(composite, 49, 134, "auto", this);
+		labelKnob7 = LabelKnob.new(composite, 96, 134, "Curve", this, 1, specs[4], 0.5, 0);
 		selectors = 0!4;
 		4.do({|i|
 			selectors[i] = InputSelector.new(composite, i*48+2, 20);
@@ -128,7 +130,7 @@ ADSRPanel : ANASPanel {
 
 	rebuild {
 		Ndef(nDef.key.asSymbol, {
-			arg knobAtk = 0, knobDec = 0.1, knobSus = 0, knobRel = 0.3, knobLevel = 1, knobauto, t_pgate = 0, hold = 0.1;
+			arg knobAtk = 0, knobDec = 0.1, knobSus = 0, knobRel = 0.3, knobLevel = 1, knobauto, t_pgate = 0, hold = 0.1, knobCurve = 0;
 			var trig = Silent.ar, env, sig, atkIn = 0, decIn = 0, susIn = 0, relIn = 0, levelIn = 0, lfo, lfoIn = 0, patterntrig;
 			inputList.do({|item|
 				trig = trig + Ndef(item);
@@ -179,7 +181,7 @@ ADSRPanel : ANASPanel {
 			});
 			levelIn = Latch.ar(LinLin.ar(levelIn, -1, 1, 0.1,1.9), trig);
 			levelIn = (levelIn * knobLevel.lag(0.08)).min(1.3);
-			env = EnvGen.ar(Env.adsr(atkIn, decIn, susIn, relIn), trig) * levelIn;
+			env = EnvGen.ar(Env.adsr(atkIn, decIn, susIn, relIn, curve: knobCurve), trig) * levelIn;
 			sig = env * 2 - 1;
 			sig;
 		});
@@ -195,6 +197,7 @@ ADSRPanel : ANASPanel {
 			\rel, labelKnob4.save,
 			\level, labelKnob5.save,
 			\auto, labelKnob6.save,
+			\curve, labelKnob7.save,
 			\inputList, inputList
 		]);
 		^saveList;
@@ -211,6 +214,7 @@ ADSRPanel : ANASPanel {
 		labelKnob4.load(loadList.at(\rel) ?? {nil});
 		labelKnob5.load(loadList.at(\level) ?? {nil});
 		labelKnob6.load(loadList.at(\auto) ?? {nil});
+		labelKnob7.load(loadList.at(\curve) ?? {nil});
 		inputList.do({|item, index|
 			{
 				selectors[index].value_(~moduleList.indexOf(item));
