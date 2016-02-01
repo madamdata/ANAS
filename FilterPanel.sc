@@ -1,5 +1,5 @@
 FilterKnob {
-	var parent, left, top, string, <>oscPanel, <>scale, <>spec, <>freqSpec, <>filtNum, <>default, <>knob1, <>knob2, <>onSwitch, <>typeSelector, <>inSelector, param, composite, knob1label, knob2label, <>modList, <>isOn;
+	var parent, left, top, string, <>oscPanel, <>scale, <>spec, <>freqSpec, <>filtNum, <>default, <>knob1, <>knob2, <>onSwitch, <>typeSelector, <>inSelector, param, composite, knob1label, knob2label, <>modList, <>isOn, <automationList, prevTime, <recording, <automationRoutine, startTime;
 	*new {
 		arg parent, left, top, string, oscPanel, scale = 1, spec, freqSpec, filtNum, default;
 		^super.newCopyArgs(parent, left, top, string, oscPanel, scale, spec, freqSpec, filtNum, default).initFilterKnob(parent, left, top, string, oscPanel, scale, spec, freqSpec, filtNum, default);
@@ -7,6 +7,20 @@ FilterKnob {
 
 	initFilterKnob{
 	arg parent, left, top, string, oscPanel, scale, spec, freqSpec, filtNum, default;
+		automationList = List.new;
+		automationRoutine = Routine {
+			loop {
+				automationList.do({|item|
+					if (item[0].notNil, {
+					item[0].wait;
+					this.doAction(item[1]);
+						{knob1.value_(item[1])}.defer;
+					}, {1.wait; "automationList is empty! Error.".postln;});
+				})
+			}
+		};
+		startTime = 0;
+		recording = 0;
 		isOn = 0;
 		default = default ?? {0.5!2};
 		spec = spec ?? {ControlSpec(0, 1)};
@@ -19,7 +33,7 @@ FilterKnob {
 		knob1label.string = string;
 		knob1label.stringColor = Color.new255(240, 205, 205, 200);
 		knob1 = Knob.new(composite, Rect(13*scale, 8*scale, 34*scale, 34*scale));
-		knob1.action = {|knob| oscPanel.nDef.set(("filt"++filtNum++"gain".asString).asSymbol, spec.map(knob.value))};
+		knob1.action = {|knob| this.doAction(knob.value);};
 		knob1.value = 0.5;
 		knob1.mode = \vert;
 		knob1.step = 0.005;
@@ -30,6 +44,52 @@ FilterKnob {
 			Color.new255(230, 0, 40, 0),
 			Color.new255(200, 150, 190, 245),
 		]);
+		knob1.keyUpAction_({|a,b,c,d,e,f|
+			var keys = f;
+			//keys.postln;
+			switch (f,
+				//on ctrl - UP, turn recording off, begin automating.
+				16777250, {
+					if (recording == 1, {
+						var delta = (Main.elapsedTime - startTime - prevTime); //add one last entry for the end of the loop
+						var when = Main.elapsedTime - startTime;
+						automationList.add([delta, knob1.value]);
+						this.startAutomation;
+					});
+					recording = 0;
+					//"ctrl UP".postln;
+				}
+			)
+		});
+		knob1.mouseDownAction_({|xx, xxx, xxxx, mod|
+			mod.postln;
+			switch(mod,
+				/*131072, {
+					("mapping "++oscPanel.nDef.key.asString++" "++string).postln;
+					this.learn;
+				},
+				524288, {
+					this.deMap;
+				},*/
+				655360, {this.resetSelectors;oscPanel.rebuild},
+
+				262144, { // on ctrl-click, start a new automation list, store start time, and reset prevTime.
+					if (recording == 0, {
+					automationList = List.new;
+					automationRoutine.stop;
+					startTime = Main.elapsedTime;
+					prevTime = 0;
+					"recording automation".postln;
+					recording = 1;
+					});
+				},
+				393216, {//on ctrl-shift click, kill all automation, reset automation list, make sure recording is off.
+					automationRoutine.stop;
+					recording = 0;
+					"stopping".postln;
+				}
+			);
+		});
 		knob2 = Knob.new(composite, Rect(2*scale, 40*scale, 25*scale, 25*scale));
 		knob2.action = {|knob|
 			var freq = freqSpec.map(knob.value);
@@ -55,6 +115,23 @@ FilterKnob {
 			oscPanel.nDef.set(("filt"++filtNum++"freq".asString).asSymbol, label.value.asFloat);
 			{knob2.value = freqSpec.unmap(label.value.asFloat)}.defer;
 		});
+	}
+
+	doAction {
+		arg value;
+		oscPanel.nDef.set(("filt"++filtNum++"gain".asString).asSymbol, spec.map(value));
+		if (recording == 1, {
+			var delta = (Main.elapsedTime - startTime - prevTime);
+			var when = Main.elapsedTime - startTime;
+			automationList.add([delta, value]);
+			prevTime = when;
+		});
+
+	}
+
+	startAutomation {
+		automationRoutine.reset;
+		automationRoutine.play;
 	}
 
 	save {
@@ -133,7 +210,7 @@ FilterPanel {
 		labelKnob7 = FilterKnob.new(composite, 96, 104, "filt7", this, 1, spec, freqSpec, 7, [1, 9465]);
 		labelKnob8 = FilterKnob.new(composite, 143, 104, "filt8", this, 1, spec, freqSpec, 8, [1, 14000]);
 		labelKnob9 = LabelKnob.new(composite, 96, 203, "global", this, 1, globalSpec);
-		labelKnob10 = HiLoKnob.new(composite, 143, 203, "LoHi", this, 1);
+		labelKnob10 = LabelKnob.new(composite, 143, 203, "LoHi", this, 1);
 		selectors = 0!4;
 		4.do({|i|
 			selectors[i] = InputSelector.new(composite, i*48+2, 20)

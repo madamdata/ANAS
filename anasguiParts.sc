@@ -71,7 +71,7 @@ OutputButton {
 }
 
 LabelKnob {
-	var parent, left, top, <>string, oscPanel, scale, <>spec, <>default, <>numSelectors, <composite, <>knob1, <>knob1label, <>action, param, <>selector1, <>selector2, <>selector3, <>selectors, <>saveList, <>modList, <>midiFunc, <>mapped, <keyRoutine, <whichPanel, <automationList, prevTime, <recording, <automationRoutine, startTime, <player;
+	var parent, left, top, <>string, oscPanel, scale, <>spec, <>default, <>numSelectors, <composite, <>knob1, <>knob1label, <>action, param, <>selector1, <>selector2, <>selector3, <>selectors, <>saveList, <>modList, <>midiFunc, <>mapped, <keyRoutine, <whichPanel, <automationList, prevTime, <recording, <automationRoutine, startTime;
 	*new {
 		arg parent, left, top, string, oscPanel, scale = 1, spec = ControlSpec(0,1), default = 0.5, numSelectors = 3;
 		^super.newCopyArgs(parent, left, top, string, oscPanel, scale, spec, default, numSelectors).initLabelKnob;
@@ -85,6 +85,7 @@ LabelKnob {
 					if (item[0].notNil, {
 					item[0].wait;
 					this.doAction(item[1]);
+						{knob1.value_(item[1])}.defer;
 					}, {1.wait; "automationList is empty! Error.".postln;});
 				})
 			}
@@ -162,7 +163,6 @@ LabelKnob {
 				[0,2], {oscPanel.focusOn((oscPanel.focus + 1).mod(oscPanel.focusList.size))},
 				[0,13], {oscPanel.focusOn((oscPanel.focus - 4).mod(oscPanel.focusList.size))},
 				[0,1], {oscPanel.focusOn((oscPanel.focus + 4).mod(oscPanel.focusList.size))},
-				[262144,0], {"ctrl down".postln;}
 			);
 			true;
 		});
@@ -173,8 +173,14 @@ LabelKnob {
 			switch (f,
 				//on ctrl - UP, turn recording off, begin automating.
 				16777250, {
-					if (recording == 1, {this.startAutomation},{"blp".postln});
-					recording = 0;"ctrl UP".postln;
+					if (recording == 1, {
+						var delta = (Main.elapsedTime - startTime - prevTime); //add one last entry for the end of the loop
+						var when = Main.elapsedTime - startTime;
+						automationList.add([delta, knob1.value]);
+						this.startAutomation;
+					});
+					recording = 0;
+					//"ctrl UP".postln;
 				}
 			)
 		});
@@ -191,11 +197,14 @@ LabelKnob {
 				655360, {this.resetSelectors;oscPanel.rebuild},
 
 				262144, { // on ctrl-click, start a new automation list, store start time, and reset prevTime.
+					if (recording == 0, {
 					automationList = List.new;
+					automationRoutine.stop;
 					startTime = Main.elapsedTime;
 					prevTime = 0;
 					"recording automation".postln;
 					recording = 1;
+					});
 				},
 				393216, {//on ctrl-shift click, kill all automation, reset automation list, make sure recording is off.
 					automationRoutine.stop;
