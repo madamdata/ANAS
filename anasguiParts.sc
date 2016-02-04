@@ -198,10 +198,11 @@ LabelKnob {
 
 				262144, { // on ctrl-click, start a new automation list, store start time, and reset prevTime.
 					if (recording == 0, {
-					automationList = List.new;
-					automationRoutine.stop;
-					startTime = Main.elapsedTime;
-					prevTime = 0;
+						automationList = List.new;
+						automationRoutine.stop;
+						startTime = Main.elapsedTime;
+						prevTime = 0;
+						automationList.add([0, knob1.value]);
 					"recording automation".postln;
 					recording = 1;
 					});

@@ -113,5 +113,7 @@ Pdef(\script2,
 	)
 ).play;
 )
-~a.osc1.labelKnob1.automationRoutine.stop
+
+~a.filt1.keyRoutine
+
 

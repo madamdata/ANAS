@@ -1,190 +1,17 @@
-FilterKnob {
-	var parent, left, top, string, <>oscPanel, <>scale, <>spec, <>freqSpec, <>filtNum, <>default, <>knob1, <>knob2, <>onSwitch, <>typeSelector, <>inSelector, param, composite, knob1label, knob2label, <>modList, <>isOn, <automationList, prevTime, <recording, <automationRoutine, startTime;
-	*new {
-		arg parent, left, top, string, oscPanel, scale = 1, spec, freqSpec, filtNum, default;
-		^super.newCopyArgs(parent, left, top, string, oscPanel, scale, spec, freqSpec, filtNum, default).initFilterKnob(parent, left, top, string, oscPanel, scale, spec, freqSpec, filtNum, default);
-	}
-
-	initFilterKnob{
-	arg parent, left, top, string, oscPanel, scale, spec, freqSpec, filtNum, default;
-		automationList = List.new;
-		automationRoutine = Routine {
-			loop {
-				automationList.do({|item|
-					if (item[0].notNil, {
-					item[0].wait;
-					this.doAction(item[1]);
-						{knob1.value_(item[1])}.defer;
-					}, {1.wait; "automationList is empty! Error.".postln;});
-				})
-			}
-		};
-		startTime = 0;
-		recording = 0;
-		isOn = 0;
-		default = default ?? {0.5!2};
-		spec = spec ?? {ControlSpec(0, 1)};
-		modList = [\none];
-		composite = CompositeView.new(parent, Rect(left, top, 47*scale, 67*scale));
-		composite.background_(Color.new255(85, 55, 155, 50));
-		knob1label = StaticText.new(composite, Rect(2*scale, 2*scale, 40*scale, 15*scale));
-		knob1label.align = \left;
-		knob1label.font = (Font("Helvetica", 10*scale));
-		knob1label.string = string;
-		knob1label.stringColor = Color.new255(240, 205, 205, 200);
-		knob1 = Knob.new(composite, Rect(13*scale, 8*scale, 34*scale, 34*scale));
-		knob1.action = {|knob| this.doAction(knob.value);};
-		knob1.value = 0.5;
-		knob1.mode = \vert;
-		knob1.step = 0.005;
-		knob1.shift_scale = 1/10;
-		knob1.color_([
-			Color.new255(120, 10, 80, 190),
-			Color.new255(25,10,25,205),
-			Color.new255(230, 0, 40, 0),
-			Color.new255(200, 150, 190, 245),
-		]);
-		knob1.keyUpAction_({|a,b,c,d,e,f|
-			var keys = f;
-			//keys.postln;
-			switch (f,
-				//on ctrl - UP, turn recording off, begin automating.
-				16777250, {
-					if (recording == 1, {
-						var delta = (Main.elapsedTime - startTime - prevTime); //add one last entry for the end of the loop
-						var when = Main.elapsedTime - startTime;
-						automationList.add([delta, knob1.value]);
-						this.startAutomation;
-					});
-					recording = 0;
-					//"ctrl UP".postln;
-				}
-			)
-		});
-		knob1.mouseDownAction_({|xx, xxx, xxxx, mod|
-			mod.postln;
-			switch(mod,
-				/*131072, {
-					("mapping "++oscPanel.nDef.key.asString++" "++string).postln;
-					this.learn;
-				},
-				524288, {
-					this.deMap;
-				},*/
-				655360, {this.resetSelectors;oscPanel.rebuild},
-
-				262144, { // on ctrl-click, start a new automation list, store start time, and reset prevTime.
-					if (recording == 0, {
-					automationList = List.new;
-					automationRoutine.stop;
-					startTime = Main.elapsedTime;
-					prevTime = 0;
-					"recording automation".postln;
-					recording = 1;
-					});
-				},
-				393216, {//on ctrl-shift click, kill all automation, reset automation list, make sure recording is off.
-					automationRoutine.stop;
-					recording = 0;
-					"stopping".postln;
-				}
-			);
-		});
-		knob2 = Knob.new(composite, Rect(2*scale, 40*scale, 25*scale, 25*scale));
-		knob2.action = {|knob|
-			var freq = freqSpec.map(knob.value);
-			oscPanel.nDef.set(("filt"++filtNum++"freq".asString).asSymbol, freq);
-			knob2label.string = freq.trunc(1).asString;
-		};
-		knob2.value = freqSpec.unmap(default[1]);
-		knob2.mode = \vert;
-		knob2.step = 0.005;
-		knob2.shift_scale = 1/10;
-		knob2.color_([
-			Color.new255(120, 70, 200, 160),
-			Color.new255(25,10,25,205),
-			Color.new255(230, 50, 140, 0),
-			Color.new255(200, 150, 190, 245),
-		]);
-		knob2label = TextField.new(composite, Rect(23, 40, 50, 10));
-		knob2label.background = Color(0,0,0,0);
-		knob2label.font = Font("Helvetica", 8);
-		knob2label.string = default[1].asString;
-		knob2label.stringColor = Color.new255(240, 205, 205, 200);
-		knob2label.action_({|label|
-			oscPanel.nDef.set(("filt"++filtNum++"freq".asString).asSymbol, label.value.asFloat);
-			{knob2.value = freqSpec.unmap(label.value.asFloat)}.defer;
-		});
-	}
-
-	doAction {
-		arg value;
-		oscPanel.nDef.set(("filt"++filtNum++"gain".asString).asSymbol, spec.map(value));
-		if (recording == 1, {
-			var delta = (Main.elapsedTime - startTime - prevTime);
-			var when = Main.elapsedTime - startTime;
-			automationList.add([delta, value]);
-			prevTime = when;
-		});
-
-	}
-
-	startAutomation {
-		automationRoutine.reset;
-		automationRoutine.play;
-	}
-
-	save {
-		var saveList;
-		saveList = Dictionary.new;
-		saveList.putPairs([
-			\knob1, knob1.value,
-			\knob2, knob2.value,
-		]);
-		^saveList;
-	}
-
-	load {
-		arg loadList;
-		loadList = loadList ?? {Dictionary.new};
-		{knob1.value = loadList.at(\knob1) ?? {spec.unmap(default[0])}}.defer;
-		oscPanel.nDef.set(("filt"++filtNum++"gain".asString).asSymbol, spec.map(loadList.at(\knob1)??{default[0]}));
-		{knob2.value = loadList.at(\knob2) ?? {freqSpec.unmap(default[1])};
-			knob2label.string = (if (loadList.at(\knob2).notNil, {
-				freqSpec.map(loadList.at(\knob2))}, {
-				default[1]})).asString;
-		}.defer;
-		oscPanel.nDef.set(("filt"++filtNum++"freq".asString).asSymbol, freqSpec.map(loadList.at(\knob2)??{default[1]}));
-
-	}
-}
-
-HiLoKnob : LabelKnob {
-
-	doAction {
-		arg value;
-		/*oscPanel.nDef.set(("knobLo".asString).asSymbol,
-			[40, 20000, 5].asSpec.map(value*2));
-		oscPanel.nDef.set(("knobHi".asString).asSymbol,
-			[25, 16000, 6].asSpec.map((value-0.5*2)).postln); */
-		oscPanel.nDef.set(("knobLoHi").asSymbol, value);
-	}
-
-
-}
-
-
-FilterPanel {
-	var parent, left, top, <>nDef, outs, <composite, <label, <label2, <>labelKnob1, <>labelKnob2, <>labelKnob3, <>labelKnob4, <>labelKnob5, <>labelKnob6, <>labelKnob7, <>labelKnob8, <>labelKnob9, <>labelKnob10, <>outputButtons, <>inputList, selectors, spec, freqSpec, globalSpec;
+FilterPanel : ANASPanel {
+	var <labelKnob1, <labelKnob2, <labelKnob3, <labelKnob4, <>labelKnob5, <>labelKnob6, <>labelKnob7, <>labelKnob8, <>labelKnob9, <>labelKnob10, <outputButtons, selectors, spec, freqSpec, globalSpec;
 
 	*new {
-		arg parent, left, top, nDef, outs;
-		^super.newCopyArgs(parent, left, top, nDef, outs).initFilterPanel;
+	arg parent, bounds, nDef, outs;
+		^super.newCopyArgs(parent, bounds, nDef, outs).initFilterPanel;
+
 	}
 
 	initFilterPanel {
-		composite = CompositeView.new(parent, Rect(left, top, 192, 300));
+		this.initANASPanel;
+		composite = CompositeView.new(parent, bounds);
 		composite.background = ~colourList.at(nDef.key) ?? {Color.new255(50, 50, 50, 50)};
+		composite.canFocus_(true);
 		inputList = \none!4;
 		spec = ControlSpec(0, 3.9);
 		freqSpec = ControlSpec(40, 18000, \exp);
@@ -225,8 +52,79 @@ FilterPanel {
 		});
 		outputButtons = Array.newClear(outs.size);
 		outs.do({|whichOut, index|
-			outputButtons[index] = OutputButton.new(composite, 2 +((80/outs.size)*index), 282, (70/outs.size), nDef, whichOut);
+			outputButtons[index] = OutputButton.new(composite, 2 +((80/outs.size)*index), 282, (80/outs.size), nDef, whichOut);
 		});
+
+		//KEYBOARD CONTROL
+		focusList = [labelKnob1, labelKnob2, labelKnob3, labelKnob4, labelKnob5, labelKnob6, labelKnob7, labelKnob8, labelKnob9, labelKnob10];
+		standardAction = {|v,c,m,u,k|
+			var keys = [m, k];
+			switch(keys,
+				[0, 49], {
+					this.rebuild;
+					keyRoutine.reset;
+					{
+						selectors.do({|item, index|
+							item.value_(~moduleList.indexOf(inputList[index]));
+							item.selector.background = (~colourList.at(item.selector.item.asSymbol) ?? {~colourList.at(\none)}).blend(Color.grey, 0.3);
+						});
+					}.defer;
+				},
+				[1048576, 18], {selectors[0].valueAction_(1)},
+				[1048576, 19], {selectors[0].valueAction_(2)},
+				[0,18], {this.focusOn(0)},
+				[0,19], {this.focusOn(1)},
+				[0,20], {this.focusOn(2)},
+				[0,21], {this.focusOn(3)},
+				[131072,18], {this.focusOn(4)},
+				[131072,19], {this.focusOn(5)},
+				[131072,20], {this.focusOn(6)},
+				[131072,21], {this.focusOn(7)},
+				[131072,23], {this.focusOn(8)},
+				[131072,22], {this.focusOn(9)},
+				[0, 12], {outputButtons[0].flipRebuild},
+				[0, 13], {outputButtons[1].flipRebuild},
+				[0, 14], {outputButtons[2].flipRebuild},
+				[0, 15], {outputButtons[3].flipRebuild},
+				[0, 0], {
+					composite.keyDownAction_(setInputAction);
+					selectors.do({|item| item.selector.background_(Color.red)});
+				},
+			);
+			nDef.key.asString.postln;
+			true;
+		};
+		setInputAction = {|v,c,m,u,k|
+			var keys = [m,k];
+			switch(keys,
+				[0, 49], {
+					this.rebuild;
+					keyRoutine.reset;
+					composite.keyDownAction_(standardAction);
+					{
+						selectors.do({|item, index|
+							item.value_(~moduleList.indexOf(inputList[index]));
+							item.selector.background = (~colourList.at(item.selector.item.asSymbol) ?? {~colourList.at(\none)}).blend(Color.grey, 0.3);
+						});
+					}.defer;
+				},
+				[0, 50], {whichPanel = \same; keyRoutine.next},
+				[0, 12], {whichPanel = \none; keyRoutine.next},
+				[0, 18], {whichPanel = \osc1; keyRoutine.next},
+				[0, 19], {whichPanel = \osc2; keyRoutine.next},
+				[0, 20], {whichPanel = \osc3; keyRoutine.next},
+				[0, 21], {whichPanel = \osc4; keyRoutine.next},
+				[0,23], {whichPanel = \osc5; keyRoutine.next},
+				[131072, 18], {whichPanel = \del1; keyRoutine.next},
+				[131072, 19], {whichPanel = \adsr1; keyRoutine.next},
+				[131072, 20], {whichPanel = \adsr2; keyRoutine.next},
+				[131072, 21], {whichPanel = \filt1; keyRoutine.next},
+				[131072, 23], {whichPanel = \sampler; keyRoutine.next},
+				[131072, 22], {whichPanel = \mult1; keyRoutine.next},
+			);
+			true;
+		};
+		composite.keyDownAction_(standardAction);
 		this.rebuild;
 	}
 
@@ -315,3 +213,206 @@ FilterPanel {
 	}
 
 }
+
+
+FilterKnob {
+	var parent, left, top, string, <>oscPanel, <>scale, <>spec, <>freqSpec, <>filtNum, <>default, <>knob1, <>knob2, <>onSwitch, <>typeSelector, <>inSelector, param, <composite, knob1label, knob2label, <>modList, <>isOn, <automationList, prevTime, <recording, <automationRoutine, startTime;
+	*new {
+		arg parent, left, top, string, oscPanel, scale = 1, spec, freqSpec, filtNum, default;
+		^super.newCopyArgs(parent, left, top, string, oscPanel, scale, spec, freqSpec, filtNum, default).initFilterKnob(parent, left, top, string, oscPanel, scale, spec, freqSpec, filtNum, default);
+	}
+
+	initFilterKnob{
+	arg parent, left, top, string, oscPanel, scale, spec, freqSpec, filtNum, default;
+		automationList = List.new;
+		automationRoutine = Routine {
+			loop {
+				automationList.do({|item|
+					if (item[0].notNil, {
+					item[0].wait;
+					this.doAction(item[1]);
+						{knob1.value_(item[1])}.defer;
+					}, {1.wait; "automationList is empty! Error.".postln;});
+				})
+			}
+		};
+		startTime = 0;
+		recording = 0;
+		isOn = 0;
+		default = default ?? {0.5!2};
+		spec = spec ?? {ControlSpec(0, 1)};
+		modList = [\none];
+		composite = CompositeView.new(parent, Rect(left, top, 47*scale, 67*scale));
+		composite.background_(Color.new255(85, 55, 155, 50));
+		knob1label = StaticText.new(composite, Rect(2*scale, 2*scale, 40*scale, 15*scale));
+		knob1label.align = \left;
+		knob1label.font = (Font("Helvetica", 10*scale));
+		knob1label.string = string;
+		knob1label.stringColor = Color.new255(240, 205, 205, 200);
+		knob1 = Knob.new(composite, Rect(13*scale, 8*scale, 34*scale, 34*scale));
+		knob1.action = {|knob| this.doAction(knob.value);};
+		knob1.value = 0.5;
+		knob1.mode = \vert;
+		knob1.step = 0.005;
+		knob1.shift_scale = 1/10;
+		knob1.color_([
+			Color.new255(120, 10, 80, 190),
+			Color.new255(25,10,25,205),
+			Color.new255(230, 0, 40, 0),
+			Color.new255(200, 150, 190, 245),
+		]);
+		knob1.keyDownAction_({|v,c,m,u,k|
+			var keys = [m,k];
+			switch(keys,
+				[0,15], {this.reset;oscPanel.rebuild},
+				[2097152, 126], {knob1.valueAction = (knob1.value + 0.01)},
+				[2097152, 125], {knob1.valueAction = (knob1.value - 0.01)},
+				[2097152, 123], {knob1.valueAction = (knob1.value - 0.122)},
+				[2097152, 124], {knob1.valueAction = (knob1.value + 0.122)},
+				[2228224, 126], {knob1.valueAction = (knob1.value + 0.001)},
+				[2228224, 125], {knob1.valueAction = (knob1.value - 0.001)},
+				[2228224, 123], {knob1.valueAction = (knob1.value - 0.05)},
+				[2228224, 124], {knob1.valueAction = (knob1.value + 0.05)},
+				[0,0], {oscPanel.focusOn((oscPanel.focus - 1).mod(oscPanel.focusList.size))},
+				[0,2], {oscPanel.focusOn((oscPanel.focus + 1).mod(oscPanel.focusList.size))},
+				[0,13], {oscPanel.focusOn((oscPanel.focus - 4).mod(oscPanel.focusList.size))},
+				[0,1], {oscPanel.focusOn((oscPanel.focus + 4).mod(oscPanel.focusList.size))},
+			);
+			true;
+		});
+		knob1.keyUpAction_({|a,b,c,d,e,f|
+			var keys = f;
+			//keys.postln;
+			switch (f,
+				//on ctrl - UP, turn recording off, begin automating.
+				16777250, {
+					if (recording == 1, {
+						var delta = (Main.elapsedTime - startTime - prevTime); //add one last entry for the end of the loop
+						var when = Main.elapsedTime - startTime;
+						automationList.add([delta, knob1.value]);
+						this.startAutomation;
+					});
+					recording = 0;
+					//"ctrl UP".postln;
+				}
+			)
+		});
+		knob1.mouseDownAction_({|xx, xxx, xxxx, mod|
+			mod.postln;
+			switch(mod,
+				/*131072, {
+					("mapping "++oscPanel.nDef.key.asString++" "++string).postln;
+					this.learn;
+				},
+				524288, {
+					this.deMap;
+				},*/
+				655360, {this.resetSelectors;oscPanel.rebuild},
+
+				262144, { // on ctrl-click, start a new automation list, store start time, and reset prevTime.
+					if (recording == 0, {
+					automationList = List.new;
+					automationRoutine.stop;
+					startTime = Main.elapsedTime;
+					prevTime = 0;
+					"recording automation".postln;
+					recording = 1;
+					});
+				},
+				393216, {//on ctrl-shift click, kill all automation, reset automation list, make sure recording is off.
+					automationRoutine.stop;
+					recording = 0;
+					"stopping".postln;
+				}
+			);
+		});
+		knob2 = Knob.new(composite, Rect(2*scale, 40*scale, 25*scale, 25*scale));
+		knob2.action = {|knob|
+			var freq = freqSpec.map(knob.value);
+			oscPanel.nDef.set(("filt"++filtNum++"freq".asString).asSymbol, freq);
+			knob2label.string = freq.trunc(1).asString;
+		};
+		knob2.value = freqSpec.unmap(default[1]);
+		knob2.mode = \vert;
+		knob2.step = 0.005;
+		knob2.shift_scale = 1/10;
+		knob2.color_([
+			Color.new255(120, 70, 200, 160),
+			Color.new255(25,10,25,205),
+			Color.new255(230, 50, 140, 0),
+			Color.new255(200, 150, 190, 245),
+		]);
+		knob2label = TextField.new(composite, Rect(23, 40, 50, 10));
+		knob2label.background = Color(0,0,0,0);
+		knob2label.font = Font("Helvetica", 8);
+		knob2label.string = default[1].asString;
+		knob2label.stringColor = Color.new255(240, 205, 205, 200);
+		knob2label.action_({|label|
+			oscPanel.nDef.set(("filt"++filtNum++"freq".asString).asSymbol, label.value.asFloat);
+			{knob2.value = freqSpec.unmap(label.value.asFloat)}.defer;
+		});
+	}
+
+	doAction {
+		arg value;
+		oscPanel.nDef.set(("filt"++filtNum++"gain".asString).asSymbol, spec.map(value));
+		if (recording == 1, {
+			var delta = (Main.elapsedTime - startTime - prevTime);
+			var when = Main.elapsedTime - startTime;
+			automationList.add([delta, value]);
+			prevTime = when;
+		});
+
+	}
+
+	focus {
+		arg val;
+		knob1.focus(val);
+
+	}
+
+	startAutomation {
+		automationRoutine.reset;
+		automationRoutine.play;
+	}
+
+	save {
+		var saveList;
+		saveList = Dictionary.new;
+		saveList.putPairs([
+			\knob1, knob1.value,
+			\knob2, knob2.value,
+		]);
+		^saveList;
+	}
+
+	load {
+		arg loadList;
+		loadList = loadList ?? {Dictionary.new};
+		{knob1.value = loadList.at(\knob1) ?? {spec.unmap(default[0])}}.defer;
+		oscPanel.nDef.set(("filt"++filtNum++"gain".asString).asSymbol, spec.map(loadList.at(\knob1)??{default[0]}));
+		{knob2.value = loadList.at(\knob2) ?? {freqSpec.unmap(default[1])};
+			knob2label.string = (if (loadList.at(\knob2).notNil, {
+				freqSpec.map(loadList.at(\knob2))}, {
+				default[1]})).asString;
+		}.defer;
+		oscPanel.nDef.set(("filt"++filtNum++"freq".asString).asSymbol, freqSpec.map(loadList.at(\knob2)??{default[1]}));
+
+	}
+}
+
+HiLoKnob : LabelKnob {
+
+	doAction {
+		arg value;
+		/*oscPanel.nDef.set(("knobLo".asString).asSymbol,
+			[40, 20000, 5].asSpec.map(value*2));
+		oscPanel.nDef.set(("knobHi".asString).asSymbol,
+			[25, 16000, 6].asSpec.map((value-0.5*2)).postln); */
+		oscPanel.nDef.set(("knobLoHi").asSymbol, value);
+	}
+
+
+}
+
+

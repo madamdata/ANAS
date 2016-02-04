@@ -16,7 +16,7 @@ PatternPanel {
 		patternField.background = Color.new255(105, 50, 100, 125);
 		patternField.stringColor_(Color.new255(255,255,255,255)).string_("value");
 		patternField.action_({|field|
-			Pdefn((nDef.key.asString ++"val").asSymbol, field.value.interpret).postln;
+			Pdefn((nDef.key.asString ++"val").asSymbol, field.value.interpret);
 		});
 		patternField2 = TextField.new(composite, Rect(2, 21, 150, 18));
 		patternField2.background = Color.new255(105, 80, 100, 125);
@@ -174,6 +174,9 @@ PatternPanel {
 			syncSelector.value_(loadList.at(\syncSelector));
 			typeSelector.value_(loadList.at(\typeSelector));
 		}.defer;
+		[patternField, patternField2, patternField3, patternField4].do({|item|
+			item.mouseDownAction_({});
+		});
 		Pdefn((nDef.key.asString ++ "dur").asSymbol, (loadList.at(\durPat)).interpret);
 		Pdefn((nDef.key.asString ++ "legato").asSymbol, (loadList.at(\legatoPat)).interpret);
 		Pdefn((nDef.key.asString ++ "lag").asSymbol, (loadList.at(\lagPat)).interpret);
