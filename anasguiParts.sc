@@ -109,6 +109,10 @@ LabelKnob {
 		knob1.mode = \vert;
 		knob1.step = 0.005;
 		knob1.shift_scale = 1/10;
+		knob1.toolTip_("Shift-click to map to the next MIDI control message received \n
+Opt-click to remove MIDI mapping\n
+Ctrl-click and hold ctrl while moving the knob to record automation. Release ctrl to begin automation. \n
+Ctrl-shift-click to remove automation.");
 		knob1.color_([
 			Color.new255(120, 10, 80, 190),
 			Color.new255(25,10,25,205),

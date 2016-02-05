@@ -43,12 +43,6 @@ OscPanel {
 			);
 			true;
 		});
-		/*label = StaticText.new(composite, Rect(0, 0, 190, 20));
-		label.string = ("" ++ nDef.key.asString.toUpper);
-		label.font = Font("courier", 18);
-		label.stringColor = Color.new255(255,255,255,200);
-		label.align = \center;
-		label.background = Color(0,0,0,0);*/
 		label2 = StaticText.new(composite, Rect(0, 0, 190, 20));
 		label2.string = nDef.key.asString;
 		label2.font = Font("Arial", 22, true);
@@ -61,6 +55,7 @@ OscPanel {
 		labelKnob4 = LabelKnob.new(composite, 143, 20, "tone", this);
 		labelKnob5 = LabelKnob.new(composite, 2, 117, "width", this);
 		labelKnob6 = LabelKnob.new(composite, 49, 117, "distort", this);
+		labelKnob7 = LabelKnob.new(composite, 96, 117, "postFilter", this, 1, [40,19000, \exp].asSpec, 0.8);
 		lockButton = Button.new(composite, Rect(155, 212, 35, 15));
 		lockButton.font_(Font("Helvetica", 11));
 		lockButton.states_([
@@ -140,8 +135,8 @@ To fade output sends in, use the fadetime field on the output panel instead.");
 	rebuild {
 		nDef.reshaping = \elastic;
 		Ndef(nDef.key.asSymbol, {
-			arg knobfreq = 0.5, knobamp = 0.5, knobtone = 0.5, knobpreFilter = 0.5, knobwidth = 0.5,  knobdistort = 0, freqMin = 40, freqMax = 12000, transpose, t_reset = 0, sync = 0;
-			var sig, freqIn = 0, ampIn=0, toneIn=0, preFilterIn=0, knobFreqIn = 0, knobpreFilterIn = 0, knobwidthIn = 0, knobdistortIn = 0, widthIn = 0, distortIn = 0, sr = SampleRate.ir;
+			arg knobfreq = 0.5, knobamp = 0.5, knobtone = 0.5, knobpreFilter = 0.5, knobwidth = 0.5,  knobdistort = 0, knobpostFilter = 15000, freqMin = 40, freqMax = 12000, transpose, t_reset = 0, sync = 0;
+			var sig, freqIn = 0, ampIn=0, toneIn=0, preFilterIn=0, knobFreqIn = 0, knobpreFilterIn = 0, knobwidthIn = 0, knobdistortIn = 0, widthIn = 0, distortIn = 0, postFilterIn = 0, sr = SampleRate.ir;
 
 			toneIn = (knobtone.linlin(0,1,1, 15)).min(20000);
 			knobFreqIn = Select.kr(sync, [knobfreq.linexp(0, 1, freqMin, freqMax),
@@ -184,6 +179,12 @@ To fade output sends in, use the fadetime field on the output panel instead.");
 			distortIn = LinLin.ar(distortIn, -1, 1, 0.5, 1.5);
 			distortIn = (knobdistortIn * distortIn).max(1).min(20);
 			});
+
+			labelKnob7.modList.do({|item|
+				postFilterIn = postFilterIn + Ndef(item);
+			});
+			postFilterIn = LinLin.ar(postFilterIn, -1, 1, 0.3, 1.7);
+			postFilterIn = (knobpostFilter * postFilterIn).max(30).min(20000);
 			switch (type, //select oscillator type
 				\DSaw, {sig = DSaw.ar(freqIn, toneIn, preFilter: preFilterIn, drift: 0.004, mul: 8.5)},
 				\DPulse, {sig = DPulse.ar(freqIn, toneIn, preFilter: preFilterIn, drift: 0.004, mul: 8.5, width:widthIn)},
@@ -205,6 +206,7 @@ To fade output sends in, use the fadetime field on the output panel instead.");
 				\distort, {sig = sig.distort},
 				\fold2, {sig = sig.fold2(1)},
 			);
+			sig = RLPF.ar(sig, postFilterIn, 0.5, 1);
 			sig = sig * ampIn;
 			sig;
 			});
