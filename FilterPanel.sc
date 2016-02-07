@@ -153,8 +153,8 @@ FilterPanel : ANASPanel {
 			loHiIn = (knobLoHi.lag(0.05) + loHiIn).max(0).min(1);
 			loIn = LinExp.ar(loHiIn*2, 0, 1, 40, 20000).min(20000);
 			hiIn = LinExp.ar(loHiIn - 0.5 * 2, 0, 1, 10, 18000).max(10).min(18000);
-			sig = DFM1.ar(sig, hiIn, 0.7, 0.4, type:1.0);
-			sig = DFM1.ar(sig, loIn, 0.7, 0.4, 0);
+			sig = DFM1.ar(sig, hiIn, 0.7, 0.05, type:1.0, mul: 8);
+			sig = DFM1.ar(sig, loIn, 0.7, 0.05, 0, mul: 8);
 
 			sig;
 		});

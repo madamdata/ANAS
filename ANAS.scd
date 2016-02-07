@@ -114,6 +114,7 @@ Pdef(\script2,
 ).play;
 )
 
-~a.filt1.keyRoutine
-
+~a.patterns[1].inputList
+~a.patterns[1].inputResponder.rebuild
+~a.patterns[0].inputResponder.nDef
 
