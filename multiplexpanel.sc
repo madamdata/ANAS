@@ -1,21 +1,14 @@
-MultiPlexPanel {
-	var parent, left, top, <>nDef, <>outs, <>composite, <label, <label2, <>labelKnob1, <>labelKnob2, <>labelKnob3, <>selector, <>inputList, <>outList, <>selectors, <>outputButtons;
+MultiPlexPanel : ANASPanel {
+	var <>labelKnob1, <>labelKnob2, <>labelKnob3, <>selector, <>outList, <>selectors, <>outputButtons;
+
 	*new {
-		arg parent, left, top, nDef, outs;
-		^super.newCopyArgs(parent, left, top, nDef, outs).initMultiPlex(parent, left, top, nDef, outs);
+	arg parent, bounds, nDef, outs;
+		^super.newCopyArgs(parent, bounds, nDef, outs).initMultiPlex;
+
 	}
 
 	initMultiPlex {
-		arg parent, left, top, nDef, outs;
-		composite = CompositeView.new(parent, Rect(left, top, 192, 150));
-		inputList = [\none, \none, \none, \none];
-		composite.background = ~colourList.at(nDef.key) ?? {Color.new255(50, 50, 50, 50)};
-		/*label = StaticText.new(composite, Rect(0, 0, 192, 15));
-		label.string = ("" ++ nDef.key.asString.toUpper);
-		label.font = Font("courier", 18);
-		label.stringColor = Color.new255(255,255,255,200);
-		label.align = \center;
-		label.background = Color(0,0,0,0);*/
+		this.initANASPanel;
 		label2 = StaticText.new(composite, Rect(0, 0, 190, 20));
 		label2.string = nDef.key.asString;
 		label2.font = Font("Arial", 22, true);
@@ -40,7 +33,7 @@ MultiPlexPanel {
 		});
 		outputButtons = Array.newClear(outs.size);
 		outs.do({|whichOut, index|
-			outputButtons[index] = OutputButton.new(composite, 2 +((80/outs.size)*index), 130, (70/outs.size), nDef, whichOut);
+			outputButtons[index] = OutputButton.new(composite, 2 +((80/outs.size)*index), 130, (80/outs.size), nDef, whichOut);
 		});
 		Ndef(nDef.key.asSymbol).clear;
 		this.rebuild;
@@ -59,9 +52,10 @@ MultiPlexPanel {
 			labelKnob1.modList.do({|item|
 				fadeIn = fadeIn + Ndef(item);
 			});
-			fadeIn = K2A.ar(fadeIn);
-			//fadeIn = fadeIn/2;
+			//fadeIn = K2A.ar(fadeIn);
+			fadeIn = fadeIn;
 			fadeIn = Mix((knobfade.linlin(0,1,-1,1) + fadeIn).max(-1).min(1));
+			fadeIn = LinLin.ar(fadeIn, -1, 1, 0, 1);
 			labelKnob2.modList.do({|item|
 				volumeIn = volumeIn + Ndef(item);
 			});
