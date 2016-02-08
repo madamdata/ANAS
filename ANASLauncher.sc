@@ -1,5 +1,5 @@
 ANASLauncher {
-	var launcher, closeButton, launchButton, configButton, reopenButton, configWindow, anasFolder, anasDir, pathFields, saveConfigButton, configText, recompileButton, outDeviceSelector, inDeviceSelector;
+	var <>launcher, closeButton, launchButton, configButton, reopenButton, configWindow, anasFolder, anasDir, pathFields, saveConfigButton, toggleAlwaysOnTopButton, configText, recompileButton, outDeviceSelector, inDeviceSelector;
 	*new {
 	^super.new.initANASLauncher;
 	}
@@ -7,9 +7,9 @@ ANASLauncher {
 	initANASLauncher {
 		anasFolder = AnasGui.anasFolder;
 		anasDir = AnasGui.anasDir;
-		launcher = Window.new("ANASLauncher", Rect(895, 30, 360, 20), border:false);
+    launcher = Window.new("ANASLauncher", Rect((Window.screenBounds.width-365), 30, 360, 20), border:false);
 		launcher.background = Color.new255(150, 90, 110, 105);
-		launcher.front.alwaysOnTop_(true);
+		// launcher.front.alwaysOnTop_(true);
 		launchButton = Button.new(launcher, Rect(2, 2, 94, 15));
 		launchButton.states_([["Start ANAS", Color.black, Color.new255(210, 180, 180, 140)]]);
 		launchButton.action_({
@@ -42,7 +42,7 @@ ANASLauncher {
 			configWindow = Window.new("ANAS Configuration", Rect(1200, 170, 400, 240));
 			configWindow.front.background_(Color.new255(170, 120, 210, 215));
 			pathFields = 0!2;
-			configText = 0!5;
+			configText = 0!6;
 			configText[0] = StaticText.new(configWindow, Rect(5,5, 390, 25)).background_(Color(1,1,1,0));
 			configText[0].stringColor_(Color.white).font_(Font("Helvetica", 11));
 			configText[0].string = "1. Drag your save folder into this text box, or enter a path:";
@@ -71,14 +71,18 @@ ANASLauncher {
 					\loadPath, pathFields[0].value,
 					\recordingsPath, pathFields[1].value,
 					\inDevice, inDeviceSelector.item,
-					\outDevice, outDeviceSelector.item
+					\outDevice, outDeviceSelector.item,
+          \alwaysOnTop, toggleAlwaysOnTopButton.value
 				]);
 				saveArray.writeArchive(anasDir.fullPath +/+ "ANASconfig");
 				configWindow.close;
 				thisProcess.recompile;
 			});
-
-
+      toggleAlwaysOnTopButton = Button.new(configWindow, Rect(150, 195, 200, 25));
+      configText[5] = StaticText.new(configWindow, Rect(5, 195, 150, 25)).background_(Color(1,1,1,0));
+			configText[5].stringColor_(Color.white).font_(Font("Helvetica", 11));
+			configText[5].string = "6. Toggle always on top?";
+      toggleAlwaysOnTopButton.states_([["Always on Top!", Color.white, Color.new255(210, 60, 210)],["Not always on top :(", Color.white, Color.new255(10, 80, 40)]]);
 		});
 		reopenButton = Button.new(launcher, Rect(290, 2, 50, 15));
 		reopenButton.states_([["Reopen", Color.black, Color.new255(100, 130, 220, 180)]]);
