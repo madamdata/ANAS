@@ -8,7 +8,7 @@ pattern control
 
 */
 AnasGui {
-	classvar <>launcher, launchButton, recompileButton, closeButton, configButton, configWindow, reopenButton, pathFields, configText, saveConfigButton, <version, <config, <anasFolder, <anasDir, <>loadPath, <>recordPath, <>netAddress, <>oscMessageSender;
+	classvar <>launcher, launchButton, recompileButton, closeButton, configButton, configWindow, reopenButton, pathFields, configText, saveConfigButton, <version, <config, <anasFolder, <anasDir, <>loadPath, <>recordPath, <>netAddress, <>oscMessageSender, isAlwaysOnTop;
 	var <>loadPath, <>recordPath, <>window, <clock, <>osc1, <>osc2, <>osc3, <>osc4, <>osc5, <>out1, <>out2, <>out3, <>out4, <>del1, <>mult1, <>adsr1, <>adsr2, <>filt1, <>midipanel, <>sampler, <>in1, <in2, <>patterns, composite, <>saveList, <>savePath, <>whichFolder, <>fileName, fileNameField, saveButton, recordButton, openRecordingsButton, recordFileName, <>recordPanel, <>loadMenu, <>menuEntries, <>folderMenu, <>folderEntries, <>loadPathFolders, <>moduleList, <>saves, img, header, closeButton, <moduleObjects, <midiLockButton;
 	*new {
 
@@ -42,7 +42,17 @@ AnasGui {
 			});
 		});
 		{0.5.wait; (version ++ " installed").postln;}.fork;
-		launcher = ANASLauncher.new;
+    launcher = ANASLauncher.new;
+    // Set always on top or not
+    if(config.at(\alwaysOnTop).isNil,{
+      isAlwaysOnTop = true;
+    },{
+      switch(config.at(\alwaysOnTop),
+        0, {isAlwaysOnTop = true},
+        1, {isAlwaysOnTop = false},
+      );
+    });
+    launcher.launcher.front.alwaysOnTop = isAlwaysOnTop;
 	}
 
 	*openLauncher {
@@ -121,7 +131,7 @@ AnasGui {
 			{ //gui code - must be deferred
 				window = Window.new(\anasGui, Rect(250, 200, 1105, 730));
 				window.front;
-				window.alwaysOnTop = true;
+				window.alwaysOnTop = isAlwaysOnTop;
 				window.background = Color.new255(255, 200, 210, 200);
 				window.onClose = {Ndef.clear};
 				~midiLock = 0;
