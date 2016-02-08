@@ -1,5 +1,222 @@
+FilterPanel : ANASPanel {
+	var <labelKnob1, <labelKnob2, <labelKnob3, <labelKnob4, <>labelKnob5, <>labelKnob6, <>labelKnob7, <>labelKnob8, <>labelKnob9, <>labelKnob10, <outputButtons, selectors, spec, freqSpec, globalSpec;
+
+	*new {
+	arg parent, bounds, nDef, outs;
+		^super.newCopyArgs(parent, bounds, nDef, outs).initFilterPanel;
+
+	}
+
+	initFilterPanel {
+		this.initANASPanel;
+		composite = CompositeView.new(parent, bounds);
+		composite.background = ~colourList.at(nDef.key) ?? {Color.new255(50, 50, 50, 50)};
+		composite.canFocus_(true);
+		inputList = \none!4;
+		spec = ControlSpec(0, 3.9);
+		freqSpec = ControlSpec(40, 18000, \exp);
+		globalSpec = ControlSpec(0.3, 1.7);
+		/*label = StaticText.new(composite, Rect(0, 0, 190, 20));
+		label.string = ("" ++ nDef.key.asString.toUpper);
+		label.font = Font("courier", 18);
+		label.stringColor = Color.new255(255,255,255,200);
+		label.align = \center;
+		label.background = Color(0,0,0,0);*/
+		label2 = StaticText.new(composite, Rect(0, 0, 190, 20));
+		label2.string = nDef.key.asString;
+		label2.font = Font("Arial", 22, true);
+		label2.stringColor = Color.new(1,1,1,0.6);
+		label2.align = \center;
+		label2.background = Color(0,0,0,0);
+		labelKnob1 = FilterKnob.new(composite, 2, 37, "filt1", this, 1, spec, freqSpec, 1, [1,40]);
+		labelKnob2 = FilterKnob.new(composite, 49, 37, "filt2", this, 1, spec, freqSpec, 2, [1,100]);
+		labelKnob3 = FilterKnob.new(composite, 96, 37, "filt3", this, 1, spec, freqSpec, 3, [1,250]);
+		labelKnob4 = FilterKnob.new(composite, 143, 37, "filt4", this, 1, spec, freqSpec,  4, [1,625]);
+		labelKnob5 = FilterKnob.new(composite, 2, 104, "filt5", this, 1, spec, freqSpec, 5, [1, 1562]);
+		labelKnob6 = FilterKnob.new(composite, 49, 104, "filt6", this, 1, spec, freqSpec, 6, [1, 3506]);
+		labelKnob7 = FilterKnob.new(composite, 96, 104, "filt7", this, 1, spec, freqSpec, 7, [1, 9465]);
+		labelKnob8 = FilterKnob.new(composite, 143, 104, "filt8", this, 1, spec, freqSpec, 8, [1, 14000]);
+		labelKnob9 = LabelKnob.new(composite, 96, 203, "global", this, 1, globalSpec);
+		labelKnob10 = LabelKnob.new(composite, 143, 203, "LoHi", this, 1);
+		selectors = 0!4;
+		4.do({|i|
+			selectors[i] = InputSelector.new(composite, i*48+2, 20)
+		});
+		selectors.do({|item, index|
+			item.selector.background = ~colourList.at(\none).blend(Color.grey, 0.3);
+			item.selector.action = {|selector|
+				inputList[index] = selector.item.asSymbol;
+				selector.background = (~colourList.at(selector.item.asSymbol) ?? {~colourList.at(\none)}).blend(Color.grey, 0.5);
+			this.rebuild;
+		};
+		});
+		outputButtons = Array.newClear(outs.size);
+		outs.do({|whichOut, index|
+			outputButtons[index] = OutputButton.new(composite, 2 +((80/outs.size)*index), 282, (80/outs.size), nDef, whichOut);
+		});
+
+		//KEYBOARD CONTROL
+		focusList = [labelKnob1, labelKnob2, labelKnob3, labelKnob4, labelKnob5, labelKnob6, labelKnob7, labelKnob8, labelKnob9, labelKnob10];
+		standardAction = {|v,c,m,u,k|
+			var keys = [m, k];
+			switch(keys,
+				[0, 49], {
+					this.rebuild;
+					keyRoutine.reset;
+					{
+						selectors.do({|item, index|
+							item.value_(~moduleList.indexOf(inputList[index]));
+							item.selector.background = (~colourList.at(item.selector.item.asSymbol) ?? {~colourList.at(\none)}).blend(Color.grey, 0.3);
+						});
+					}.defer;
+				},
+				[1048576, 18], {selectors[0].valueAction_(1)},
+				[1048576, 19], {selectors[0].valueAction_(2)},
+				[0,18], {this.focusOn(0)},
+				[0,19], {this.focusOn(1)},
+				[0,20], {this.focusOn(2)},
+				[0,21], {this.focusOn(3)},
+				[131072,18], {this.focusOn(4)},
+				[131072,19], {this.focusOn(5)},
+				[131072,20], {this.focusOn(6)},
+				[131072,21], {this.focusOn(7)},
+				[131072,23], {this.focusOn(8)},
+				[131072,22], {this.focusOn(9)},
+				[0, 12], {outputButtons[0].flipRebuild},
+				[0, 13], {outputButtons[1].flipRebuild},
+				[0, 14], {outputButtons[2].flipRebuild},
+				[0, 15], {outputButtons[3].flipRebuild},
+				[0, 0], {
+					composite.keyDownAction_(setInputAction);
+					selectors.do({|item| item.selector.background_(Color.red)});
+				},
+			);
+			nDef.key.asString.postln;
+			true;
+		};
+		setInputAction = {|v,c,m,u,k|
+			var keys = [m,k];
+			switch(keys,
+				[0, 49], {
+					this.rebuild;
+					keyRoutine.reset;
+					composite.keyDownAction_(standardAction);
+					{
+						selectors.do({|item, index|
+							item.value_(~moduleList.indexOf(inputList[index]));
+							item.selector.background = (~colourList.at(item.selector.item.asSymbol) ?? {~colourList.at(\none)}).blend(Color.grey, 0.3);
+						});
+					}.defer;
+				},
+				[0, 50], {whichPanel = \same; keyRoutine.next},
+				[0, 12], {whichPanel = \none; keyRoutine.next},
+				[0, 18], {whichPanel = \osc1; keyRoutine.next},
+				[0, 19], {whichPanel = \osc2; keyRoutine.next},
+				[0, 20], {whichPanel = \osc3; keyRoutine.next},
+				[0, 21], {whichPanel = \osc4; keyRoutine.next},
+				[0,23], {whichPanel = \osc5; keyRoutine.next},
+				[131072, 18], {whichPanel = \del1; keyRoutine.next},
+				[131072, 19], {whichPanel = \adsr1; keyRoutine.next},
+				[131072, 20], {whichPanel = \adsr2; keyRoutine.next},
+				[131072, 21], {whichPanel = \filt1; keyRoutine.next},
+				[131072, 23], {whichPanel = \sampler; keyRoutine.next},
+				[131072, 22], {whichPanel = \mult1; keyRoutine.next},
+			);
+			true;
+		};
+		composite.keyDownAction_(standardAction);
+		this.rebuild;
+	}
+
+	rebuild {
+		Ndef(nDef.key.asSymbol, {
+			arg filt1gain = 1, filt2gain = 1, filt3gain = 1, filt4gain = 1, filt5gain = 1, filt6gain = 1, filt7gain = 1, filt8gain = 1, filt1freq = 40, filt2freq = 100, filt3freq = 250, filt4freq = 625, filt5freq =1562, filt6freq = 3506, filt7freq = 9465, filt8freq = 14000, knobglobal = 1, knobLoHi = 0.5;
+			var inputs = Silent.ar, filts = 0!7, sig = 0, filtGains, filtFreqs, globalIn = 0, loIn = 0, hiIn = 0, loHiIn = 0;
+			inputList.do({|item|
+				inputs = inputs + Ndef(item);
+			});
+			inputs = Mix(inputs);
+			filtGains = [filt1gain, filt2gain, filt3gain, filt4gain, filt5gain, filt6gain, filt7gain, filt8gain];
+			filtFreqs = [filt1freq, filt2freq, filt3freq, filt4freq, filt5freq, filt6freq, filt7freq, filt8freq];
+			labelKnob9.modList.do({|item|
+				globalIn = globalIn + Ndef(item);
+			});
+			globalIn = LinLin.ar(globalIn, -1, 1, 0.5, 1.5);
+			globalIn = (knobglobal * globalIn);
+
+			8.do{|index|
+				sig = sig + MoogFF.ar(inputs, (filtFreqs[index] * globalIn).min(19000), filtGains[index]);
+			};
+			labelKnob10.modList.do({|item|
+				loHiIn = loHiIn + Ndef(item);
+			});
+			loHiIn = (knobLoHi.lag(0.05) + loHiIn).max(0).min(1);
+			loIn = LinExp.ar(loHiIn*2, 0, 1, 40, 20000).min(20000);
+			hiIn = LinExp.ar(loHiIn - 0.5 * 2, 0, 1, 10, 18000).max(10).min(18000);
+			sig = DFM1.ar(sig, hiIn, 0.7, 0.05, type:1.0, mul: 8);
+			sig = DFM1.ar(sig, loIn, 0.7, 0.05, 0, mul: 8);
+
+			sig;
+		});
+	}
+
+	save {
+		var saveList = Dictionary.new;
+		saveList.putPairs([
+			\labelKnob1, labelKnob1.save,
+			\labelKnob2, labelKnob2.save,
+			\labelKnob3, labelKnob3.save,
+			\labelKnob4, labelKnob4.save,
+			\labelKnob5, labelKnob5.save,
+			\labelKnob6, labelKnob6.save,
+			\labelKnob7, labelKnob7.save,
+			\labelKnob8, labelKnob8.save,
+			\labelKnob9, labelKnob9.save,
+			\labelKnob10, labelKnob10.save,
+			\selectors, selectors.collect({|item| item.value}),
+			\inputList, inputList,
+			\outputButton, outputButtons.collect({|item| item.value}),
+		]);
+		^saveList;
+	}
+
+	load {
+		arg loadList;
+		loadList = loadList ?? {Dictionary.new};
+		inputList = loadList.at(\inputList) ?? {[\none, \none, \none, \none]};
+		{
+			if (loadList.at(\selectors).notNil, {
+				loadList.at(\selectors).do({|item, index|
+					selectors[index].value_(item);
+					selectors[index].selector.background = (~colourList.at(selectors[index].selector.item.asSymbol) ?? {Color.new255(200, 200, 200, 200)}).blend(Color.grey, 0.5);
+				});
+			})
+		}.defer;
+		labelKnob1.load(loadList.at(\labelKnob1)??{nil});
+		labelKnob2.load(loadList.at(\labelKnob2)??{nil});
+		labelKnob3.load(loadList.at(\labelKnob3)??{nil});
+		labelKnob4.load(loadList.at(\labelKnob4)??{nil});
+		labelKnob5.load(loadList.at(\labelKnob5)??{nil});
+		labelKnob6.load(loadList.at(\labelKnob6)??{nil});
+		labelKnob7.load(loadList.at(\labelKnob7)??{nil});
+		labelKnob8.load(loadList.at(\labelKnob8)??{nil});
+		labelKnob9.load(loadList.at(\labelKnob9)??{nil});
+		labelKnob10.load(loadList.at(\labelKnob10)??{nil});
+		outputButtons.do({|item, index|
+			var isOn = ((loadList.at(\outputButton)??{0!4}).asArray[index]) ?? {0};
+			{item.value_(isOn)}.defer;
+			if (isOn == 1, {item.isOn = 1; item.doAction});
+		});
+		this.rebuild;
+
+
+	}
+
+}
+
+
 FilterKnob {
-	var parent, left, top, string, <>oscPanel, <>scale, <>spec, <>freqSpec, <>filtNum, <>default, <>knob1, <>knob2, <>onSwitch, <>typeSelector, <>inSelector, param, composite, knob1label, knob2label, <>modList, <>isOn, <automationList, prevTime, <recording, <automationRoutine, startTime;
+	var parent, left, top, string, <>oscPanel, <>scale, <>spec, <>freqSpec, <>filtNum, <>default, <>knob1, <>knob2, <>onSwitch, <>typeSelector, <>inSelector, param, <composite, knob1label, knob2label, <>modList, <>isOn, <automationList, prevTime, <recording, <automationRoutine, startTime;
 	*new {
 		arg parent, left, top, string, oscPanel, scale = 1, spec, freqSpec, filtNum, default;
 		^super.newCopyArgs(parent, left, top, string, oscPanel, scale, spec, freqSpec, filtNum, default).initFilterKnob(parent, left, top, string, oscPanel, scale, spec, freqSpec, filtNum, default);
@@ -44,6 +261,25 @@ FilterKnob {
 			Color.new255(230, 0, 40, 0),
 			Color.new255(200, 150, 190, 245),
 		]);
+		knob1.keyDownAction_({|v,c,m,u,k|
+			var keys = [m,k];
+			switch(keys,
+				[0,15], {this.reset;oscPanel.rebuild},
+				[2097152, 126], {knob1.valueAction = (knob1.value + 0.01)},
+				[2097152, 125], {knob1.valueAction = (knob1.value - 0.01)},
+				[2097152, 123], {knob1.valueAction = (knob1.value - 0.122)},
+				[2097152, 124], {knob1.valueAction = (knob1.value + 0.122)},
+				[2228224, 126], {knob1.valueAction = (knob1.value + 0.001)},
+				[2228224, 125], {knob1.valueAction = (knob1.value - 0.001)},
+				[2228224, 123], {knob1.valueAction = (knob1.value - 0.05)},
+				[2228224, 124], {knob1.valueAction = (knob1.value + 0.05)},
+				[0,0], {oscPanel.focusOn((oscPanel.focus - 1).mod(oscPanel.focusList.size))},
+				[0,2], {oscPanel.focusOn((oscPanel.focus + 1).mod(oscPanel.focusList.size))},
+				[0,13], {oscPanel.focusOn((oscPanel.focus - 4).mod(oscPanel.focusList.size))},
+				[0,1], {oscPanel.focusOn((oscPanel.focus + 4).mod(oscPanel.focusList.size))},
+			);
+			true;
+		});
 		knob1.keyUpAction_({|a,b,c,d,e,f|
 			var keys = f;
 			//keys.postln;
@@ -129,6 +365,12 @@ FilterKnob {
 
 	}
 
+	focus {
+		arg val;
+		knob1.focus(val);
+
+	}
+
 	startAutomation {
 		automationRoutine.reset;
 		automationRoutine.play;
@@ -174,144 +416,3 @@ HiLoKnob : LabelKnob {
 }
 
 
-FilterPanel {
-	var parent, left, top, <>nDef, outs, <composite, <label, <label2, <>labelKnob1, <>labelKnob2, <>labelKnob3, <>labelKnob4, <>labelKnob5, <>labelKnob6, <>labelKnob7, <>labelKnob8, <>labelKnob9, <>labelKnob10, <>outputButtons, <>inputList, selectors, spec, freqSpec, globalSpec;
-
-	*new {
-		arg parent, left, top, nDef, outs;
-		^super.newCopyArgs(parent, left, top, nDef, outs).initFilterPanel;
-	}
-
-	initFilterPanel {
-		composite = CompositeView.new(parent, Rect(left, top, 192, 300));
-		composite.background = ~colourList.at(nDef.key) ?? {Color.new255(50, 50, 50, 50)};
-		inputList = \none!4;
-		spec = ControlSpec(0, 3.9);
-		freqSpec = ControlSpec(40, 18000, \exp);
-		globalSpec = ControlSpec(0.3, 1.7);
-		/*label = StaticText.new(composite, Rect(0, 0, 190, 20));
-		label.string = ("" ++ nDef.key.asString.toUpper);
-		label.font = Font("courier", 18);
-		label.stringColor = Color.new255(255,255,255,200);
-		label.align = \center;
-		label.background = Color(0,0,0,0);*/
-		label2 = StaticText.new(composite, Rect(0, 0, 190, 20));
-		label2.string = nDef.key.asString;
-		label2.font = Font("Arial", 22, true);
-		label2.stringColor = Color.new(1,1,1,0.6);
-		label2.align = \center;
-		label2.background = Color(0,0,0,0);
-		labelKnob1 = FilterKnob.new(composite, 2, 37, "filt1", this, 1, spec, freqSpec, 1, [1,40]);
-		labelKnob2 = FilterKnob.new(composite, 49, 37, "filt2", this, 1, spec, freqSpec, 2, [1,100]);
-		labelKnob3 = FilterKnob.new(composite, 96, 37, "filt3", this, 1, spec, freqSpec, 3, [1,250]);
-		labelKnob4 = FilterKnob.new(composite, 143, 37, "filt4", this, 1, spec, freqSpec,  4, [1,625]);
-		labelKnob5 = FilterKnob.new(composite, 2, 104, "filt5", this, 1, spec, freqSpec, 5, [1, 1562]);
-		labelKnob6 = FilterKnob.new(composite, 49, 104, "filt6", this, 1, spec, freqSpec, 6, [1, 3506]);
-		labelKnob7 = FilterKnob.new(composite, 96, 104, "filt7", this, 1, spec, freqSpec, 7, [1, 9465]);
-		labelKnob8 = FilterKnob.new(composite, 143, 104, "filt8", this, 1, spec, freqSpec, 8, [1, 14000]);
-		labelKnob9 = LabelKnob.new(composite, 96, 203, "global", this, 1, globalSpec);
-		labelKnob10 = LabelKnob.new(composite, 143, 203, "LoHi", this, 1);
-		selectors = 0!4;
-		4.do({|i|
-			selectors[i] = InputSelector.new(composite, i*48+2, 20)
-		});
-		selectors.do({|item, index|
-			item.selector.background = ~colourList.at(\none).blend(Color.grey, 0.3);
-			item.selector.action = {|selector|
-				inputList[index] = selector.item.asSymbol;
-				selector.background = (~colourList.at(selector.item.asSymbol) ?? {~colourList.at(\none)}).blend(Color.grey, 0.5);
-			this.rebuild;
-		};
-		});
-		outputButtons = Array.newClear(outs.size);
-		outs.do({|whichOut, index|
-			outputButtons[index] = OutputButton.new(composite, 2 +((80/outs.size)*index), 282, (70/outs.size), nDef, whichOut);
-		});
-		this.rebuild;
-	}
-
-	rebuild {
-		Ndef(nDef.key.asSymbol, {
-			arg filt1gain = 1, filt2gain = 1, filt3gain = 1, filt4gain = 1, filt5gain = 1, filt6gain = 1, filt7gain = 1, filt8gain = 1, filt1freq = 40, filt2freq = 100, filt3freq = 250, filt4freq = 625, filt5freq =1562, filt6freq = 3506, filt7freq = 9465, filt8freq = 14000, knobglobal = 1, knobLoHi = 0.5;
-			var inputs = Silent.ar, filts = 0!7, sig = 0, filtGains, filtFreqs, globalIn = 0, loIn = 0, hiIn = 0, loHiIn = 0;
-			inputList.do({|item|
-				inputs = inputs + Ndef(item);
-			});
-			inputs = Mix(inputs);
-			filtGains = [filt1gain, filt2gain, filt3gain, filt4gain, filt5gain, filt6gain, filt7gain, filt8gain];
-			filtFreqs = [filt1freq, filt2freq, filt3freq, filt4freq, filt5freq, filt6freq, filt7freq, filt8freq];
-			labelKnob9.modList.do({|item|
-				globalIn = globalIn + Ndef(item);
-			});
-			globalIn = LinLin.ar(globalIn, -1, 1, 0.5, 1.5);
-			globalIn = (knobglobal * globalIn);
-
-			8.do{|index|
-				sig = sig + MoogFF.ar(inputs, (filtFreqs[index] * globalIn).min(19000), filtGains[index]);
-			};
-			labelKnob10.modList.do({|item|
-				loHiIn = loHiIn + Ndef(item);
-			});
-			loHiIn = (knobLoHi.lag(0.05) + loHiIn).max(0).min(1);
-			loIn = LinExp.ar(loHiIn*2, 0, 1, 40, 20000).min(20000);
-			hiIn = LinExp.ar(loHiIn - 0.5 * 2, 0, 1, 10, 18000).max(10).min(18000);
-			sig = DFM1.ar(sig, hiIn, 0.7, 0.4, type:1.0);
-			sig = DFM1.ar(sig, loIn, 0.7, 0.4, 0);
-
-			sig;
-		});
-	}
-
-	save {
-		var saveList = Dictionary.new;
-		saveList.putPairs([
-			\labelKnob1, labelKnob1.save,
-			\labelKnob2, labelKnob2.save,
-			\labelKnob3, labelKnob3.save,
-			\labelKnob4, labelKnob4.save,
-			\labelKnob5, labelKnob5.save,
-			\labelKnob6, labelKnob6.save,
-			\labelKnob7, labelKnob7.save,
-			\labelKnob8, labelKnob8.save,
-			\labelKnob9, labelKnob9.save,
-			\labelKnob10, labelKnob10.save,
-			\selectors, selectors.collect({|item| item.value}),
-			\inputList, inputList,
-			\outputButton, outputButtons.collect({|item| item.value}),
-		]);
-		^saveList;
-	}
-
-	load {
-		arg loadList;
-		loadList = loadList ?? {Dictionary.new};
-		inputList = loadList.at(\inputList) ?? {[\none, \none, \none, \none]};
-		{
-			if (loadList.at(\selectors).notNil, {
-				loadList.at(\selectors).do({|item, index|
-					selectors[index].value_(item);
-					selectors[index].selector.background = (~colourList.at(selectors[index].selector.item.asSymbol) ?? {Color.new255(200, 200, 200, 200)}).blend(Color.grey, 0.5);
-				});
-			})
-		}.defer;
-		labelKnob1.load(loadList.at(\labelKnob1)??{nil});
-		labelKnob2.load(loadList.at(\labelKnob2)??{nil});
-		labelKnob3.load(loadList.at(\labelKnob3)??{nil});
-		labelKnob4.load(loadList.at(\labelKnob4)??{nil});
-		labelKnob5.load(loadList.at(\labelKnob5)??{nil});
-		labelKnob6.load(loadList.at(\labelKnob6)??{nil});
-		labelKnob7.load(loadList.at(\labelKnob7)??{nil});
-		labelKnob8.load(loadList.at(\labelKnob8)??{nil});
-		labelKnob9.load(loadList.at(\labelKnob9)??{nil});
-		labelKnob10.load(loadList.at(\labelKnob10)??{nil});
-		outputButtons.do({|item, index|
-			var isOn = ((loadList.at(\outputButton)??{0!4}).asArray[index]) ?? {0};
-			{item.value_(isOn)}.defer;
-			if (isOn == 1, {item.isOn = 1; item.doAction});
-		});
-		this.rebuild;
-
-
-	}
-
-}

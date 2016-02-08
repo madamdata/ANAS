@@ -17,7 +17,7 @@ AnasGui {
 	}
 
 	*initClass {
-		version = "ANAS v0.97";
+		version = "ANAS v0.972";
 		this.loadEventTypes;
 		anasFolder = PathName(AnasGui.filenameSymbol.asString.dirname);
 		anasDir = PathName(AnasGui.filenameSymbol.asString.dirname.dirname);
@@ -143,9 +143,11 @@ AnasGui {
 					\out4,Color.new255(255, 166, 20, 170),
 					\midi, Color.new255(50, 80, 90, 130),
 					\sampler, Color.new255(50, 185, 170, 155),
-					\pattern1, Color.new255(150, 0, 150, 140),
-					\pattern2, Color.new255(150, 0, 150, 140),
+					\pattern1, Color.new255(150, 0, 120, 130),
+					\pattern2, Color.new255(120, 0, 175, 130),
+					\pattern3, Color.new255(80, 0, 255, 130),
 					\in1, Color.new255(200, 50, 50, 180),
+					\in2, Color.new255(180, 79, 55, 180),
 				]);
 				composite = CompositeView.new(window, Rect(2, 2, 1100, 725));
 				composite.canFocus_(true).keyDownAction_({|v,c,m,u,k| //keyboard control - selecting panels
@@ -197,16 +199,16 @@ AnasGui {
 				moduleObjects[6] = mult1 = MultiPlexPanel.new(composite, 10, 490, Ndef(\mult1), ~outPuts);
 				moduleObjects[7] = adsr1 = ADSRPanel.new(composite, Rect(208, 340, 192, 300), Ndef(\adsr1), ~outPuts);
 				moduleObjects[8] = adsr2 = ADSRPanel.new(composite, Rect(406, 340, 192, 300), Ndef(\adsr2), ~outPuts);
-				moduleObjects[9] = filt1 = FilterPanel.new(composite, 604, 340, Ndef(\filt1), ~outPuts);
+				moduleObjects[9] = filt1 = FilterPanel.new(composite, Rect(604,340,192,300), Ndef(\filt1), ~outPuts);
 				moduleObjects[10] = sampler = SamplerPanel.new(composite, 802, 340, Ndef(\sampler), ~outPuts);
 				moduleObjects[11] = in1 = InputPanel.new(composite, Rect(1000, 590, 100, 100), Ndef(\in1));
 				moduleObjects[12] = in2 = InputPanel.new(composite, Rect(1000, 645, 100, 100), Ndef(\in2));
 				midipanel = MIDIPanel.new(composite, 10, 645);
-				patterns = 0!4;
+				patterns = 0!3;
 				patterns[0] = PatternPanel.new(composite, 208, 645, Ndef(\pattern1), this);
-				patterns[1] = PatternPanel.new(composite, 406, 645, Ndef(\pattern2), this);
-				patterns[2] = PatternPanel.new(composite, 604, 645, Ndef(\pattern3), this);
-				patterns[3] = PatternPanel.new(composite, 802, 645, Ndef(\pattern4), this);
+				patterns[1] = PatternPanel.new(composite, 472, 645, Ndef(\pattern2), this);
+				patterns[2] = PatternPanel.new(composite, 736, 645, Ndef(\pattern3), this);
+				//patterns[3] = PatternPanel.new(composite, 802, 645, Ndef(\pattern4), this);
 				~moduleList =  //this is how all the input selectors know what their menu items are, and more
 				[\none] ++
 				moduleObjects.collect({|item| item.nDef.key}) ++

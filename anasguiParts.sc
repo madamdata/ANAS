@@ -109,6 +109,10 @@ LabelKnob {
 		knob1.mode = \vert;
 		knob1.step = 0.005;
 		knob1.shift_scale = 1/10;
+		knob1.toolTip_("Shift-click to map to the next MIDI control message received \n
+Opt-click to remove MIDI mapping\n
+Ctrl-click and hold ctrl while moving the knob to record automation. Release ctrl to begin automation. \n
+Ctrl-shift-click to remove automation.");
 		knob1.color_([
 			Color.new255(120, 10, 80, 190),
 			Color.new255(25,10,25,205),
@@ -198,10 +202,11 @@ LabelKnob {
 
 				262144, { // on ctrl-click, start a new automation list, store start time, and reset prevTime.
 					if (recording == 0, {
-					automationList = List.new;
-					automationRoutine.stop;
-					startTime = Main.elapsedTime;
-					prevTime = 0;
+						automationList = List.new;
+						automationRoutine.stop;
+						startTime = Main.elapsedTime;
+						prevTime = 0;
+						automationList.add([0, knob1.value]);
 					"recording automation".postln;
 					recording = 1;
 					});
@@ -218,10 +223,10 @@ LabelKnob {
 		numSelectors.do({|i|
 			selectors[i] = InputSelector.new(composite, 1*scale, (15*i+48)*scale, scale);
 			selectors[i].selector.background_(~colourList.at(\none).blend(Color.grey, 0.3));
-			selectors[i].selector.action_({|item|
+			selectors[i].action_({|item|
 				modList[i] = item.item.asSymbol;
 				oscPanel.rebuild;
-				item.background = (~colourList.at(item.item.asSymbol) ?? {~colourList.at(\none)}).blend(Color.grey, 0.3);
+				//item.background = (~colourList.at(item.item.asSymbol) ?? {~colourList.at(\none)}).blend(Color.grey, 0.3);
 			});
 		});
 		this.doAction(default); //set the control parameter to the default value when initialized.
@@ -542,14 +547,13 @@ LFOKnob {
 
 
 InputSelector {
-	var parent, left, top, scale, <>selector;
+	var parent, left, top, scale, <modListNumber, <>selector, <function;
 	*new {
-		arg parent, left, top, scale = 1;
-		^super.newCopyArgs(parent,left,top,scale).initInputSelector(parent, left, top, scale);
+		arg parent, left, top, scale = 1, modListNumber = 0;
+		^super.newCopyArgs(parent,left,top,scale, modListNumber).initInputSelector(parent, left, top, scale, modListNumber);
 	}
 
 	initInputSelector {
-		arg parent, left, top,scale;
 		selector = PopUpMenu.new(parent, Rect(left, top, 45*scale, 15*scale));
 		selector.font = Font("Helvetica", 8.3*scale, true);
 		//selector.canFocus_(true);
@@ -561,6 +565,23 @@ InputSelector {
 			~updateInputSelectors.wait;
 			{selector.items = ~moduleList.collect({|item| item.asString})}.defer;
 		}).play;
+	}
+
+	action_ {
+		arg func;
+		function = func;
+		selector.action = {func.value(selector);this.setColour};
+
+	}
+
+	doAction {
+		function.value(selector);
+
+	}
+
+	setColour {
+		selector.background = (~colourList.at(selector.item.asSymbol) ?? {~colourList.at(\none)}).blend(Color.grey, 0.5);
+
 	}
 
 	value {
@@ -769,8 +790,8 @@ ClockPanel {
 		[\osc1, \osc2, \osc3, \osc4, \osc5].do({|item|
 			if(anasGui.perform(item).syncToClock == 1, {anasGui.perform(item).sync});
 		});
-		4.do({|i|
-			anasGui.patterns[i].sync;
+		anasGui.patterns.do({|item|
+			item.sync;
 		});
 	}
 	rebuild {

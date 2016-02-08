@@ -113,5 +113,8 @@ Pdef(\script2,
 	)
 ).play;
 )
-~a.osc1.labelKnob1.automationRoutine.stop
+
+~a.patterns[1].inputList
+~a.patterns[1].inputResponder.rebuild
+~a.patterns[0].inputResponder.nDef
 

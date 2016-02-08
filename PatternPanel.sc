@@ -1,36 +1,39 @@
 PatternPanel {
-		var parent, left, top, <nDef, <anasGui, <>syncSource, <>valPat, <>durPat, <legatoPat, <lagPat,<composite, patternField, patternField2,patternField3,patternField4, typeSelector, <syncSelector, <>syncOn, <>currentDur, <>prevDur, <condition, <type, <adsr, adsrSelector;
+		var parent, left, top, <nDef, <anasGui, <>syncSource, <>valPat, <>durPat, <legatoPat, <lagPat,<composite, patternField, patternField2,patternField3,patternField4, typeSelector, <syncSelector, <>syncOn, <>currentDur, <>prevDur, <condition, <type, <adsr, adsrSelector, <inputSelector, <inputList, <receivingInput, <inputResponder;
 
 	*new {
 		arg parent, left, top, nDef, anasGui;
 		^super.newCopyArgs(parent, left, top, nDef, anasGui).initPatternPanel;
 	}
-
 	initPatternPanel {
 		type = \freq;
 		adsr = ~a.adsr1.nDef;
-		composite = CompositeView.new(parent, Rect(left, top, 192, 79));
+		inputList = [\none];
+		receivingInput = 0;
+		inputResponder = InputResponder.new(Ndef((nDef.key.asString++"input").asSymbol), this);
+		inputResponder.rebuild;
+		composite = CompositeView.new(parent, Rect(left, top, 258, 79));
 		composite = composite.background = ~colourList.at(nDef.key);
-		patternField = TextField.new(composite, Rect(2,2,150, 18));
+		patternField = TextField.new(composite, Rect(2,2,165, 18));
 		patternField.font = Font("Helvetica", 11);
 		patternField.background = Color.new255(105, 50, 100, 125);
 		patternField.stringColor_(Color.new255(255,255,255,255)).string_("value");
 		patternField.action_({|field|
-			Pdefn((nDef.key.asString ++"val").asSymbol, field.value.interpret).postln;
+			Pdefn((nDef.key.asString ++"val").asSymbol, field.value.interpret);
 		});
-		patternField2 = TextField.new(composite, Rect(2, 21, 150, 18));
+		patternField2 = TextField.new(composite, Rect(2, 21, 165, 18));
 		patternField2.background = Color.new255(105, 80, 100, 125);
 		patternField2.stringColor_(Color.new255(255,255,255,255)).string_("duration");
 		patternField2.font = Font("Helvetica", 11);
 		patternField2.action_({|field|
 			Pdefn((nDef.key.asString ++ "dur").asSymbol, field.value.interpret);
 		});
-		patternField3 = TextField.new(composite, Rect(2, 40, 150, 18));
+		patternField3 = TextField.new(composite, Rect(2, 40, 165, 18));
 		patternField3.background = Color.new255(105, 80, 100, 125);	patternField3.stringColor_(Color.new255(255,255,255,255)).string_("legato").font_(Font("Helvetica", 11));
 		patternField3.action_({|field|
 			Pdefn((nDef.key.asString ++ "legato").asSymbol, field.value.interpret);
 		});
-		patternField4 = TextField.new(composite, Rect(2, 59, 150, 18));
+		patternField4 = TextField.new(composite, Rect(2, 59, 165, 18));
 		patternField4.background = Color.new255(105, 80, 100, 125);	patternField4.stringColor_(Color.new255(255,255,255,255)).string_("lag").font_(Font("Helvetica", 11));
 		patternField4.action_({|field|
 			Pdefn((nDef.key.asString ++ "lag").asSymbol, field.value.interpret);
@@ -38,23 +41,38 @@ PatternPanel {
 		[patternField, patternField2, patternField3, patternField4].do({|item|
 			item.mouseDownAction_({item.string = "";item.mouseDownAction_({})});
 		});
-		typeSelector = PopUpMenu.new(composite, Rect(152, 2, 38, 18)).background_(~colourList.at(\none));
+		typeSelector = PopUpMenu.new(composite, Rect(167, 2, 50, 18)).background_(~colourList.at(\none));
 		typeSelector.items_(["freq", "note", "ADSR", "amp", "trig"]).stringColor_(Color.white);
 		typeSelector.action_({|selector|
 			type = selector.item.asSymbol;
 			this.rebuild;
 		});
-		syncSelector = PopUpMenu.new(composite, Rect(152, 21, 38, 18)).background_(~colourList.at(\none));
-		syncSelector.items_(["none", "1", "2", "3", "4"]).stringColor_(Color.white);
+		syncSelector = PopUpMenu.new(composite, Rect(167, 21, 50, 18)).background_(~colourList.at(\none));
+		syncSelector.items_(["none", "P1", "P2", "P3", "Input"]).stringColor_(Color.white);
 		syncSelector.action_({|selector|
 			if (selector.value==0, {syncOn = 0}, {
-				syncSource = anasGui.patterns[selector.value];
+				syncSource = switch(selector.value,
+					1, {anasGui.patterns[0]},
+					2, {anasGui.patterns[1]},
+					3, {anasGui.patterns[2]},
+					4, {this.inputResponder},
+				);
 				syncOn = 1;
 			});
+			Tdef(nDef.key).stop.play(anasGui.clock.clock);
+			durPat.reset;
 		}).allowsReselection_(true);
-		adsrSelector = PopUpMenu.new(composite, Rect(152, 40, 38, 18));
+		adsrSelector = PopUpMenu.new(composite, Rect(167, 40, 50, 18));
 		adsrSelector.items_(["adsr1", "adsr2"]);
 		adsrSelector.action_({|selector| adsr = Ndef(selector.item.asSymbol)});
+		[typeSelector, syncSelector, adsrSelector].do({|item|
+			item.font_(Font("Helvetica", 11));
+		});
+		inputSelector = InputSelector.new(composite, 167, 59);
+		inputSelector.action_({|selector|
+			inputList[0] = selector.item.asSymbol;
+			inputResponder.rebuild;
+		});
 		syncOn = 0;
 		currentDur = 1;
 		durPat = 1;
@@ -88,6 +106,7 @@ PatternPanel {
 				condition.signal;
 				condition.test = false;
 				if (syncOn == 0, {currentDur.wait}, {syncSource.condition.wait});
+
 			}
 		}).play(anasGui.clock.clock);
 		this.rebuild;
@@ -174,6 +193,9 @@ PatternPanel {
 			syncSelector.value_(loadList.at(\syncSelector));
 			typeSelector.value_(loadList.at(\typeSelector));
 		}.defer;
+		[patternField, patternField2, patternField3, patternField4].do({|item|
+			item.mouseDownAction_({});
+		});
 		Pdefn((nDef.key.asString ++ "dur").asSymbol, (loadList.at(\durPat)).interpret);
 		Pdefn((nDef.key.asString ++ "legato").asSymbol, (loadList.at(\legatoPat)).interpret);
 		Pdefn((nDef.key.asString ++ "lag").asSymbol, (loadList.at(\lagPat)).interpret);
@@ -182,5 +204,36 @@ PatternPanel {
 
 	}
 
+
+}
+
+InputResponder {
+	var <nDef, patternPanel, <condition, <oscDef;
+	*new {
+		arg nDef, patternPanel;
+		^super.newCopyArgs(nDef, patternPanel).initInputResponder
+	}
+
+	initInputResponder {
+		condition = Condition.new(false);
+		OSCFunc.newMatching({|msg|
+			msg.postln;
+			condition.test = true;
+			condition.signal;
+			condition.test = false;
+		}, ("/" ++ nDef.key.asString).asSymbol);
+
+	}
+
+	rebuild {
+		Ndef(nDef.key, {
+			var input, msgName;
+			input = Ndef(patternPanel.inputList[0]);
+			input = A2K.kr(input);
+			msgName = ("/" ++ nDef.key.asString).asSymbol;
+			SendReply.kr(input, msgName, 1);
+		});
+
+	}
 
 }

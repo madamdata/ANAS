@@ -1,5 +1,5 @@
 ANASPanel {
-	var parent, <bounds, <nDef, <composite, subunits, <label1, <label2, <focusList, <focus, <lock, <outs, <thingsToSave, keyRoutine, standardAction, setInputAction, whichPanel, inputList;
+	var parent, <bounds, <nDef, <outs, <composite, subunits, <label1, <label2, <focusList, <focus, <lock,  <thingsToSave, keyRoutine, standardAction, setInputAction, <whichPanel, <inputList;
 
 	*new {
 		arg parent, bounds, nDef;
