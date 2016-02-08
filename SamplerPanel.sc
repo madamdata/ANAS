@@ -339,6 +339,10 @@ SamplerPanel {
     recordButton.load(loadList.at(\recordButton));
     overdubButton.load(loadList.at(\overdubButton));
     resetButton.load(loadList.at(\resetButton));
+
+    // update lVal and rVal
+    this.sampleSlider.setLVal(loadList.at(\lVal) ?? {nil});
+    this.sampleSlider.setRVal(loadList.at(\rVal) ?? {nil});
     this.rebuild;
   }
 }

@@ -83,11 +83,10 @@ SampleSlider {
           this.moveRight(x-(handleSize/2));
         },
         \mid, {
-   //       leftHandle.moveTo((x - ldisplace).max(0).min(bounds.width-(handleSize/2)), bounds.height-handleSize);
-   //       rightHandle.moveTo((x + rdisplace).max(bounds.width-(handleSize/2)).min(), bounds.height-handleSize);
-          this.moveLeft(x-ldisplace);
+          this.moveLeft(x-ldisplace,rdisplace+200); // this is totally a hack....
           this.moveRight(x+rdisplace);
           shade.moveTo((x - ldisplace).max(0).min(bounds.width-shade.bounds.width), 0);
+          shade.refresh;
           this.updatePos;
         },
       );
@@ -97,9 +96,9 @@ SampleSlider {
 	}
 
   moveLeft{
-    arg x;
+    arg x, displace=0;
     // Don't allow moving past right handle or edge
-    if (( (x < (rightHandle.bounds.left+(handleSize/2))) && (x > 0)), {
+    if (( (x <= (rightHandle.bounds.left+(handleSize/2)+displace.abs)) && (x > 0)), {
       leftHandle.moveTo(x, bounds.height-handleSize);
       shade.resizeTo(rightHandle.bounds.right-leftHandle.bounds.left, bounds.height-handleSize);
       shade.moveTo(x,0);
@@ -110,9 +109,10 @@ SampleSlider {
   moveRight{
     arg x;
     // Don't allow moving past left handle or edge
-    if (( (x > (leftHandle.bounds.left-(handleSize/2))) && (x < (bounds.right-(handleSize/2)))), {
+    if (( (x >= (leftHandle.bounds.left-(handleSize/2))) && (x < (bounds.right-(handleSize/2)))), {
       rightHandle.moveTo(x, bounds.height-handleSize);
       shade.resizeTo(rightHandle.bounds.right-leftHandle.bounds.left, bounds.height-handleSize);
+      shade.moveTo(leftHandle.bounds.left,0);
     });
     this.updatePos;
   }
@@ -134,5 +134,20 @@ SampleSlider {
 		this.refresh;
 	}
 
+  setLVal{
+    arg val;
+    lVal = val;
+    nDef.set(\startPos, lVal);
+    leftHandle.moveTo(lVal*bounds.width, bounds.height-handleSize);
+    shade.resizeTo(rightHandle.bounds.right-leftHandle.bounds.left, bounds.height-handleSize);
+    shade.moveTo(lVal*bounds.width,0);
+  }
 
+    setRVal{
+    arg val;
+    rVal = val;
+    nDef.set(\endPos, rVal);
+    rightHandle.moveTo(rVal*bounds.width, bounds.height-handleSize);
+    shade.resizeTo(rightHandle.bounds.right-leftHandle.bounds.left, bounds.height-handleSize);
+  }
 }
