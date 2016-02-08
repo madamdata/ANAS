@@ -776,6 +776,8 @@ ClockPanel {
 	rebuild {
 		Ndef(nDef.key, {
 			arg bpm = 120;
+      // Send OSC message /anas/bang 1 on clock hit
+      SendReply.kr(Impulse.kr(bpm/60),'/anas/bang', 1);
 			SinOsc.kr(0, add: bpm/60);
 		});
 
