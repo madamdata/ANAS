@@ -189,7 +189,6 @@ Ctrl-shift-click to remove automation.");
 			)
 		});
 		knob1.mouseDownAction_({|xx, xxx, xxxx, mod|
-			mod.postln;
 			switch(mod,
 				131072, {
 					("mapping "++oscPanel.nDef.key.asString++" "++string).postln;
@@ -350,6 +349,31 @@ Ctrl-shift-click to remove automation.");
 		}.defer;
 
 	}
+}
+
+// A clone of LabelKnob that changes the sampler slider position
+SamplePosLabelKnob : LabelKnob {
+  var mySampleSlider;
+
+  *new {
+    arg parent, left, top, string, oscPanel, scale = 1, spec = ControlSpec(0,1), default = 0.5, numSelectors = 3, sampleSlider;
+    ^super.newCopyArgs(parent, left, top, string, oscPanel, scale, spec, default, numSelectors).initSamplePosLabelKnob(sampleSlider);
+
+  }
+
+  initSamplePosLabelKnob {
+    arg sampleSlider;
+    this.initLabelKnob;
+    mySampleSlider = sampleSlider;
+    knob1.action = {|knob|
+      this.doAction(knob.value);
+      // {sampleSlider.moveBoth(knob.value)}.defer; @TODO: update gui to match pos
+    };
+  }
+
+
+
+
 }
 
 // Basically a clone of LabelKnob.
@@ -797,6 +821,8 @@ ClockPanel {
 	rebuild {
 		Ndef(nDef.key, {
 			arg bpm = 120;
+      // Send OSC message /anas/bang 1 on clock hit
+      SendReply.kr(Impulse.kr(bpm/60),'/anas/bang', 1);
 			SinOsc.kr(0, add: bpm/60);
 		});
 

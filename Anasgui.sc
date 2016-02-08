@@ -7,10 +7,8 @@ invert input (?)
 pattern control
 
 */
-
-// Hi, I'm David.
 AnasGui {
-	classvar <>launcher, launchButton, recompileButton, closeButton, configButton, configWindow, reopenButton, pathFields, configText, saveConfigButton, <version, <config, <anasFolder, <anasDir, <>loadPath, <>recordPath;
+	classvar <>launcher, launchButton, recompileButton, closeButton, configButton, configWindow, reopenButton, pathFields, configText, saveConfigButton, <version, <config, <anasFolder, <anasDir, <>loadPath, <>recordPath, <>netAddress, <>oscMessageSender;
 	var <>loadPath, <>recordPath, <>window, <clock, <>osc1, <>osc2, <>osc3, <>osc4, <>osc5, <>out1, <>out2, <>out3, <>out4, <>del1, <>mult1, <>adsr1, <>adsr2, <>filt1, <>midipanel, <>sampler, <>in1, <in2, <>patterns, composite, <>saveList, <>savePath, <>whichFolder, <>fileName, fileNameField, saveButton, recordButton, openRecordingsButton, recordFileName, <>recordPanel, <>loadMenu, <>menuEntries, <>folderMenu, <>folderEntries, <>loadPathFolders, <>moduleList, <>saves, img, header, closeButton, <moduleObjects, <midiLockButton;
 	*new {
 
@@ -75,6 +73,12 @@ AnasGui {
 
 	initAnasGui {
 		var loadPath, recordPath;
+
+    netAddress = NetAddr.new("localhost", 9090); // send OSC messages to localhost:9090
+    oscMessageSender = OSCdef.newMatching(\messageSender, { arg msg, time;
+      netAddress.sendMsg("/renoise/transport/start");
+    },'/anas/bang');
+
 		loadPath = this.class.loadPath;
 		recordPath = this.class.recordPath;
 		saves = Dictionary.new;

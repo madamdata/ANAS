@@ -8,6 +8,8 @@ SampleSlider {
 
 	initSampleSlider {
 		arg parent, bounds, bgColor, shadeColor, nDef, signal;
+    lVal = 0;
+    rVal = 1;
 		signalArray = signal ?? {[0]};
 		background = View.new(parent, bounds);
 		waveform = UserView.new(background, Rect(0, 0, bounds.width, bounds.height-handleSize));
