@@ -266,6 +266,8 @@ To fade output sends in, use the fadetime field on the output panel instead.");
 			\labelKnob4, labelKnob4.save,
 			\labelKnob5, labelKnob5.save,
 			\labelKnob6, labelKnob6.save,
+			\labelKnob7, labelKnob7.save,
+			\labelKnob8, labelKnob8.save,
 			\outputButton, outputButtons.collect{|button| button.value},
 			\freqButton, freqButton.value,
 			\oscType, oscType.value,
@@ -297,6 +299,8 @@ To fade output sends in, use the fadetime field on the output panel instead.");
 			labelKnob4.load(loadList.at(\labelKnob4) ?? {nil});
 			labelKnob5.load(loadList.at(\labelKnob5) ?? {nil});
 			labelKnob6.load(loadList.at(\labelKnob6) ?? {nil});
+			labelKnob7.load(loadList.at(\labelKnob7) ?? {nil});
+			labelKnob8.load(loadList.at(\labelKnob8) ?? {nil});
 			outputButtons.do({|item, index|
 				var isOn = (loadList.at(\outputButton).asArray[index]) ?? {0};
 				if (isOn == 1, {item.isOn = 1; item.doAction});

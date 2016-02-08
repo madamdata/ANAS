@@ -157,7 +157,7 @@ DelayPanel {
 				delayTimeIn = delayTimeIn + (lfo*0.25);
 			});
 			delayTimeIn = LinLin.ar(delayTimeIn, -1, 1, 0.5, 2);
-			delayTimeIn = (knobdelayTime.linexp(0,1, 0.01, 4).lag(0.4) * delayTimeIn).max(0.05).min(4);
+			delayTimeIn = (knobdelayTime.linexp(0,1, 0.01, 4).lag(0.4) * delayTimeIn).max(0.01).min(4);
 			inputList.do({|item|
 				sig = sig + Ndef(item);
 			});
