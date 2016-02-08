@@ -172,6 +172,8 @@ PatternPanel {
 			\type, type,
 			\adsrSelector, adsrSelector.value,
 			\adsr, adsr.asCompileString,
+			\inputList, inputList,
+			\inputSelector, inputSelector.value,
 		]);
 		^saveList;
 	}
@@ -185,6 +187,11 @@ PatternPanel {
 		type = loadList.at(\type) ?? {\freq};
 		adsr = loadList.at(\adsr).interpret;
 		syncOn = loadList.at(\syncOn) ?? {0};
+		inputList = loadList.at(\inputList) ?? {[\none]};
+		{
+		inputSelector.value = loadList.at(\inputSelector) ?? {0};
+		inputSelector.selector.background = (~colourList.at(inputSelector.selector.item.asSymbol) ?? {Color.new255(200, 200, 200, 200)}).blend(Color.grey, 0.5);
+		}.defer;
 		{
 			patternField.value_(loadList.at(\valPat));
 			patternField2.value_(loadList.at(\durPat));
@@ -217,7 +224,6 @@ InputResponder {
 	initInputResponder {
 		condition = Condition.new(false);
 		OSCFunc.newMatching({|msg|
-			msg.postln;
 			condition.test = true;
 			condition.signal;
 			condition.test = false;

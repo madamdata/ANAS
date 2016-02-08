@@ -81,7 +81,7 @@ CrossFader {
 	*ar { arg inputs, bipolar,width=2.0;
 		var whiches;
 		inputs = inputs.dereference;
-		whiches = PanAz.ar(inputs.size,SinOsc.ar(0.0,add:1.0),bipolar, width: width);
+		whiches = PanAz.ar(inputs.size.postln,SinOsc.ar(0.0,add:1.0),bipolar, width: width);
 
 		^Mix.new(
 			inputs.collect({ arg sound,i;

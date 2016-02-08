@@ -116,5 +116,6 @@ Pdef(\script2,
 
 ~a.patterns[1].inputList
 ~a.patterns[1].inputResponder.rebuild
-~a.patterns[0].inputResponder.nDef
+~a.patterns[0].currentDur
+Tdef(\pattern1).play
 

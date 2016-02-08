@@ -196,7 +196,7 @@ AnasGui {
 				moduleObjects[3] = osc4 = OscPanel.new(composite, 604, 35, Ndef(\osc4), ~outPuts, clock);
 				moduleObjects[4] = osc5 = OscPanel.new(composite, 802, 35, Ndef(\osc5), ~outPuts, clock);
 				moduleObjects[5] = del1 = DelayPanel.new(composite, 10, 340, Ndef(\del1), ~outPuts);
-				moduleObjects[6] = mult1 = MultiPlexPanel.new(composite, 10, 490, Ndef(\mult1), ~outPuts);
+				moduleObjects[6] = mult1 = MultiPlexPanel.new(composite, Rect(10,490, 192, 150), Ndef(\mult1), ~outPuts);
 				moduleObjects[7] = adsr1 = ADSRPanel.new(composite, Rect(208, 340, 192, 300), Ndef(\adsr1), ~outPuts);
 				moduleObjects[8] = adsr2 = ADSRPanel.new(composite, Rect(406, 340, 192, 300), Ndef(\adsr2), ~outPuts);
 				moduleObjects[9] = filt1 = FilterPanel.new(composite, Rect(604,340,192,300), Ndef(\filt1), ~outPuts);
