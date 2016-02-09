@@ -29,6 +29,7 @@ AnasGui {
 		},
 		{ //if not, prompt the user to configure.
 			StartUp.add(
+				config = Dictionary.new;
 				{{0.5.wait; "You must configure ANAS before starting! Click below to configure.".postln;}.fork;}
 			);
 		}

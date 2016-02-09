@@ -47,12 +47,12 @@ ANASLauncher {
 			configText[0].stringColor_(Color.white).font_(Font("Helvetica", 11));
 			configText[0].string = "1. Drag your save folder into this text box, or enter a path:";
 			pathFields[0] = TextField.new(configWindow, Rect(5, 30, 390, 25)).background_(Color(1,1,1,0.2));
-			pathFields[0].string = AnasGui.loadPath.fullPath;
+			pathFields[0].string = (AnasGui.loadPath??{PathName.new}).fullPath;
 			configText[1] = StaticText.new(configWindow, Rect(5,57, 390, 25)).background_(Color(1,1,1,0));
 			configText[1].stringColor_(Color.white).font_(Font("Helvetica", 11));
 			configText[1].string = "2. Drag your recordings folder into this text box, or enter a path:";
 			pathFields[1] = TextField.new(configWindow, Rect(5, 80, 390, 25)).background_(Color(1,1,1,0.3));
-			pathFields[1].string = AnasGui.recordPath.fullPath;
+			pathFields[1].string = (AnasGui.recordPath??{PathName.new}).fullPath;
 			inDeviceSelector = PopUpMenu.new(configWindow, Rect(150, 110, 200, 20));
 			inDeviceSelector.items_(ServerOptions.devices);
 			configText[2] = StaticText.new(configWindow, Rect(5, 110, 120, 25));

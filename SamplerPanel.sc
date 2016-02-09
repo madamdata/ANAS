@@ -341,8 +341,8 @@ SamplerPanel {
     resetButton.load(loadList.at(\resetButton));
 
     // update lVal and rVal
-    this.sampleSlider.setLVal(loadList.at(\lVal) ?? {nil});
-    this.sampleSlider.setRVal(loadList.at(\rVal) ?? {nil});
+    this.sampleSlider.setLVal(loadList.at(\lVal) ?? {0});
+    this.sampleSlider.setRVal(loadList.at(\rVal) ?? {1});
     this.rebuild;
   }
 }
