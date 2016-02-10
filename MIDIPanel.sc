@@ -1,5 +1,5 @@
 MIDIPanel {
-	var parent, left, top, composite, <>keybList, <>offset, <>keybButtons;
+	var parent, left, top, composite, <>keybList, <>offset, <>keybButtons, <label;
 	*new {
 		arg parent, left, top;
 		^super.newCopyArgs(parent, left, top).initMIDIPanel(parent, left, top);
@@ -15,11 +15,15 @@ MIDIPanel {
 		composite = CompositeView.new(parent, Rect(left, top, 192, 55));
 		composite.background = ~colourList.at(\midi);
 		this.initDefs;
+		label = StaticText.new(composite, Rect(0, 0, 192, 20)).align_(\center);
+		label.string = "midi note routing";
+		label.stringColor_(Color.new255(225, 225, 225, 180)).font_(Font("Helvetica", 11, true));
 		5.do({|i|
-			keybButtons[i] = Button.new(composite, Rect(2 + (i*22), 10 , 20, 20));
+			var whichOsc = ("osc"++(i+1));
+			keybButtons[i] = Button.new(composite, Rect(12 + (i*32), 20 , 30, 15));
 			keybButtons[i].states = [
-				["", Color.black, Color.grey],
-				[("osc"++(i+1)), Color.black, Color.white],
+				["", Color.white, ~colourList.at(whichOsc.asSymbol).blend(Color.grey, 0.8)],
+				[whichOsc, Color.white, ~colourList.at(whichOsc.asSymbol)],
 			];
 			keybButtons[i].font = Font("Helvetica", 9);
 			keybButtons[i].action_({|button|

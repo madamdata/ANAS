@@ -4,7 +4,6 @@ finish Sampler panel
 keyboard window control
 volume knobs for everything?
 invert input (?)
-pattern control
 
 */
 AnasGui {
@@ -146,13 +145,13 @@ AnasGui {
 					\adsr1, Color.new255(70, 60, 50, 140),
 					\adsr2, Color.new255(10, 10, 50, 140),
 					\del1, Color.new255(0, 0, 0, 180),
-					\mult1, Color.new255(232, 215, 196, 140),
+					\mult1, Color.new255(232, 215, 196, 160),
 					\filt1, Color.new255(220, 180, 85, 140),
 					\out1, Color.new255(255, 50, 70, 170),
 					\out2, Color.new255(255, 80, 244, 170),
 					\out3, Color.new255(40, 251, 255, 170),
 					\out4,Color.new255(255, 166, 20, 170),
-					\midi, Color.new255(50, 80, 90, 130),
+					\midi, Color.new255(70, 100, 90, 140),
 					\sampler, Color.new255(50, 185, 170, 155),
 					\pattern1, Color.new255(150, 0, 120, 130),
 					\pattern2, Color.new255(120, 0, 175, 130),
@@ -212,8 +211,8 @@ AnasGui {
 				moduleObjects[8] = adsr2 = ADSRPanel.new(composite, Rect(406, 340, 192, 300), Ndef(\adsr2), ~outPuts);
 				moduleObjects[9] = filt1 = FilterPanel.new(composite, Rect(604,340,192,300), Ndef(\filt1), ~outPuts);
 				moduleObjects[10] = sampler = SamplerPanel.new(composite, 802, 340, Ndef(\sampler), ~outPuts);
-				moduleObjects[11] = in1 = InputPanel.new(composite, Rect(1000, 590, 100, 100), Ndef(\in1));
-				moduleObjects[12] = in2 = InputPanel.new(composite, Rect(1000, 645, 100, 100), Ndef(\in2));
+				moduleObjects[11] = in1 = InputPanel.new(composite, Rect(1000, 530, 100, 80), Ndef(\in1));
+				moduleObjects[12] = in2 = InputPanel.new(composite, Rect(1000, 625, 100, 80), Ndef(\in2));
 				midipanel = MIDIPanel.new(composite, 10, 645);
 				patterns = 0!3;
 				patterns[0] = PatternPanel.new(composite, 208, 645, Ndef(\pattern1), this);
