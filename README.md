@@ -42,4 +42,6 @@ with help from the community at Mills College and the East Bay.
 - download and install SC3Plugins (required)
 - download as zip and extract to Extensions folder
 - recompile. 
+
+
 ------
