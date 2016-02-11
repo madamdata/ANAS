@@ -124,7 +124,7 @@ AnasGui {
 			this.initNdefs; //initialize Ndefs - sets up some dummy ndef things with the appropriate audio rate inputs. for some reason it bugs out if I don't do this.
 			0.3.wait;
 			{ //gui code - must be deferred
-				guiPositions.putPairs([
+				guiPositions.putPairs([ //pixel locations of panels
 					\topRowTop, 3,
 					\topRowHeight, 25,
 					\firstRowPanels, 32,
@@ -192,12 +192,15 @@ AnasGui {
 				});
 				composite.mouseDownAction_({this.updateFocus});
 				//header image
-				/*img = Image.open((this.class.anasFolder +/+ "ANASLogo.png").fullPath);
-				img.scalesWhenResized_(true).interpolation_(\smooth);
-				img.setSize(90, 30);
-				header = View.new(composite, Rect(10,2, 90, 30)).background_(Color(0,0,0,0));
-				header.backgroundImage_(img, 10, 0.5); */
-
+				Platform.case( //image works differently on Linux, or so I've heard. for now, header image only appears in OS X.
+					\osx, {
+						img = Image.open((this.class.anasFolder +/+ "ANASLogo.png").fullPath);
+						img.scalesWhenResized_(true).interpolation_(\smooth);
+						header = View.new(composite, Rect(10,2, 96, 25)).background_(Color(0,0,0,0));
+						header.setBackgroundImage(img, 10, 0.8);
+						header.toolTip_("ANAS is the work of thumbthumb (Adam Adhiyatma) and agargara (David Cummings). \n
+www.adamadhiyatma.com \n agargara.bandcamp.com");
+				});
 				//modules
 				moduleObjects = 0!17;
 				~updateInputSelectors = Condition.new(false);
@@ -228,7 +231,7 @@ AnasGui {
 				~moduleList =  //this is how all the input selectors know what their menu items are, and more
 				[\none] ++
 				moduleObjects.collect({|item| item.nDef.key}) ++
-				[\pattern1, \pattern2, \pattern3, \pattern4, \noteBus];
+				[\pattern1, \pattern2, \pattern3, \noteBus];
 				~updateInputSelectors.test_(true).signal; //now that ~moduleList is fully populated, signal all input selector to update their lists.
 				//controls at the top of the window
 				fileNameField = TextField.new(composite, Rect(guiPositions.at(\fifthColumnLeft), guiPositions.at(\topRowTop), 110, guiPositions.at(\topRowHeight)));
