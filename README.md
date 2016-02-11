@@ -8,7 +8,8 @@ with help from the community at Mills College and the East Bay.
 ### Installation Instructions
 - download and install SC3Plugins (required)
 - download as zip and extract to Extensions folder
-- recompile. 
+- recompile. A launcher should appear in the bottom right of the screen. 
+- click 'Start ANAS'.
 
 
 ### Features
