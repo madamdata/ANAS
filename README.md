@@ -4,6 +4,13 @@ ANAS is a digital modular synthesizer for the SuperCollider open source audio en
 code by thumbthumb (adam adhiyatma) and agargara (david cummings) 
 with help from the community at Mills College and the East Bay.
 
+
+### Installation Instructions
+- download and install SC3Plugins (required)
+- download as zip and extract to Extensions folder
+- recompile. 
+
+
 ### Features
 - Modular - style signal routing between different sound generation objects. 
 - No difference between control and audio signals - everything is scaled so that you can plug anything into anything. 
@@ -37,11 +44,6 @@ with help from the community at Mills College and the East Bay.
 - Drum generator
 - MIDI / OSC sync with DAWs.
 - Pitch detection. 
-
-### Installation Instructions
-- download and install SC3Plugins (required)
-- download as zip and extract to Extensions folder
-- recompile. 
 
 
 ------
