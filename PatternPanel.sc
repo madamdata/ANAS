@@ -162,10 +162,10 @@ PatternPanel {
 	save {
 		var saveList = Dictionary.new;
 		saveList.putPairs([
-			\valPat, patternField.value,
-			\durPat, patternField2.value,
-			\legatoPat, patternField3.value,
-			\lagPat, patternField4.value,
+			\valPat, if (patternField.value.asSymbol != \value, {patternField.value}, {"Pn(0)"}),
+			\durPat,  if (patternField2.value.asSymbol != \duration, {patternField2.value}, {"Pn(0.3)"}),
+			\legatoPat, if (patternField3.value.asSymbol != \legato, {patternField3.value}, {"Pn(0.3)"}),
+			\lagPat, if (patternField4.value.asSymbol != \lag, {patternField4.value}, {"Pn(0)"}),
 			\syncSelector, syncSelector.value,
 			\syncOn, syncOn,
 			\typeSelector, typeSelector.value,

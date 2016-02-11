@@ -248,6 +248,8 @@ AnasGui {
 				recordButton.action_({|button|
 					if (button.value == 1, {
 						button.font = Font("Helvetica", 10);
+						Server.local.recHeaderFormat = "WAV";
+						Server.local.recSampleFormat = "int24";
 						Server.local.record(recordPath.fullPath ++ recordFileName ++ ".wav");
 					}, {button.font = Font("Helvetica", 11); Server.local.stopRecording});
 

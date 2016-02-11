@@ -21,6 +21,8 @@ ANASLauncher {
 			Server.local.options.numOutputBusChannels_(2);
 			Server.local.options.hardwareBufferSize_(512);
 			Server.local.options.blockSize_(512);
+			Server.local.recHeaderFormat = "AIFF";
+			Server.local.recSampleFormat = "int16";
 			Server.local.latency = 0.05;
 			Server.local.waitForBoot({
 				//replace the paths below with your own path for a save folder and a recordings folder. (don't make them the same folder)
