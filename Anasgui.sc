@@ -16,7 +16,7 @@ AnasGui {
 	}
 
 	*initClass {
-		version = "ANAS v0.98";
+		version = "ANAS v0.982";
 		this.loadEventTypes;
 		anasFolder = PathName(AnasGui.filenameSymbol.asString.dirname);
 		anasDir = PathName(AnasGui.filenameSymbol.asString.dirname.dirname);
@@ -235,7 +235,7 @@ www.adamadhiyatma.com \n agargara.bandcamp.com");
 				~updateInputSelectors.test_(true).signal; //now that ~moduleList is fully populated, signal all input selector to update their lists.
 				//controls at the top of the window
 				fileNameField = TextField.new(composite, Rect(guiPositions.at(\fifthColumnLeft), guiPositions.at(\topRowTop), 110, guiPositions.at(\topRowHeight)));
-				fileNameField.background = Color.new255(100, 100, 100, 50);
+				fileNameField.background_(Color.new255(100, 80, 80, 100)).stringColor_(Color.white);
 				fileNameField.action_({|field| fileName = field.value});
 				fileNameField.toolTip_("Type the name of the preset you wish to save in here and PRESS ENTER before saving.");
 				saveButton = Button.new(composite, Rect(guiPositions.at(\fourthColumnLeft) + 132,  guiPositions.at(\topRowTop), 59, guiPositions.at(\topRowHeight)));
