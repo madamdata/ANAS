@@ -4,7 +4,7 @@ ANAS is a digital modular synthesizer for the SuperCollider open source audio en
 code by thumbthumb (adam adhiyatma) and agargara (david cummings) 
 with help from the community at Mills College and the East Bay.
 
-###Features
+### Features
 - Modular - style signal routing between different sound generation objects. 
 - No difference between control and audio signals - everything is scaled so that you can plug anything into anything. 
 - Feedback possible and encouraged. 
@@ -30,10 +30,12 @@ with help from the community at Mills College and the East Bay.
 - 93 Knobs!.
 
 
-###Upcoming
+### Upcoming
+
 - Replaceable panels
 - Multi-filters, generic effects like chorus, phasing, gating
 - Drum generator
 - MIDI / OSC sync with DAWs.
-- Pitch detection
-- 
+- Pitch detection. 
+
+------
