@@ -86,7 +86,7 @@ AnasGui {
 
     netAddress = NetAddr.new("localhost", 9090); // send OSC messages to localhost:9090
     oscMessageSender = OSCdef.newMatching(\messageSender, { arg msg, time;
-      netAddress.sendMsg("/renoise/transport/start");
+     //  netAddress.sendMsg("/renoise/transport/start"); // send sync messages to renoise? @TODO
     },'/anas/bang');
 
 		loadPath = this.class.loadPath;
