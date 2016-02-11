@@ -36,6 +36,69 @@ MultiPlexPanel : ANASPanel {
 			outputButtons[index] = OutputButton.new(composite, 2 +((80/outs.size)*index), 130, (80/outs.size), nDef, whichOut);
 		});
 		Ndef(nDef.key.asSymbol).clear;
+		focusList = [labelKnob1, labelKnob2, labelKnob3];
+		standardAction = {|v,c,m,u,k|
+			var keys = [m, k];
+			switch(keys,
+				[0, 49], {
+					this.rebuild;
+					keyRoutine.reset;
+					{
+						selectors.do({|item, index|
+							item.value_(~moduleList.indexOf(inputList[index]));
+							item.selector.background = (~colourList.at(item.selector.item.asSymbol) ?? {~colourList.at(\none)}).blend(Color.grey, 0.3);
+						});
+					}.defer;
+				},
+				[1048576, 18], {selectors[0].valueAction_(1)},
+				[1048576, 19], {selectors[0].valueAction_(2)},
+				[0,18], {this.focusOn(0)},
+				[0,19], {this.focusOn(1)},
+				[0,20], {this.focusOn(2)},
+				[0,21], {this.focusOn(3)},
+				[0, 12], {outputButtons[0].flipRebuild},
+				[0, 13], {outputButtons[1].flipRebuild},
+				[0, 14], {outputButtons[2].flipRebuild},
+				[0, 15], {outputButtons[3].flipRebuild},
+				[0, 0], {
+					composite.keyDownAction_(setInputAction);
+					selectors.do({|item| item.selector.background_(Color.red)});
+				},
+			);
+			nDef.key.asString.postln;
+			true;
+		};
+		setInputAction = {|v,c,m,u,k|
+			var keys = [m,k];
+			switch(keys,
+				[0, 49], {
+					this.rebuild;
+					keyRoutine.reset;
+					composite.keyDownAction_(standardAction);
+					{
+						selectors.do({|item, index|
+							item.value_(~moduleList.indexOf(inputList[index]));
+							item.selector.background = (~colourList.at(item.selector.item.asSymbol) ?? {~colourList.at(\none)}).blend(Color.grey, 0.3);
+						});
+					}.defer;
+				},
+				[0, 50], {whichPanel = \same; keyRoutine.next},
+				[0, 12], {whichPanel = \none; keyRoutine.next},
+				[0, 18], {whichPanel = \osc1; keyRoutine.next},
+				[0, 19], {whichPanel = \osc2; keyRoutine.next},
+				[0, 20], {whichPanel = \osc3; keyRoutine.next},
+				[0, 21], {whichPanel = \osc4; keyRoutine.next},
+				[0,23], {whichPanel = \osc5; keyRoutine.next},
+				[131072, 18], {whichPanel = \del1; keyRoutine.next},
+				[131072, 19], {whichPanel = \adsr1; keyRoutine.next},
+				[131072, 20], {whichPanel = \adsr2; keyRoutine.next},
+				[131072, 21], {whichPanel = \filt1; keyRoutine.next},
+				[131072, 23], {whichPanel = \sampler; keyRoutine.next},
+				[131072, 22], {whichPanel = \mult1; keyRoutine.next},
+			);
+			true;
+		};
+		composite.keyDownAction_(standardAction);
 		this.rebuild;
 	}
 
