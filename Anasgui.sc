@@ -8,7 +8,7 @@ invert input (?)
 */
 AnasGui {
 	classvar <>launcher, launchButton, recompileButton, closeButton, configButton, configWindow, reopenButton, pathFields, configText, saveConfigButton, <version, <config, <anasFolder, <anasDir, <>loadPath, <>recordPath, <>netAddress, <>oscMessageSender, isAlwaysOnTop;
-	var <>loadPath, <>recordPath, <>window, <clock, <>osc1, <>osc2, <>osc3, <>osc4, <>osc5, <>out1, <>out2, <>out3, <>out4, <>del1, <>mult1, <>adsr1, <>adsr2, <>filt1, <>midipanel, <>sampler, <>in1, <in2, <>patterns, composite, <>saveList, <>savePath, <>whichFolder, <>fileName, fileNameField, saveButton, recordButton, openRecordingsButton, recordFileName, <>recordPanel, <>loadMenu, <>menuEntries, <>folderMenu, <>folderEntries, <>loadPathFolders, <>moduleList, <>saves, img, header, closeButton, <moduleObjects, <midiLockButton;
+	var <>loadPath, <>recordPath, <>window, <clock, <>osc1, <>osc2, <>osc3, <>osc4, <>osc5, <>out1, <>out2, <>out3, <>out4, <>del1, <>mult1, <>adsr1, <>adsr2, <>filt1, <>midipanel, <>sampler, <>in1, <in2, <>patterns, composite, <>saveList, <>savePath, <>whichFolder, <>fileName, fileNameField, saveButton, recordButton, openRecordingsButton, recordFileName, <>recordPanel, <>loadMenu, <>menuEntries, <>folderMenu, <>folderEntries, <>loadPathFolders, <>moduleList, <>saves, img, header, closeButton, <moduleObjects, <midiLockButton, <guiPositions;
 	*new {
 
 		^super.new.initAnasGui;
@@ -16,7 +16,7 @@ AnasGui {
 	}
 
 	*initClass {
-		version = "ANAS v0.973";
+		version = "ANAS v0.98";
 		this.loadEventTypes;
 		anasFolder = PathName(AnasGui.filenameSymbol.asString.dirname);
 		anasDir = PathName(AnasGui.filenameSymbol.asString.dirname.dirname);
@@ -84,11 +84,11 @@ AnasGui {
 	initAnasGui {
 		var loadPath, recordPath;
 
-    netAddress = NetAddr.new("localhost", 9090); // send OSC messages to localhost:9090
-    oscMessageSender = OSCdef.newMatching(\messageSender, { arg msg, time;
-     //  netAddress.sendMsg("/renoise/transport/start"); // send sync messages to renoise? @TODO
-    },'/anas/bang');
-
+		netAddress = NetAddr.new("localhost", 9090); // send OSC messages to localhost:9090
+		oscMessageSender = OSCdef.newMatching(\messageSender, { arg msg, time;
+			//  netAddress.sendMsg("/renoise/transport/start"); // send sync messages to renoise? @TODO
+		},'/anas/bang');
+		guiPositions = Dictionary.new; //dictionary for storing gui positions in pixels e.g. first row = 5 pixels from top
 		loadPath = this.class.loadPath;
 		recordPath = this.class.recordPath;
 		saves = Dictionary.new;
@@ -116,19 +116,26 @@ AnasGui {
 						window.visible = false;
 					},
 					[0, 48], {composite.focus(true); "composite focus".postln;this.updateFocus}, //tab key - reset focus
-					[1048576, 36], {sampler.recordButton.button.valueAction = (1-sampler.recordButton.button.value)},
+					[1048576, 36], {sampler.recordButton.button.valueAction = (1-sampler.recordButton.button.value)}, //cmd+enter - activate sampler record
 					[524288, 36], {sampler.overdubButton.button.valueAction = (1-sampler.overdubButton.button.value)},
 				);
 			};
-			View.globalKeyUpAction = {|v,c,m,u,k|
-				var keys = [m, k];
-				switch(keys,
-					[0,53], {window.visible = true} //when cmd + w is let go, make the window visible again
-				)
-			};
+
 			this.initNdefs; //initialize Ndefs - sets up some dummy ndef things with the appropriate audio rate inputs. for some reason it bugs out if I don't do this.
 			0.3.wait;
 			{ //gui code - must be deferred
+				guiPositions.putPairs([
+					\topRowTop, 3,
+					\topRowHeight, 25,
+					\firstRowPanels, 32,
+					\secondRowPanels, 337,
+					\thirdRowPanels, 643,
+					\firstColumnLeft, 10,
+					\secondColumnLeft, 208,
+					\thirdColumnLeft, 406,
+					\fourthColumnLeft, 604,
+					\fifthColumnLeft, 802,
+				]);
 				window = Window.new(\anasGui, Rect(250, 200, 1105, 730));
 				window.front;
 				window.alwaysOnTop = isAlwaysOnTop;
@@ -194,84 +201,80 @@ AnasGui {
 				//modules
 				moduleObjects = 0!17;
 				~updateInputSelectors = Condition.new(false);
-				clock = ClockPanel.new(composite, Rect(1000, 5, 98, 25), Ndef(\clock), this);
-				moduleObjects[13] = out1 = OutPanel.new(composite, 1000, 35, Ndef(\out1));
+				clock = ClockPanel.new(composite, Rect(1000, guiPositions.at(\topRowTop), 98, guiPositions.at(\topRowHeight)), Ndef(\clock), this);
+				moduleObjects[13] = out1 = OutPanel.new(composite, 1000, guiPositions.at(\firstRowPanels), Ndef(\out1));
 				moduleObjects[14] = out2 = OutPanel.new(composite, 1000, out1.bottom, Ndef(\out2));
 				moduleObjects[15] = out3 = OutPanel.new(composite, 1000, out2.bottom, Ndef(\out3));
 				moduleObjects[16] = out4 = OutPanel.new(composite, 1000, out3.bottom, Ndef(\out4));
 				~outPuts = [out1, out2, out3, out4];
-				moduleObjects[0] = osc1 = OscPanel.new(composite, 10, 35, Ndef(\osc1), ~outPuts, clock);
-				moduleObjects[1] = osc2 = OscPanel.new(composite, 208, 35, Ndef(\osc2), ~outPuts, clock);
-				moduleObjects[2] = osc3 = OscPanel.new(composite, 406, 35, Ndef(\osc3), ~outPuts, clock);
-				moduleObjects[3] = osc4 = OscPanel.new(composite, 604, 35, Ndef(\osc4), ~outPuts, clock);
-				moduleObjects[4] = osc5 = OscPanel.new(composite, 802, 35, Ndef(\osc5), ~outPuts, clock);
-				moduleObjects[5] = del1 = DelayPanel.new(composite, 10, 340, Ndef(\del1), ~outPuts);
-				moduleObjects[6] = mult1 = MultiPlexPanel.new(composite, Rect(10,490, 192, 150), Ndef(\mult1), ~outPuts);
-				moduleObjects[7] = adsr1 = ADSRPanel.new(composite, Rect(208, 340, 192, 300), Ndef(\adsr1), ~outPuts);
-				moduleObjects[8] = adsr2 = ADSRPanel.new(composite, Rect(406, 340, 192, 300), Ndef(\adsr2), ~outPuts);
-				moduleObjects[9] = filt1 = FilterPanel.new(composite, Rect(604,340,192,300), Ndef(\filt1), ~outPuts);
-				moduleObjects[10] = sampler = SamplerPanel.new(composite, 802, 340, Ndef(\sampler), ~outPuts);
+				moduleObjects[0] = osc1 = OscPanel.new(composite, 10, guiPositions.at(\firstRowPanels), Ndef(\osc1), ~outPuts, clock);
+				moduleObjects[1] = osc2 = OscPanel.new(composite, 208, guiPositions.at(\firstRowPanels), Ndef(\osc2), ~outPuts, clock);
+				moduleObjects[2] = osc3 = OscPanel.new(composite, 406, guiPositions.at(\firstRowPanels), Ndef(\osc3), ~outPuts, clock);
+				moduleObjects[3] = osc4 = OscPanel.new(composite, 604, guiPositions.at(\firstRowPanels), Ndef(\osc4), ~outPuts, clock);
+				moduleObjects[4] = osc5 = OscPanel.new(composite, 802, guiPositions.at(\firstRowPanels), Ndef(\osc5), ~outPuts, clock);
+				moduleObjects[5] = del1 = DelayPanel.new(composite, 10, guiPositions.at(\secondRowPanels), Ndef(\del1), ~outPuts);
+				moduleObjects[6] = mult1 = MultiPlexPanel.new(composite, Rect(10, guiPositions.at(\secondRowPanels) + 150, 192, 150), Ndef(\mult1), ~outPuts);
+				moduleObjects[7] = adsr1 = ADSRPanel.new(composite, Rect(208, guiPositions.at(\secondRowPanels), 192, 300), Ndef(\adsr1), ~outPuts);
+				moduleObjects[8] = adsr2 = ADSRPanel.new(composite, Rect(406, guiPositions.at(\secondRowPanels), 192, 300), Ndef(\adsr2), ~outPuts);
+				moduleObjects[9] = filt1 = FilterPanel.new(composite, Rect(604,guiPositions.at(\secondRowPanels),192,300), Ndef(\filt1), ~outPuts);
+				moduleObjects[10] = sampler = SamplerPanel.new(composite, 802, guiPositions.at(\secondRowPanels), Ndef(\sampler), ~outPuts);
 				moduleObjects[11] = in1 = InputPanel.new(composite, Rect(1000, 530, 100, 80), Ndef(\in1));
 				moduleObjects[12] = in2 = InputPanel.new(composite, Rect(1000, 625, 100, 80), Ndef(\in2));
-				midipanel = MIDIPanel.new(composite, 10, 645);
+				midipanel = MIDIPanel.new(composite, 10, guiPositions.at(\thirdRowPanels));
 				patterns = 0!3;
-				patterns[0] = PatternPanel.new(composite, 208, 645, Ndef(\pattern1), this);
-				patterns[1] = PatternPanel.new(composite, 472, 645, Ndef(\pattern2), this);
-				patterns[2] = PatternPanel.new(composite, 736, 645, Ndef(\pattern3), this);
-				//patterns[3] = PatternPanel.new(composite, 802, 645, Ndef(\pattern4), this);
+				patterns[0] = PatternPanel.new(composite, 208, guiPositions.at(\thirdRowPanels), Ndef(\pattern1), this);
+				patterns[1] = PatternPanel.new(composite, 472, guiPositions.at(\thirdRowPanels), Ndef(\pattern2), this);
+				patterns[2] = PatternPanel.new(composite, 736, guiPositions.at(\thirdRowPanels), Ndef(\pattern3), this);
 				~moduleList =  //this is how all the input selectors know what their menu items are, and more
 				[\none] ++
 				moduleObjects.collect({|item| item.nDef.key}) ++
 				[\pattern1, \pattern2, \pattern3, \pattern4, \noteBus];
 				~updateInputSelectors.test_(true).signal; //now that ~moduleList is fully populated, signal all input selector to update their lists.
 				//controls at the top of the window
-				fileNameField = TextField.new(composite, Rect(720, 3, 100, 25));
+				fileNameField = TextField.new(composite, Rect(guiPositions.at(\fifthColumnLeft), guiPositions.at(\topRowTop), 110, guiPositions.at(\topRowHeight)));
 				fileNameField.background = Color.new255(100, 100, 100, 50);
 				fileNameField.action_({|field| fileName = field.value});
 				fileNameField.toolTip_("Type the name of the preset you wish to save in here and PRESS ENTER before saving.");
-				saveButton = Button.new(composite, Rect(660, 3, 55, 25));
-				saveButton.background = Color.new255(50, 100, 180, 200);
-				saveButton.states = [["Save", Color.black, Color.new255(155,155, 185, 2000)]];
+				saveButton = Button.new(composite, Rect(guiPositions.at(\fourthColumnLeft) + 132,  guiPositions.at(\topRowTop), 59, guiPositions.at(\topRowHeight)));
+				saveButton.states_([["Save ->", Color.white, Color.new255(200,135, 185, 180)]]).font_(Font("Helvetica", 13, true));
 				saveButton.action_({this.save; (fileName.asString ++ " saved").postln;});
-				openRecordingsButton = Button.new(composite, Rect(200, 3, 60, 25));
-				openRecordingsButton.states_([["RECFOLDER", Color.white, Color.new255(30, 30, 150, 150)]]).font_(Font("Helvetica", 10));
+				openRecordingsButton = Button.new(composite, Rect(guiPositions.at(\secondColumnLeft), guiPositions.at(\topRowTop), 92, guiPositions.at(\topRowHeight)));
+				openRecordingsButton.states_([["Rec Folder", Color.white, Color.new255(30, 30, 150, 150)]]).font_(Font("Helvetica", 12, true));
 				openRecordingsButton.action_({
 					this.class.recordPath.fullPath.openOS;
 					window.visible = false;
 				});
-				recordButton = Button.new(composite, Rect(260, 3, 55, 25));
+				recordButton = Button.new(composite, Rect(guiPositions.at(\secondColumnLeft) + 96, guiPositions.at(\topRowTop), 96, guiPositions.at(\topRowHeight)));
 				recordButton.font = Font("Helvetica", 11);
-				recordButton.states = [
-					["record", Color.white, Color.new255(155, 35, 35, 150)],
-					["recording", Color.white, Color.new255(255, 100, 100, 180)],
-				];
+				recordButton.states_([
+					["record ->", Color.white, Color.new255(155, 35, 35, 150)],
+					["recording", Color.white, Color.new255(255, 90, 100, 185)],
+				]).font_(Font("Helvetica", 13, true));
 				recordButton.action_({|button|
 					if (button.value == 1, {
-						button.font = Font("Helvetica", 10);
 						Server.local.recHeaderFormat = "WAV";
 						Server.local.recSampleFormat = "int24";
 						Server.local.record(recordPath.fullPath ++ recordFileName ++ ".wav");
-					}, {button.font = Font("Helvetica", 11); Server.local.stopRecording});
-
+					}, {Server.local.stopRecording});
 				});
-				recordPanel = TextField.new(composite, Rect(320, 3, 100, 23));
+				recordPanel = TextField.new(composite, Rect(guiPositions.at(\thirdColumnLeft), guiPositions.at(\topRowTop), 100, guiPositions.at(\topRowHeight)));
 				recordPanel.background = Color.new255(80, 80, 80, 150);
-				recordPanel.action_({|panel| recordFileName = panel.value.asString});
+				recordPanel.action_({|panel| recordFileName = panel.value.asString}).stringColor_(Color.white);
 				recordPanel.toolTip_("Type the name of the recording you wish to save here and PRESS ENTER before recording.");
-				folderMenu = PopUpMenu.new(composite, Rect(430, 3, 100, 25));
-				folderMenu.items = folderEntries;
+				folderMenu = PopUpMenu.new(composite, Rect(guiPositions.at(\thirdColumnLeft) + 102, guiPositions.at(\topRowTop), 90, guiPositions.at(\topRowHeight)));
+				folderMenu.items_(folderEntries).background_(Color.new255(150, 135, 135, 180)).toolTip_("Use this menu to select a folder of presets.");
 				folderMenu.action_({|menu|
 					menu.value.postln;
 					whichFolder = loadPathFolders[menu.value];
 					this.updateMenuEntries;
 				});
-				loadMenu = PopUpMenu.new(composite, Rect(530, 3, 130, 25));
-				loadMenu.items = menuEntries;
+				loadMenu = PopUpMenu.new(composite, Rect(guiPositions.at(\fourthColumnLeft), guiPositions.at(\topRowTop), 130, guiPositions.at(\topRowHeight)));
+				loadMenu.items_(menuEntries).background_(Color.new255(130, 120, 195, 180).blend(Color.grey, 0.3));
 				loadMenu.action_({|menu|
 					this.load(menuEntries.at(menu.value));
 				});
-				loadMenu.allowsReselection = true;
-				midiLockButton = Button.new(composite, Rect(880, 3, 80, 20));
+				loadMenu.allowsReselection_(true).toolTip_("Use this menu to select and load presets.");
+				midiLockButton = Button.new(composite, Rect(guiPositions.at(\fifthColumnLeft) + 112, guiPositions.at(\topRowTop), 80, guiPositions.at(\topRowHeight)));
 				midiLockButton.states_([
 					["MIDI unlocked", Color.white, Color.new255(50, 50, 50, 200)],
 					["MIDI locked", Color.white, Color.new255(200, 40, 40, 150)]

@@ -65,7 +65,7 @@ PatternPanel {
 		}).allowsReselection_(true);
 		adsrSelector = PopUpMenu.new(composite, Rect(167, 40, 50, 18));
 		adsrSelector.items_(["adsr1", "adsr2"]);
-		adsrSelector.action_({|selector| adsr = Ndef(selector.item.asSymbol)});
+		adsrSelector.action_({|selector| adsr = Ndef(selector.item.asSymbol)}).background_(Color.new255(200, 150, 200, 175));
 		[typeSelector, syncSelector, adsrSelector].do({|item|
 			item.font_(Font("Helvetica", 11));
 		});

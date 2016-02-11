@@ -447,9 +447,10 @@ LFOKnob {
 		]);
 		onSwitch = Button.new(composite, Rect(1, 48, 45, 15));
 		onSwitch.states_([
-			["off", Color.black, Color.white],
-			["on", Color.black, Color.new255(180, 100, 100, 155)],
+			["off", Color.white, Color.new255(120, 50, 70, 155)],
+			["on", Color.white, Color.new255(210, 80, 100, 155)],
 		]);
+		onSwitch.font_(Font("Helvetica", 11, true));
 		onSwitch.action_({|button|
 			switch(button.value,
 				0, {isOn = 0; oscPanel.rebuild;},
@@ -460,7 +461,7 @@ LFOKnob {
 		typeSelector.items_([
 			"sin", "saw", "tri", "sq", "noise0", "noise1", "noise2", "noiseA"
 		]);
-		typeSelector.font = Font("Helvetica", 8);
+		typeSelector.font_(Font("Helvetica", 8)).background_(Color.new255(180, 180, 180, 130));
 		typeSelector.action_({|selector|
 			oscType = selector.item.asSymbol;
 			oscPanel.rebuild;
