@@ -35,6 +35,7 @@ with help from the community at Mills College and the East Bay.
 - Three pattern panels with support for controlling oscillator frequencies, triggering envelopes, or modulating any parameter
   using the Patterns library. These accept signals as trigger inputs to generate the next pattern. 
 - 93 Knobs!
+- MIDI keyboard control routing for oscillators. 
 
 
 ### Upcoming
