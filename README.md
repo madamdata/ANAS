@@ -34,7 +34,7 @@ with help from the community at Mills College and the East Bay.
 - Two inputs with support for direct audio and amplitude detection. 
 - Three pattern panels with support for controlling oscillator frequencies, triggering envelopes, or modulating any parameter
   using the Patterns library. These accept signals as trigger inputs to generate the next pattern. 
-- 93 Knobs!.
+- 93 Knobs!
 
 
 ### Upcoming
