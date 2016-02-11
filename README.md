@@ -1,6 +1,8 @@
 # ANAS
 
 ANAS is a digital modular synthesizer for the SuperCollider open source audio environment. 
+code by thumbthumb (adam adhiyatma) and agargara (david cummings) 
+with help from the community at Mills College and the East Bay.
 
 ###Features
 - Modular - style signal routing between different sound generation objects. 
