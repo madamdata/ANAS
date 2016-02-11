@@ -33,12 +33,12 @@ PatternPanel {
 		patternField3.background = Color.new255(105, 80, 100, 125);	patternField3.stringColor_(Color.new255(255,255,255,255)).string_("legato").font_(Font("Helvetica", 11));
 		patternField3.action_({|field|
 			Pdefn((nDef.key.asString ++ "legato").asSymbol, field.value.interpret);
-		});
+		}).toolTip_("Input a pattern to control what fraction of the duration passes before the adsr envelope enters its release portion. Only works in 'note' or 'adsr' modes.");
 		patternField4 = TextField.new(composite, Rect(2, 59, 165, 18));
 		patternField4.background = Color.new255(105, 80, 100, 125);	patternField4.stringColor_(Color.new255(255,255,255,255)).string_("lag").font_(Font("Helvetica", 11));
 		patternField4.action_({|field|
 			Pdefn((nDef.key.asString ++ "lag").asSymbol, field.value.interpret);
-		});
+		}).toolTip_("Input a pattern to control the portamento between values.");
 		[patternField, patternField2, patternField3, patternField4].do({|item|
 			item.mouseDownAction_({item.string = "";item.mouseDownAction_({})});
 		});
@@ -62,10 +62,14 @@ PatternPanel {
 			});
 			Tdef(nDef.key).stop.play(anasGui.clock.clock);
 			durPat.reset;
-		}).allowsReselection_(true);
+		}).allowsReselection_(true).toolTip_("Use this menu to select a trigger source for this pattern. \n
+None: This panel will use its own 'duration' field to generate durations for the next value\n
+P1-3: This panel will output the next value when the respective pattern panel 1-3 output its next value\n
+Input: This panel will accept a signal input and output its next value when the signal crosses from nonpositive to positive.");
 		adsrSelector = PopUpMenu.new(composite, Rect(167, 40, 50, 18));
 		adsrSelector.items_(["adsr1", "adsr2"]);
 		adsrSelector.action_({|selector| adsr = Ndef(selector.item.asSymbol)}).background_(Color.new255(200, 150, 200, 175));
+		adsrSelector.toolTip_("Use this menu to select which adsr gets triggered when this pattern is set to 'note' or 'adsr' modes.");
 		[typeSelector, syncSelector, adsrSelector].do({|item|
 			item.font_(Font("Helvetica", 11));
 		});
