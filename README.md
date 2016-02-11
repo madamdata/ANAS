@@ -37,7 +37,7 @@ with help from the community at Mills College / Center for Contemporary Music an
 - Four outputs with modulateable pan, which can double as routing busses. 
 - Two inputs with support for direct audio and amplitude detection. 
 - Three pattern panels with support for controlling oscillator frequencies, triggering envelopes, or modulating any parameter
-  using the Patterns library. These accept signals as trigger inputs to generate the next pattern. 
+  using the Patterns library. These accept signals as trigger inputs to generate the next pattern value. 
 - 93 Knobs!
 - MIDI keyboard control routing for oscillators. 
 
