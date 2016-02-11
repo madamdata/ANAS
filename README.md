@@ -6,6 +6,7 @@ with help from the community at Mills College and the East Bay.
 
 
 ### Installation Instructions
+- install SuperCollider 3.7 (any version of 3.7 works, but 3.6 will not work due to the major JITlib updates in 3.7)
 - download and install SC3Plugins (required)
 - download as zip and extract to Extensions folder
 - recompile. A launcher should appear in the bottom right of the screen. 
