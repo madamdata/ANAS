@@ -26,6 +26,7 @@ OutputButton {
 			);
 		});
 		button.font_(Font("Helvetia", 8));
+		button.toolTip_("Click on this button to send this panel's output to the respective Output Panel.");
 
 	}
 

@@ -21,6 +21,7 @@ PatternPanel {
 		patternField.action_({|field|
 			Pdefn((nDef.key.asString ++"val").asSymbol, field.value.interpret);
 		});
+		patternField.toolTip_("Enter a pattern here; for example Pseq([0,3,10], inf). \n The menu to the right determines how this pattern is interpreted. \n Freq: You can enter interval numbers in semitones, 0 being the original pitch. Pseq([0,3,7,10], inf) would give you a minor 7th arpeggio. \n Note: Same as freq, but also triggers the ADSR selected in the third menu every time a new value is output. \n ADSR: This field is ignored, and 0s and 1s are output according to the duration and legato fields below.");
 		patternField2 = TextField.new(composite, Rect(2, 21, 165, 18));
 		patternField2.background = Color.new255(105, 80, 100, 125);
 		patternField2.stringColor_(Color.new255(255,255,255,255)).string_("duration");
@@ -77,16 +78,7 @@ PatternPanel {
 		currentDur = 1;
 		durPat = 1;
 		valPat = 0;
-		/*Pdef(nDef.key,
-			Pbind(
-				\freq, \rest,
-				\dur, Pdefn((nDef.key.asString ++ "dur").asSymbol),
-				\val, Pdefn((nDef.key.asString ++ "val").asSymbol).midiratio.explin(0.1, 2.5, -1, 1, \min),
-				\send, Pfunc({|event|
-					nDef.set(\input, event.at(\val));
-				})
-			)
-		).postln.play;*/
+
 		valPat = Pdefn((nDef.key.asString ++ "val").asSymbol, Pn(0)).asStream;
 		durPat = Pdefn((nDef.key.asString ++ "dur").asSymbol, Pn(0.3)).asStream;
 		legatoPat = Pdefn((nDef.key.asString ++ "legato").asSymbol, Pn(0.1)).asStream;
