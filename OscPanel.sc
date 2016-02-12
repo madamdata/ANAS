@@ -49,6 +49,15 @@ OscPanel {
 		label2.stringColor = Color.new(1,1,1,0.4);
 		label2.align = \center;
 		label2.background = Color(0,0,0,0);
+		label2.toolTip_("Oscillator panel \n
+freq, amp: Oscillator frequency and final amplitude control\n
+preFilter: (DSaw and DPulse only) fixed band pass filter before distortion, tone and amplitude \n
+tone: (DSaw and DPulse only) frequency-dependent band pass filter before distortion and amplitude \n
+width: (DPulse and LFPulse and LFNoiseA only) duty cycle of square waves. Left = more low values, right = more high values. \n
+For LFNoiseA, controls speed of internal rate oscillator. Left = more consistent, right = more extreme fluctuations. \n
+distort: Applies the selected distortion type. Knob controls pre-distortion gain. (tanh will distort even at knob = 0) \n
+postFilter: Resonant low pass filter post distortion, pre-amplitude. \n
+Q: postFilter resonance value \n");
 		labelKnob1 = LabelKnob.new(composite, 2, 20, "freq", this);
 		labelKnob2 = LabelKnob.new(composite, 49, 20, "amp", this);
 		labelKnob3 = LabelKnob.new(composite, 96, 20, "preFilter", this);
