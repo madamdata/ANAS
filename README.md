@@ -12,7 +12,10 @@ with help from the community at Mills College / Center for Contemporary Music an
 - recompile. A launcher should appear in the bottom right of the screen. 
 - click 'Start ANAS'.
 
-
+### Getting help
+- Most panels, knobs and menus have tooltips. Hover the cursor over an item to see what it does. To see a general description of knob functions, hover over the panel's name text. 
+- Leave an issue or email me at forks.andhope@gmail.com
+- 
 ### Features
 - Modular - style signal routing between different sound generation objects. 
 - Usable without any knowledge of SuperCollider code. 
