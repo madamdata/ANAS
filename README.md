@@ -10,7 +10,9 @@ with help from the community at Mills College / Center for Contemporary Music an
 - download and install SC3Plugins (required)
 - download as zip and extract to Extensions folder
 - recompile. A launcher should appear in the bottom right of the screen. 
-- click 'Start ANAS'.
+- make two separate new folders anywhere for audio recordings and preset files. 
+- click 'configure' and follow the instructions on screen.
+- click 'start ANAS'. 
 
 ### Getting help
 - Most panels, knobs and menus have tooltips. Hover the cursor over an item to see what it does. To see a general description of knob functions, hover over the panel's name text. 
