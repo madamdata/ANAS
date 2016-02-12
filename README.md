@@ -21,6 +21,7 @@ with help from the community at Mills College / Center for Contemporary Music an
 ### Features
 - Modular - style signal routing between different sound generation objects. 
 - Usable without any knowledge of SuperCollider code. 
+- non-hideous GUI. 
 - No difference between control and audio signals - everything is scaled so that you can plug anything into anything. 
 - Feedback possible and encouraged. 
 - Integration with the SuperCollider language and patterns / events library. (in progress)
