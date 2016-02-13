@@ -282,7 +282,7 @@ www.adamadhiyatma.com \n agargara.bandcamp.com");
 					["MIDI unlocked", Color.white, Color.new255(50, 50, 50, 200)],
 					["MIDI locked", Color.white, Color.new255(200, 40, 40, 150)]
 				]).font_(Font("Helvetica", 11, true));
-				midiLockButton.action_({|button| ~midiLock = button.value});
+				midiLockButton.action_({|button| ~midiLock = button.value}).toolTip_("When this button is set to 'MIDI Locked', loading presets will not load their associated midi mappings. \n Otherwise, mappings will follow the ones that were saved in the preset. \n Useful for live performances.");
 		}.defer;
 			0.5.wait;
 		[osc1, osc2, osc3, osc4, osc5, del1, mult1, adsr1, filt1, out1, out2, out3, out4].do{|item| item.rebuild;};
