@@ -8,7 +8,7 @@ with help from the community at Mills College / Center for Contemporary Music an
 ### Installation Instructions
 - install SuperCollider 3.7 (any version of 3.7 works, but 3.6 will not work due to the major JITlib updates in 3.7)
 - download and install SC3Plugins (required) https://sourceforge.net/projects/sc3-plugins/files/
-- download as zip and extract to Extensions folder
+- download as zip (click the "download zip" button in the top right) and extract to Extensions folder (you can find this by going to file --> open user support directory. If there is no extensions folder there, make one.) 
 - recompile. A launcher should appear in the bottom right of the screen. 
 - make two separate new folders anywhere for audio recordings and preset files. 
 - click 'configure' and follow the instructions on screen.
