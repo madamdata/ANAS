@@ -8,7 +8,7 @@ invert input (?)
 */
 AnasGui {
 	classvar <>launcher, launchButton, recompileButton, closeButton, configButton, configWindow, reopenButton, pathFields, configText, saveConfigButton, <version, <config, <anasFolder, <anasDir, <>loadPath, <>recordPath, <>netAddress, <>oscMessageSender, isAlwaysOnTop;
-	var <>loadPath, <>recordPath, <>window, <clock, <>osc1, <>osc2, <>osc3, <>osc4, <>osc5, <>out1, <>out2, <>out3, <>out4, <>del1, <>mult1, <>adsr1, <>adsr2, <>filt1, <>midipanel, <>sampler, <>in1, <in2, <>patterns, composite, <>saveList, <>savePath, <>whichFolder, <>fileName, fileNameField, saveButton, recordButton, openRecordingsButton, recordFileName, <>recordPanel, <>loadMenu, <>menuEntries, <>folderMenu, <>folderEntries, <>loadPathFolders, <>moduleList, <>saves, img, header, closeButton, <moduleObjects, <midiLockButton, <guiPositions;
+	var <>loadPath, <>recordPath, <>window, <clock, <>osc1, <>osc2, <>osc3, <>osc4, <>osc5, <>out1, <>out2, <>out3, <>out4, <>del1, <>mult1, <>adsr1, <>adsr2, <>filt1, <>midipanel, <>sampler, <>in1, <in2, <>patterns, composite, <>saveList, <>savePath, <>whichFolder, <>fileName, fileNameField, saveButton, recordButton, openRecordingsButton, recordFileName, <>recordPanel, <>loadMenu, <>menuEntries, <>folderMenu, <>folderEntries, <>loadPathFolders, <>moduleList, <>saves, img, header, closeButton, <moduleObjects, <midiLockButton, <guiPositions, <oscSend;
 	*new {
 
 		^super.new.initAnasGui;
@@ -88,6 +88,7 @@ AnasGui {
 		oscMessageSender = OSCdef.newMatching(\messageSender, { arg msg, time;
 			//  netAddress.sendMsg("/renoise/transport/start"); // send sync messages to renoise? @TODO
 		},'/anas/bang');
+		oscSend = NetAddr.new("10.0.3.251", 58100);
 		guiPositions = Dictionary.new; //dictionary for storing gui positions in pixels e.g. first row = 5 pixels from top
 		loadPath = this.class.loadPath;
 		recordPath = this.class.recordPath;
@@ -312,6 +313,7 @@ www.adamadhiyatma.com \n agargara.bandcamp.com");
 							item.font_(Font("Arial", 130, true)).stringColor_(Color.new255(250,240, 40, 170));
 						};
 						item.composite.background = item.composite.background.alpha_(0.9);
+						oscSend.sendMsg(("/" ++ item.nDef.key.asString).postln);
 					}, {
 						var size1, size2;
 						//item.label.stringColor_(Color.new255(255,255,255,200));
@@ -415,7 +417,7 @@ www.adamadhiyatma.com \n agargara.bandcamp.com");
 		var loadList;
 		loadList = saves.at(file.asSymbol);
 		~outPuts.do({|out| out.outList = List.new});
-		clock.reSyncAll;
+		/*clock.reSyncAll;
 		osc1.load(loadList.at(\osc1));
 		osc2.load(loadList.at(\osc2));
 		osc3.load(loadList.at(\osc3));
@@ -431,10 +433,13 @@ www.adamadhiyatma.com \n agargara.bandcamp.com");
 		out1.load(loadList.at(\out1) ??{nil});
 		out2.load(loadList.at(\out2)??{nil});
 		out3.load(loadList.at(\out3)??{nil});
-		out4.load(loadList.at(\out4)??{nil});
+		out4.load(loadList.at(\out4)??{nil});*/
 		patterns[0].load(loadList.at(\pattern1));
 		patterns[1].load(loadList.at(\pattern2));
 		patterns[2].load(loadList.at(\pattern3));
+		moduleObjects.do({|item|
+			item.load(loadList.at(item.nDef.key) ?? {nil});
+		});
 		[clock, osc1, osc2, osc3, osc4, osc5, del1, mult1, adsr1, filt1, sampler, out1, out2, out3, out4].do{|item| item.rebuild;};
 		//clock.reSyncAll;
 		//[osc1, osc2, osc3, osc4, osc5, del1, mult1, adsr1, filt1, out1, out2, out3, out4].do{|item| item.rebuild;};

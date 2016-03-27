@@ -23,7 +23,9 @@ SamplerPanel {
     specs.put(\Rate, ControlSpec(0.1, 50, \exp));
     specs.put(\Volume, ControlSpec(0, 2));
     samplePath.files.do({|item, index|
-      bufs.put(item.fileName.asSymbol, Buffer.readChannel(Server.local, item.fullPath, 0, -1, 0));
+			if (item.extension == "wav", {
+				bufs.put(item.fileName.asSymbol, Buffer.readChannel(Server.local, item.fullPath, 0, -1, 0));
+			});
     });
     bufs.put(\temp, Buffer.alloc(Server.local, 44100 * 60, 1));
     composite = CompositeView.new(parent, Rect(left, top, 192, 300));

@@ -1,5 +1,5 @@
 OutputButton {
-	var parent, left, top, width, <>in, <>outPanel, <>button, <>isOn;
+	var parent, left, top, width, <>in, <>outPanel, <>button, <>isOn, oscPath, oscFunc;
 	*new {
 		arg parent, left, top, width, in, outPanel;
 		^super.newCopyArgs(parent, left, top, width, in, outPanel).initOutputButton(parent, left, top, width, in, outPanel);
@@ -7,6 +7,7 @@ OutputButton {
 
 	initOutputButton {
 		arg parent, left, top, width, in, outPanel;
+		oscPath = ("/" ++ in.key.asString ++ "/" ++ outPanel.nDef.key.asString).asSymbol;
 		isOn = 0;
 		button = Button.new(parent, Rect(left, top, width, 15));
 		button.states_([
@@ -27,6 +28,7 @@ OutputButton {
 		});
 		button.font_(Font("Helvetia", 8));
 		button.toolTip_("Click on this button to send this panel's output to the respective Output Panel.");
+		oscFunc = OSCFunc.newMatching({|msg| isOn = msg[1]*(-1)+1; {this.flipRebuild}.defer}, oscPath);
 
 	}
 
@@ -72,7 +74,7 @@ OutputButton {
 }
 
 LabelKnob {
-	var parent, left, top, <>string, oscPanel, scale, <>spec, <>default, <>numSelectors, <composite, <>knob1, <>knob1label, <>action, param, <>selector1, <>selector2, <>selector3, <>selectors, <>saveList, <>modList, <>midiFunc, <>mapped, <keyRoutine, <whichPanel, <automationList, prevTime, <recording, <automationRoutine, startTime;
+	var parent, left, top, <>string, oscPanel, scale, <>spec, <>default, <>numSelectors, <composite, <>knob1, <>knob1label, <>action, param, <>selector1, <>selector2, <>selector3, <>selectors, <>saveList, <>modList, <>midiFunc, <>mapped, <keyRoutine, <whichPanel, <automationList, prevTime, <recording, <automationRoutine, startTime, <oscFunc, oscString;
 	*new {
 		arg parent, left, top, string, oscPanel, scale = 1, spec = ControlSpec(0,1), default = 0.5, numSelectors = 3;
 		^super.newCopyArgs(parent, left, top, string, oscPanel, scale, spec, default, numSelectors).initLabelKnob;
@@ -230,9 +232,13 @@ Ctrl-shift-click to remove automation.");
 			});
 		});
 		this.doAction(default); //set the control parameter to the default value when initialized.
+		//OSCfunc
+		oscString = (oscPanel.nDef.key.asString +/+ string).asSymbol;
+		oscFunc = OSCFunc.newMatching({|msg| this.doAction(msg[1]); {knob1.value_(msg[1])}.defer}, oscString);
 		^this;
 
 	}
+
 
 	doAction {
 		arg value;

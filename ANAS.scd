@@ -75,15 +75,15 @@ Pbind(
 Tdef(\loader, {
 	i = 0;
 	loop {
-		~a.menuEntries.do({|item|
+		var preset = ~a.menuEntries.choose;
 			[~a.osc1, ~a.osc2, ~a.osc3, ~a.osc4, ~a.osc5].do({|item|
 				var lock = [0,1].choose;
 				item.lock = lock;
 				{item.lockButton.value = lock}.defer;
 			});
-			{~a.load(item)}.defer;
-			[1,0.4,0.8].choose.wait;
-		});
+			{~a.load(preset)}.defer;
+		rrand(0.3, 1).wait;
+
 	}
 }).play;
 );
@@ -114,8 +114,4 @@ Pdef(\script2,
 ).play;
 )
 
-~a.patterns[1].inputList
-~a.patterns[1].inputResponder.rebuild
-~a.patterns[0].currentDur
-Tdef(\pattern1).play
-
+~a.moduleObjects.asCompileString
