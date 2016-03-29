@@ -8,7 +8,7 @@ git 3 testing git 3 testing
 */
 AnasGui {
 	classvar <>launcher, launchButton, recompileButton, closeButton, configButton, configWindow, reopenButton, pathFields, configText, saveConfigButton, <version, <config, <anasFolder, <anasDir, <>loadPath, <>recordPath, <>netAddress, <>oscMessageSender, isAlwaysOnTop;
-	var <>loadPath, <>recordPath, <>window, <clock, <>osc1, <>osc2, <>osc3, <>osc4, <>osc5, <>out1, <>out2, <>out3, <>out4, <>del1, <>mult1, <>adsr1, <>adsr2, <>filt1, <>midipanel, <>sampler, <>in1, <in2, <>patterns, composite, <>saveList, <>savePath, <>whichFolder, <>fileName, fileNameField, saveButton, recordButton, openRecordingsButton, recordFileName, <>recordPanel, <>loadMenu, <>menuEntries, <>folderMenu, <>folderEntries, <>loadPathFolders, <>moduleList, <>saves, img, header, closeButton, <moduleObjects, <midiLockButton, <guiPositions, <oscSend;
+	var <>loadPath, <>recordPath, <>window, <clock, <>osc1, <>osc2, <>osc3, <>osc4, <>osc5, <>out1, <>out2, <>out3, <>out4, <>del1, <>mult1, <>adsr1, <>adsr2, <>filt1, <>midipanel, <>sampler, <>in1, <in2, <>patterns, composite, <>saveList, <>savePath, <>whichFolder, <>fileName, fileNameField, saveButton, recordButton, openRecordingsButton, recordFileName, <>recordPanel, <>loadMenu, <>menuEntries, <>folderMenu, <>folderEntries, <>loadPathFolders, <>moduleList, <>saves, img, header, closeButton, <moduleObjects, <moduleSockets, <midiLockButton, <guiPositions, <guiBounds, <oscSend;
 	*new {
 
 		^super.new.initAnasGui;
@@ -129,6 +129,8 @@ AnasGui {
 				guiPositions.putPairs([ //pixel locations of panels
 					\topRowTop, 3,
 					\topRowHeight, 25,
+					\panelRows, [32, 337, 643],
+					\panelColumns, [10, 208, 406, 604, 802],
 					\firstRowPanels, 32,
 					\secondRowPanels, 337,
 					\thirdRowPanels, 643,
@@ -138,6 +140,18 @@ AnasGui {
 					\fourthColumnLeft, 604,
 					\fifthColumnLeft, 802,
 				]);
+				guiBounds = 0!17;
+				5.do({|i|
+					guiBounds[i] = Rect(guiPositions.at(\panelColumns)[i], guiPositions.at(\panelRows)[0], 192, 300);
+				});
+				guiBounds[5] = Rect(guiPositions.at(\panelColumns)[0], guiPositions.at(\panelRows)[1], 192, 150);
+				guiBounds[6] = Rect(guiPositions.at(\panelColumns)[0], guiPositions.at(\panelRows)[1] + 150, 192, 150);
+				4.do({|i|
+					guiBounds[7+i] = Rect(guiPositions.at(\panelColumns)[1+i], guiPositions.at(\panelRows)[1], 192, 300)
+				});
+				guiBounds[11] = Rect(1000, 530, 100, 80);
+				guiBounds[12] = Rect(1000, 625, 100, 80);
+
 				//create parent window
 				window = Window.new(\anasGui, Rect(250, 200, 1105, 730));
 				window.front;
@@ -174,18 +188,18 @@ AnasGui {
 					var keys = [m, k];
 					[v,keys].postln;
 					switch(keys,
-						[0,18], {osc1.composite.focus(true); this.updateFocus},
-						[0,19], {osc2.composite.focus(true); this.updateFocus},
-						[0,20], {osc3.composite.focus(true); this.updateFocus},
-						[0,21], {osc4.composite.focus(true); this.updateFocus},
-						[0,23], {osc5.composite.focus(true); this.updateFocus},
-						[131072,18], {del1.composite.focus(true); this.updateFocus},
-						[131072,19], {adsr1.composite.focus(true); this.updateFocus},
-						[131072,20], {adsr2.composite.focus(true); this.updateFocus},
-						[131072,21], {filt1.composite.focus(true); this.updateFocus},
-						[131072,23], {sampler.composite.focus(true); this.updateFocus},
-						[131072,22], {mult1.composite.focus(true); this.updateFocus},
-						[131072,26], {in1.composite.focus(true); this.updateFocus},
+						[0,18], {moduleSockets[0].focus(true); this.updateFocus},
+						[0,19], {moduleSockets[1].focus(true); this.updateFocus},
+						[0,20], {moduleSockets[2].focus(true); this.updateFocus},
+						[0,21], {moduleSockets[3].focus(true); this.updateFocus},
+						[0,23], {moduleSockets[4].focus(true); this.updateFocus},
+						[131072,18], {moduleSockets[5].focus(true); this.updateFocus},
+						[131072,19], {moduleSockets[6].focus(true); this.updateFocus},
+						[131072,20], {moduleSockets[7].focus(true); this.updateFocus},
+						[131072,21], {moduleSockets[8].focus(true); this.updateFocus},
+						[131072,23], {moduleSockets[9].focus(true); this.updateFocus},
+						[131072,22], {moduleSockets[10].focus(true); this.updateFocus},
+						[131072,26], {moduleSockets[11].focus(true); this.updateFocus},
 						[0, 26], {out1.composite.focus(true); this.updateFocus},
 						[0, 28], {out2.composite.focus(true); this.updateFocus},
 						[0, 25], {out3.composite.focus(true); this.updateFocus},
@@ -205,27 +219,20 @@ AnasGui {
 www.adamadhiyatma.com \n agargara.bandcamp.com");
 				});
 				//modules
-				moduleObjects = 0!17;
+				moduleObjects = 0!13;
 				~updateInputSelectors = Condition.new(false);
 				clock = ClockPanel.new(composite, Rect(1000, guiPositions.at(\topRowTop), 98, guiPositions.at(\topRowHeight)), Ndef(\clock), this);
-				moduleObjects[13] = out1 = OutPanel.new(composite, 1000, guiPositions.at(\firstRowPanels), Ndef(\out1));
-				moduleObjects[14] = out2 = OutPanel.new(composite, 1000, out1.bottom, Ndef(\out2));
-				moduleObjects[15] = out3 = OutPanel.new(composite, 1000, out2.bottom, Ndef(\out3));
-				moduleObjects[16] = out4 = OutPanel.new(composite, 1000, out3.bottom, Ndef(\out4));
+				out1 = OutPanel.new(composite, 1000, guiPositions.at(\firstRowPanels), Ndef(\out1));
+				out2 = OutPanel.new(composite, 1000, out1.bottom, Ndef(\out2));
+				out3 = OutPanel.new(composite, 1000, out2.bottom, Ndef(\out3));
+				out4 = OutPanel.new(composite, 1000, out3.bottom, Ndef(\out4));
 				~outPuts = [out1, out2, out3, out4];
-				moduleObjects[0] = osc1 = OscPanel.new(composite, Rect(guiPositions.at(\firstColumnLeft), guiPositions.at(\firstRowPanels), 192, 300), Ndef(\osc1), ~outPuts, clock);
-				moduleObjects[1] = osc2 = OscPanel.new(composite, Rect(guiPositions.at(\secondColumnLeft), guiPositions.at(\firstRowPanels), 192, 300), Ndef(\osc2), ~outPuts, clock);
-				moduleObjects[2] = osc3 = OscPanel.new(composite, Rect(guiPositions.at(\thirdColumnLeft), guiPositions.at(\firstRowPanels), 192, 300), Ndef(\osc3), ~outPuts, clock);
-				moduleObjects[3] = osc4 = OscPanel.new(composite, Rect(guiPositions.at(\fourthColumnLeft), guiPositions.at(\firstRowPanels), 192, 300), Ndef(\osc4), ~outPuts, clock);
-				moduleObjects[4] = osc5 = OscPanel.new(composite, Rect(guiPositions.at(\fifthColumnLeft), guiPositions.at(\firstRowPanels), 192, 300), Ndef(\osc5), ~outPuts, clock);
-				moduleObjects[5] = del1 = DelayPanel.new(composite, 10, guiPositions.at(\secondRowPanels), Ndef(\del1), ~outPuts);
-				moduleObjects[6] = mult1 = MultiPlexPanel.new(composite, Rect(10, guiPositions.at(\secondRowPanels) + 150, 192, 150), Ndef(\mult1), ~outPuts);
-				moduleObjects[7] = adsr1 = ADSRPanel.new(composite, Rect(208, guiPositions.at(\secondRowPanels), 192, 300), Ndef(\adsr1), ~outPuts);
-				moduleObjects[8] = adsr2 = ADSRPanel.new(composite, Rect(406, guiPositions.at(\secondRowPanels), 192, 300), Ndef(\adsr2), ~outPuts);
-				moduleObjects[9] = filt1 = FilterPanel.new(composite, Rect(604,guiPositions.at(\secondRowPanels),192,300), Ndef(\filt1), ~outPuts);
-				moduleObjects[10] = sampler = SamplerPanel.new(composite, 802, guiPositions.at(\secondRowPanels), Ndef(\sampler), ~outPuts);
-				moduleObjects[11] = in1 = InputPanel.new(composite, Rect(1000, 530, 100, 80), Ndef(\in1));
-				moduleObjects[12] = in2 = InputPanel.new(composite, Rect(1000, 625, 100, 80), Ndef(\in2));
+				moduleSockets = 0!13;
+				13.do({|i| moduleSockets[i] = ModuleSocket.new(composite, guiBounds[i])});
+				[[OscPanel, \osc1], [OscPanel, \osc2], [OscPanel, \osc3], [OscPanel, \osc4], [OscPanel, \osc5], [DelayPanel, \del1], [MultiPlexPanel, \mult1], [ADSRPanel, \adsr1], [ADSRPanel, \adsr2], [FilterPanel, \filt1], [SamplerPanel, \sampler], [InputPanel, \in1], [InputPanel, \in2]].do({|item, index|
+					moduleSockets[index].loadPanel(item[0], item[1]);
+				});
+
 				midipanel = MIDIPanel.new(composite, 10, guiPositions.at(\thirdRowPanels));
 				patterns = 0!3;
 				patterns[0] = PatternPanel.new(composite, 208, guiPositions.at(\thirdRowPanels), Ndef(\pattern1), this);
@@ -233,7 +240,7 @@ www.adamadhiyatma.com \n agargara.bandcamp.com");
 				patterns[2] = PatternPanel.new(composite, 736, guiPositions.at(\thirdRowPanels), Ndef(\pattern3), this);
 				~moduleList =  //this is how all the input selectors know what their menu items are, and more
 				[\none] ++
-				moduleObjects.collect({|item| item.nDef.key}) ++
+				moduleSockets.collect({|item| item.nDef.key}) ++
 				[\pattern1, \pattern2, \pattern3, \noteBus];
 				~updateInputSelectors.test_(true).signal; //now that ~moduleList is fully populated, signal all input selector to update their lists.
 				//controls at the top of the window
@@ -288,7 +295,8 @@ www.adamadhiyatma.com \n agargara.bandcamp.com");
 				midiLockButton.action_({|button| ~midiLock = button.value}).toolTip_("When this button is set to 'MIDI Locked', loading presets will not load their associated midi mappings. \n Otherwise, mappings will follow the ones that were saved in the preset. \n Useful for live performances.");
 		}.defer;
 			0.5.wait;
-		[osc1, osc2, osc3, osc4, osc5, del1, mult1, adsr1, filt1, out1, out2, out3, out4].do{|item| item.rebuild;};
+		//rebuild all ndefs
+		moduleSockets.do({|item| item.rebuild});
 			0.05.wait;
 		}.fork;
 
@@ -300,36 +308,39 @@ www.adamadhiyatma.com \n agargara.bandcamp.com");
 	}
 
 	updateFocus { //check every panel to see if it has focus. if it is, change the label to reflect focus
-		{
+	{
 			0.005.wait;
 			{
-		moduleObjects.do({|item|
-					if (item.composite.hasFocus, {
-						var size1, size2;
-						//item.label.stringColor_(Color.new255(255, 255, 255, 250));
-						//item.label.font_(Font("Courier", 22));
-						item.label2.stringColor_(Color.new255(255,190,95, 210));
-						size2 = item.label2.font.size;
-						item.label2.font_(Font("Arial", size2, true));
-						item.tryPerform(\label3) !? {|item|
-							item.font_(Font("Arial", 130, true)).stringColor_(Color.new255(250,240, 40, 170));
-						};
-						item.composite.background = item.composite.background.alpha_(0.9);
-						oscSend.sendMsg(("/" ++ item.nDef.key.asString).postln);
-					}, {
-						var size1, size2;
-						//item.label.stringColor_(Color.new255(255,255,255,200));
-						//item.label.font_(Font("Courier", 18));
-						item.label2.stringColor_(Color.new(1,1,1,0.5));
-						size2 = item.label2.font.size;
-						item.label2.font_(Font("Arial", size2, true));
-						item.tryPerform(\label3) !? {|item|
-								item.font_(Font("Arial", 110, true)).stringColor_(Color(1,1,1,0.6));
-						};
-						item.composite.background = item.composite.background.alpha_(0.6);
-					});
-		});
-		}.defer;
+				moduleSockets.do({|socket|
+					var item = socket.panel;
+					if (item.notNil) {
+						if (item.composite.hasFocus, {
+							var size1, size2;
+							//item.label.stringColor_(Color.new255(255, 255, 255, 250));
+							//item.label.font_(Font("Courier", 22));
+							item.label2.stringColor_(Color.new255(255,190,95, 210));
+							size2 = item.label2.font.size;
+							item.label2.font_(Font("Arial", size2, true));
+							item.tryPerform(\label3) !? {|item|
+								item.font_(Font("Arial", 130, true)).stringColor_(Color.new255(250,240, 40, 170));
+							};
+							item.composite.background = item.composite.background.alpha_(0.9);
+							oscSend.sendMsg(("/" ++ item.nDef.key.asString).postln);
+							}, {
+								var size1, size2;
+								//item.label.stringColor_(Color.new255(255,255,255,200));
+								//item.label.font_(Font("Courier", 18));
+								item.label2.stringColor_(Color.new(1,1,1,0.5));
+								size2 = item.label2.font.size;
+								item.label2.font_(Font("Arial", size2, true));
+								item.tryPerform(\label3) !? {|item|
+									item.font_(Font("Arial", 110, true)).stringColor_(Color(1,1,1,0.6));
+								};
+								item.composite.background = item.composite.background.alpha_(0.6);
+						});
+					};
+				});
+			}.defer;
 		}.fork;
 
 	}
@@ -422,10 +433,11 @@ www.adamadhiyatma.com \n agargara.bandcamp.com");
 		patterns[0].load(loadList.at(\pattern1));
 		patterns[1].load(loadList.at(\pattern2));
 		patterns[2].load(loadList.at(\pattern3));
-		moduleObjects.do({|item|
+		moduleSockets.do({|item|
 			item.load(loadList.at(item.nDef.key) ?? {nil});
 		});
-		[clock, osc1, osc2, osc3, osc4, osc5, del1, mult1, adsr1, filt1, sampler, out1, out2, out3, out4].do{|item| item.rebuild;};
+		moduleSockets.do({|item| item.rebuild;});
+		~outPuts.do({|item| item.rebuild;})
 
 
 	}

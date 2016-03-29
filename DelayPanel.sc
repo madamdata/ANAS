@@ -1,17 +1,16 @@
-DelayPanel {
-	var <>parent, <>left, <>top, <>nDef, <>outs, <>composite, <>labelKnob1, <>labelKnob2, <>labelKnob3, <>labelKnob4, <>selectors, <>outputButtons, <>inputList, <>buffer, <>loadList, <label, <label2, <focusList, <focus, standardAction, setInputAction, keyRoutine, whichPanel;
+DelayPanel : ANASPanel {
+	var <>labelKnob1, <>labelKnob2, <>labelKnob3, <>labelKnob4, <>selectors, <>outputButtons, <>buffer, <>loadList;
 	*new {
-		arg parent, left, top, nDef, outs;
-		^super.newCopyArgs(parent, left, top, nDef, outs).initDelayPanel(parent, left, top, nDef, outs);
+		arg parent, bounds, nDef, outs;
+		^super.newCopyArgs(parent, bounds, nDef, outs).initDelayPanel;
 	}
 
 	initDelayPanel {
-		arg parent, left, top, nDef, outs;
+		this.initANASPanel;
 		focus = 0;
 		buffer = Buffer.alloc(Server.local, Server.local.sampleRate * 5, 1);
 		inputList = [\none, \none, \none, \none];
 		nDef.fadeTime = 5;
-		composite = CompositeView.new(parent, Rect(left, top, 192, 150));
 		keyRoutine = Routine{
 			4.do({|i|
 				if (whichPanel != \same, {
@@ -83,8 +82,8 @@ DelayPanel {
 		};
 		composite.canFocus_(true).keyDownAction_(standardAction);
 		composite.background = ~colourList.at(nDef.key.asSymbol);
-		label = StaticText.new(composite, Rect(0, 0, 192, 17));
-		/*label.string = ("" ++ nDef.key.asString.toUpper);
+		/*label = StaticText.new(composite, Rect(0, 0, 192, 17));
+		label.string = ("" ++ nDef.key.asString.toUpper);
 		label.font = Font("courier", 18);
 		label.stringColor = Color.new255(255,255,255,200);
 		label.align = \center;

@@ -7,7 +7,7 @@ PatternPanel {
 	}
 	initPatternPanel {
 		type = \freq;
-		adsr = ~a.adsr1.nDef;
+	    adsr = Ndef(\none);
 		inputList = [\none];
 		receivingInput = 0;
 		inputResponder = InputResponder.new(Ndef((nDef.key.asString++"input").asSymbol), this);

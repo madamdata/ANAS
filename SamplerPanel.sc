@@ -1,14 +1,13 @@
-SamplerPanel {
-	var parent, left, top, <>nDef, outs, <composite, <label, <label2, <>labelKnob1, <>labelKnob2, <>labelKnob3, <>samplePosLabelKnob, <>sampleSlider, <>specs, outputButtons, selectors, <>inputList, samplePath, sampleList, sampleMenu, <>bufs, <>whichSample, <recordButton, <overdubButton, <resetButton, <>fileName, saveField, saveButton, interpolationButton, <>currentBuffer, <>signalArray, <>startTime, <>endTime, <sr, <>loopFrames, oscFunc, oscFunc2,
-	<focusList, <focus, standardAction, setInputAction, keyRoutine, whichPanel;
+SamplerPanel : ANASPanel {
+	var <>labelKnob1, <>labelKnob2, <>labelKnob3, <>samplePosLabelKnob, <>sampleSlider, <>specs, outputButtons, selectors, samplePath, sampleList, sampleMenu, <>bufs, <>whichSample, <recordButton, <overdubButton, <resetButton, <>fileName, saveField, saveButton, interpolationButton, <>currentBuffer, <>signalArray, <>startTime, <>endTime, <sr, <>loopFrames, oscFunc, oscFunc2;
 
 	*new {
-		arg parent, left, top, nDef, outs;
-		^super.newCopyArgs(parent,left,top,nDef,outs).initSamplerPanel(parent,left,top,nDef,outs);
+		arg parent, bounds, nDef, outs;
+		^super.newCopyArgs(parent,bounds,nDef,outs).initSamplerPanel;
 	}
 
 	initSamplerPanel {
-		arg parent, left, top, nDef, outs;
+		this.initANASPanel;
 		//if "Samples" folder does not exist in the recordPath, make one.
 		if (File.exists((AnasGui.recordPath.fullPath +/+ "Samples")), {}, {
 			File.mkdir((AnasGui.recordPath.fullPath +/+ "Samples"))
@@ -28,7 +27,6 @@ SamplerPanel {
 			});
 		});
 		bufs.put(\temp, Buffer.alloc(Server.local, 44100 * 60, 1));
-		composite = CompositeView.new(parent, Rect(left, top, 192, 300));
 		//KEYBOARD CONTROL
 		keyRoutine = Routine{
 			4.do({|i|
@@ -102,8 +100,8 @@ SamplerPanel {
 		composite.canFocus_(true).keyDownAction_(standardAction);
 		//END KEYBOARD CONTROL
 		composite.background = ~colourList.at(nDef.key) ?? {Color.new255(50, 50, 50, 50)};
-		label = StaticText.new(composite, Rect(0, 0, 190, 20));
-		/*label.string = ("" ++ nDef.key.asString.toUpper);
+		/*label = StaticText.new(composite, Rect(0, 0, 190, 20));
+		label.string = ("" ++ nDef.key.asString.toUpper);
 		label.font = Font("courier", 18);
 		label.stringColor = Color.new255(255,255,255,200);
 		label.align = \center;
