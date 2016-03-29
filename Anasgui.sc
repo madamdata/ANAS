@@ -5,6 +5,8 @@ keyboard window control
 volume knobs for everything?
 invert input (?)
 GIT TESTING GIT TESTING
+GIT TESTING 2 GIT TESTING
+git 3 testing git 3 testing
 */
 AnasGui {
 	classvar <>launcher, launchButton, recompileButton, closeButton, configButton, configWindow, reopenButton, pathFields, configText, saveConfigButton, <version, <config, <anasFolder, <anasDir, <>loadPath, <>recordPath, <>netAddress, <>oscMessageSender, isAlwaysOnTop;
