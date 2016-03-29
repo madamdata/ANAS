@@ -43,7 +43,7 @@ AnasGui {
 			});
 		});
 		{0.5.wait; (version ++ " installed").postln;}.fork; //startup blip to indicate ANAS Version
-    launcher = ANASLauncher.new;
+    launcher = ANASLauncher.new; //open Launcher
     // Set always on top or not
     if(config.at(\alwaysOnTop).isNil,{
       isAlwaysOnTop = true;
@@ -54,6 +54,7 @@ AnasGui {
       );
     });
     launcher.launcher.front.alwaysOnTop = isAlwaysOnTop;
+	//end INITCLASS
 	}
 
 	*openLauncher {
@@ -84,13 +85,12 @@ AnasGui {
 
 	initAnasGui {
 		var loadPath, recordPath;
-
 		netAddress = NetAddr.new("localhost", 9090); // send OSC messages to localhost:9090
 		oscMessageSender = OSCdef.newMatching(\messageSender, { arg msg, time;
 			//  netAddress.sendMsg("/renoise/transport/start"); // send sync messages to renoise? @TODO
 		},'/anas/bang');
 		oscSend = NetAddr.new("10.0.3.251", 58100);
-		guiPositions = Dictionary.new; //dictionary for storing gui positions in pixels e.g. first row = 5 pixels from top
+		guiPositions = Dictionary.new; //dictionary for storing gui row and column positions in pixels e.g. first row = 5 pixels from top - makes specifying and editing panel locations easier.
 		loadPath = this.class.loadPath;
 		recordPath = this.class.recordPath;
 		saves = Dictionary.new;
@@ -138,6 +138,7 @@ AnasGui {
 					\fourthColumnLeft, 604,
 					\fifthColumnLeft, 802,
 				]);
+				//create parent window
 				window = Window.new(\anasGui, Rect(250, 200, 1105, 730));
 				window.front;
 				window.alwaysOnTop = isAlwaysOnTop;
@@ -193,7 +194,7 @@ AnasGui {
 					);
 				});
 				composite.mouseDownAction_({this.updateFocus});
-				//header image
+				//Display Header image
 				Platform.case( //image works differently on Linux, or so I've heard. for now, header image only appears in OS X.
 					\osx, {
 						img = Image.open((this.class.anasFolder +/+ "ANASLogo.png").fullPath);
