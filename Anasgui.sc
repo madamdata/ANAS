@@ -19,7 +19,7 @@ AnasGui {
 	}
 
 	*initClass {
-		version = "ANAS v1.0";
+		version = "ANAS v1.0 - Master";
 		this.loadEventTypes;
 		anasFolder = PathName(AnasGui.filenameSymbol.asString.dirname);
 		anasDir = PathName(AnasGui.filenameSymbol.asString.dirname.dirname);
