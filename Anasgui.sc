@@ -4,7 +4,7 @@ finish Sampler panel
 keyboard window control
 volume knobs for everything?
 invert input (?)
-
+GIT TESTING GIT TESTING
 */
 AnasGui {
 	classvar <>launcher, launchButton, recompileButton, closeButton, configButton, configWindow, reopenButton, pathFields, configText, saveConfigButton, <version, <config, <anasFolder, <anasDir, <>loadPath, <>recordPath, <>netAddress, <>oscMessageSender, isAlwaysOnTop;

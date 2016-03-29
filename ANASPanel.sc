@@ -8,7 +8,7 @@ ANASPanel {
 
 	initANASPanel {
 		composite = CompositeView.new(parent, bounds);
-		composite.background = ~colourList.at(nDef.key);
+		composite.background = ~colourList.at(nDef.key) ?? {Color.grey};
 		composite.canFocus_(true);
 		inputList = \none!4;
 		//label1 = StaticText.new(composite, Rect(10, 10, 50, 10));
