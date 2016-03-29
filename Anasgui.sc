@@ -1,6 +1,4 @@
 /* to do
-mapping LFOKnobs
-finish Sampler panel
 keyboard window control
 volume knobs for everything?
 invert input (?)
@@ -18,8 +16,9 @@ AnasGui {
 	}
 
 	*initClass {
-		version = "ANAS v1.0";
-		this.loadEventTypes;
+		version = "ANAS v1.1-change_panels";
+		this.loadEventTypes; //load events for Patterns library control
+		//initialize file structure
 		anasFolder = PathName(AnasGui.filenameSymbol.asString.dirname);
 		anasDir = PathName(AnasGui.filenameSymbol.asString.dirname.dirname);
 		if (File.exists(anasDir.fullPath +/+ "ANASconfig"), {
@@ -43,7 +42,7 @@ AnasGui {
 				File.mkdir(loadPath.fullPath +/+ "folder1");
 			});
 		});
-		{0.5.wait; (version ++ " installed").postln;}.fork;
+		{0.5.wait; (version ++ " installed").postln;}.fork; //startup blip to indicate ANAS Version
     launcher = ANASLauncher.new;
     // Set always on top or not
     if(config.at(\alwaysOnTop).isNil,{
