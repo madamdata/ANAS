@@ -213,11 +213,11 @@ www.adamadhiyatma.com \n agargara.bandcamp.com");
 				moduleObjects[15] = out3 = OutPanel.new(composite, 1000, out2.bottom, Ndef(\out3));
 				moduleObjects[16] = out4 = OutPanel.new(composite, 1000, out3.bottom, Ndef(\out4));
 				~outPuts = [out1, out2, out3, out4];
-				moduleObjects[0] = osc1 = OscPanel.new(composite, 10, guiPositions.at(\firstRowPanels), Ndef(\osc1), ~outPuts, clock);
-				moduleObjects[1] = osc2 = OscPanel.new(composite, 208, guiPositions.at(\firstRowPanels), Ndef(\osc2), ~outPuts, clock);
-				moduleObjects[2] = osc3 = OscPanel.new(composite, 406, guiPositions.at(\firstRowPanels), Ndef(\osc3), ~outPuts, clock);
-				moduleObjects[3] = osc4 = OscPanel.new(composite, 604, guiPositions.at(\firstRowPanels), Ndef(\osc4), ~outPuts, clock);
-				moduleObjects[4] = osc5 = OscPanel.new(composite, 802, guiPositions.at(\firstRowPanels), Ndef(\osc5), ~outPuts, clock);
+				moduleObjects[0] = osc1 = OscPanel.new(composite, Rect(guiPositions.at(\firstColumnLeft), guiPositions.at(\firstRowPanels), 192, 300), Ndef(\osc1), ~outPuts, clock);
+				moduleObjects[1] = osc2 = OscPanel.new(composite, Rect(guiPositions.at(\secondColumnLeft), guiPositions.at(\firstRowPanels), 192, 300), Ndef(\osc2), ~outPuts, clock);
+				moduleObjects[2] = osc3 = OscPanel.new(composite, Rect(guiPositions.at(\thirdColumnLeft), guiPositions.at(\firstRowPanels), 192, 300), Ndef(\osc3), ~outPuts, clock);
+				moduleObjects[3] = osc4 = OscPanel.new(composite, Rect(guiPositions.at(\fourthColumnLeft), guiPositions.at(\firstRowPanels), 192, 300), Ndef(\osc4), ~outPuts, clock);
+				moduleObjects[4] = osc5 = OscPanel.new(composite, Rect(guiPositions.at(\fifthColumnLeft), guiPositions.at(\firstRowPanels), 192, 300), Ndef(\osc5), ~outPuts, clock);
 				moduleObjects[5] = del1 = DelayPanel.new(composite, 10, guiPositions.at(\secondRowPanels), Ndef(\del1), ~outPuts);
 				moduleObjects[6] = mult1 = MultiPlexPanel.new(composite, Rect(10, guiPositions.at(\secondRowPanels) + 150, 192, 150), Ndef(\mult1), ~outPuts);
 				moduleObjects[7] = adsr1 = ADSRPanel.new(composite, Rect(208, guiPositions.at(\secondRowPanels), 192, 300), Ndef(\adsr1), ~outPuts);
@@ -419,23 +419,6 @@ www.adamadhiyatma.com \n agargara.bandcamp.com");
 		var loadList;
 		loadList = saves.at(file.asSymbol);
 		~outPuts.do({|out| out.outList = List.new});
-		/*clock.reSyncAll;
-		osc1.load(loadList.at(\osc1));
-		osc2.load(loadList.at(\osc2));
-		osc3.load(loadList.at(\osc3));
-		osc4.load(loadList.at(\osc4));
-		osc5.load(loadList.at(\osc5));
-		del1.load(loadList.at(\del1));
-		mult1.load(loadList.at(\mult1) ??{nil});
-		adsr1.load(loadList.at(\adsr1)??{nil});
-		adsr2.load(loadList.at(\adsr2)??{nil});
-		filt1.load(loadList.at(\filt1)??{nil});
-		sampler.load(loadList.at(\sampler)??{nil});
-		in1.load(loadList.at(\in1)??{nil});
-		out1.load(loadList.at(\out1) ??{nil});
-		out2.load(loadList.at(\out2)??{nil});
-		out3.load(loadList.at(\out3)??{nil});
-		out4.load(loadList.at(\out4)??{nil});*/
 		patterns[0].load(loadList.at(\pattern1));
 		patterns[1].load(loadList.at(\pattern2));
 		patterns[2].load(loadList.at(\pattern3));
@@ -443,8 +426,7 @@ www.adamadhiyatma.com \n agargara.bandcamp.com");
 			item.load(loadList.at(item.nDef.key) ?? {nil});
 		});
 		[clock, osc1, osc2, osc3, osc4, osc5, del1, mult1, adsr1, filt1, sampler, out1, out2, out3, out4].do{|item| item.rebuild;};
-		//clock.reSyncAll;
-		//[osc1, osc2, osc3, osc4, osc5, del1, mult1, adsr1, filt1, out1, out2, out3, out4].do{|item| item.rebuild;};
+
 
 	}
 

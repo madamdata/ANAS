@@ -1,11 +1,14 @@
-OscPanel {
-	var parent, <>left, <>top, <>nDef, <>outs, <clockPanel, <>composite, <>labelKnob1, <>labelKnob2, <>labelKnob3, <>labelKnob4, <>labelKnob5, <>labelKnob6, <labelKnob7, <labelKnob8, <>selector1, <>selector2, <>outputButtons, <>freqButton, <>oscType, <resetButton, <syncButton, <>lockButton, <>type, <>fadeTime, <>noteArrayField, <>transposeField, <>noteArray, <>transpose, <label, <label2, <label3, <>distort, <>distortSelector, <>lock, <focusList, <focus, <>syncToClock;
+OscPanel : ANASPanel {
+	var <clockPanel, <>labelKnob1, <>labelKnob2, <>labelKnob3, <>labelKnob4, <>labelKnob5, <>labelKnob6, <labelKnob7, <labelKnob8, <>selector1, <>selector2, <>outputButtons, <>freqButton, <>oscType, <resetButton, <syncButton, <>lockButton, <>type, <>fadeTime, <>noteArrayField, <>transposeField, <>noteArray, <>transpose, <>distort, <>distortSelector, <>lock, <>syncToClock;
 	*new {
-		arg parent, left, top, nDef, outs, clockPanel;
-		^super.newCopyArgs(parent, left, top, nDef, outs, clockPanel).initOscPanel;
+		arg parent, bounds, nDef, outs, clockPanel;
+		^super.newCopyArgs(parent, bounds, nDef, outs).initOscPanel(clockPanel);
 	}
 
 	initOscPanel {
+		arg clockPanelArg;
+		clockPanel = clockPanelArg;
+		this.initANASPanel;
 		focus = 0;
 		syncToClock = 0;
 		type = \DSaw;
@@ -13,9 +16,6 @@ OscPanel {
 		noteArray = [0];
 		transpose = 0;
 		distort = 0;
-		composite = CompositeView.new(parent, Rect(left, top, 192, 300));
-		composite.background_(~colourList.at(nDef.key)).focusColor_(Color.red);
-		composite.canFocus_(true);
 		composite.keyDownAction_({|v,c,m,u,k|
 			var keys = [m, k];
 			switch(keys,

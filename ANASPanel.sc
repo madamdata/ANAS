@@ -44,5 +44,11 @@ ANASPanel {
 
 	}
 
+	close {
+		composite.close;
+		nDef.free;
+
+	}
+
 
 }
