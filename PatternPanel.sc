@@ -134,7 +134,7 @@ Input: This panel will accept a signal input and output its next value when the 
 					\ADSR, {nDef.set(\input, 1);
 						{(valPat.next*currentDur).wait;nDef.set(\input, 0)}.fork(anasGui.clock.clock);
 					}
-				);
+				);≤≥≥
 				condition.test = true;
 				condition.signal;
 				condition.test = false;
@@ -168,7 +168,7 @@ Input: This panel will accept a signal input and output its next value when the 
 			\type, type,
 			\adsrSelector, adsrSelector.value,
 			\adsr, adsr.asCompileString,
-			\inputList, inputList,
+			\inputList, inputList,≥
 			\inputSelector, inputSelector.value,
 		]);
 		^saveList;

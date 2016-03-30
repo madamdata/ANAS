@@ -85,6 +85,8 @@ AnasGui {
 
 	initAnasGui {
 		var loadPath, recordPath;
+		//global variable for storing all inputSelectors
+		~allInputSelectors = List.new;
 		netAddress = NetAddr.new("localhost", 9090); // send OSC messages to localhost:9090
 		oscMessageSender = OSCdef.newMatching(\messageSender, { arg msg, time;
 			//  netAddress.sendMsg("/renoise/transport/start"); // send sync messages to renoise? @TODO
@@ -228,7 +230,7 @@ www.adamadhiyatma.com \n agargara.bandcamp.com");
 				out4 = OutPanel.new(composite, 1000, out3.bottom, Ndef(\out4));
 				~outPuts = [out1, out2, out3, out4];
 				moduleSockets = 0!13;
-				13.do({|i| moduleSockets[i] = ModuleSocket.new(composite, guiBounds[i])});
+				13.do({|i| moduleSockets[i] = ModuleSocket.new(composite, guiBounds[i], this)});
 				[[OscPanel, \osc1], [OscPanel, \osc2], [OscPanel, \osc3], [OscPanel, \osc4], [OscPanel, \osc5], [DelayPanel, \del1], [MultiPlexPanel, \mult1], [ADSRPanel, \adsr1], [ADSRPanel, \adsr2], [FilterPanel, \filt1], [SamplerPanel, \sampler], [InputPanel, \in1], [InputPanel, \in2]].do({|item, index|
 					moduleSockets[index].loadPanel(item[0], item[1]);
 				});
@@ -238,11 +240,7 @@ www.adamadhiyatma.com \n agargara.bandcamp.com");
 				patterns[0] = PatternPanel.new(composite, 208, guiPositions.at(\thirdRowPanels), Ndef(\pattern1), this);
 				patterns[1] = PatternPanel.new(composite, 472, guiPositions.at(\thirdRowPanels), Ndef(\pattern2), this);
 				patterns[2] = PatternPanel.new(composite, 736, guiPositions.at(\thirdRowPanels), Ndef(\pattern3), this);
-				~moduleList =  //this is how all the input selectors know what their menu items are, and more
-				[\none] ++
-				moduleSockets.collect({|item| item.nDef.key}) ++
-				[\pattern1, \pattern2, \pattern3, \noteBus];
-				~updateInputSelectors.test_(true).signal; //now that ~moduleList is fully populated, signal all input selector to update their lists.
+				this.updateModuleList;
 				//controls at the top of the window
 				fileNameField = TextField.new(composite, Rect(guiPositions.at(\fifthColumnLeft), guiPositions.at(\topRowTop), 110, guiPositions.at(\topRowHeight)));
 				fileNameField.background_(Color.new255(100, 80, 80, 100)).stringColor_(Color.white);
@@ -305,6 +303,19 @@ www.adamadhiyatma.com \n agargara.bandcamp.com");
 	updateMenuEntries {
 		menuEntries = whichFolder.files.collect({|item| item.fileName});
 		{loadMenu.items = menuEntries}.defer;
+	}
+
+	updateModuleList {
+		~moduleList =  //this is how all the input selectors know what their menu items are, and more
+		[\none] ++
+		moduleSockets.collect({|item| item.nDef.key}).flatten ++   //flatten in anticipation of future updates where module sockets may contain multiple panels and return an array of keys rather than just one.
+		[\out1, \out2, \out3, \out4] ++
+		[\pattern1, \pattern2, \pattern3, \noteBus];
+		{~allInputSelectors.do({|item|
+			item.selector.items = ~moduleList;
+			item.update;
+		})}.defer;
+
 	}
 
 	updateFocus { //check every panel to see if it has focus. if it is, change the label to reflect focus
@@ -398,19 +409,6 @@ www.adamadhiyatma.com \n agargara.bandcamp.com");
 	save {
 		saveList = Dictionary.new;
 		saveList.putPairs([
-			\modules, ~moduleList,
-			\osc1, osc1.save,
-			\osc2, osc2.save,
-			\osc3, osc3.save,
-			\osc4, osc4.save,
-			\osc5, osc5.save,
-			\del1, del1.save,
-			\mult1, mult1.save,
-			\adsr1, adsr1.save,
-			\adsr2, adsr2.save,
-			\filt1, filt1.save,
-			\sampler, sampler.save,
-			\in1, in1.save,
 			\out1, out1.save,
 			\out2, out2.save,
 			\out3, out3.save,
@@ -419,8 +417,12 @@ www.adamadhiyatma.com \n agargara.bandcamp.com");
 			\pattern2, patterns[1].save,
 			\pattern3, patterns[2].save,
 		]);
-		saves.put(fileName.asSymbol, saveList);
-		savePath = PathName.new(whichFolder.fullPath ++ fileName);
+		moduleSockets.do({|item, index|
+			saveList.put(index.asSymbol, item.save);
+		});
+		//saveList.put(\modules, moduleSockets.collect({|item| item.module.asString}));
+		saves.put(fileName.asSymbol, saveList); //add the list straight into the pre-loaded saves dictionary
+		savePath = PathName.new(whichFolder.fullPath ++ fileName); //name and write the file
 		saveList.writeArchive(savePath.fullPath);
 		this.updateMenuEntries;
 	}
@@ -433,14 +435,12 @@ www.adamadhiyatma.com \n agargara.bandcamp.com");
 		patterns[0].load(loadList.at(\pattern1));
 		patterns[1].load(loadList.at(\pattern2));
 		patterns[2].load(loadList.at(\pattern3));
-		moduleSockets.do({|item|
-			item.load(loadList.at(item.nDef.key) ?? {nil});
+		moduleSockets.do({|item, index|
+			item.load(loadList.at(index.asSymbol) ?? {nil});
 		});
+		this.updateModuleList;
 		moduleSockets.do({|item| item.rebuild;});
-		~outPuts.do({|item| item.rebuild;})
-
-
+		~outPuts.do({|item| item.rebuild;});
 	}
-
 
 }

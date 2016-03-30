@@ -347,13 +347,19 @@ Ctrl-shift-click to remove automation.");
 			this.mapToKnob(loadList.at(\msgNum));
 		});
 		});
-		{ //update GUI
-			knob1.value = loadList.at(\knob) ?? {default};
-			selectors.do({|item, index|
-				item.value_(loadList.at(("selector"++(index+1)).asSymbol) ?? {0});
-				item.selector.background = (~colourList.at(item.selector.item.asSymbol) ?? {~colourList.at(\none)}).blend(Color.grey, 0.3);
-			});
-		}.defer;
+		//update GUI
+		{knob1.value = loadList.at(\knob) ?? {default};}.defer;
+		selectors.do({|item, index|
+			var selectorSymbol = ("selector" ++ (index+1)).asSymbol;
+			var loadValue = loadList.at(selectorSymbol);
+			var selectorItem = ~moduleList.at(loadValue);
+			{
+				item.value_(loadValue);
+				item.selector.background = (~colourList.at(selectorItem) ?? {~colourList.at(\none)}).blend(Color.grey, 0.3);
+			}.defer;
+				//~a.saves.at(\kord).at(\7)[\atk][\selector]
+				//~a.moduleSockets[7].panel.labelKnob1.selectors[0].value
+		});
 
 	}
 }
@@ -562,7 +568,7 @@ LFOKnob {
 		{
 			typeSelector.value_(loadList.at(\typeSelector) ?? {0});
 			inSelector.value_(loadList.at(\inSelector) ?? {0});
-			inSelector.selector.background = (~colourList.at(inSelector.selector.item.asSymbol) ?? {Color.new255(200, 200, 200, 200)}).blend(Color.grey, 0.5)
+			//inSelector.selector.background = (~colourList.at(inSelector.selector.item.asSymbol) ?? {Color.new255(200, 200, 200, 200)}).blend(Color.grey, 0.5)
 		}.defer;
 
 		if (~midiLock == 0, {//don't load MIDI mappings if midilock is on.
@@ -579,7 +585,7 @@ LFOKnob {
 
 
 InputSelector {
-	var parent, left, top, scale, <modListNumber, <>selector, <function;
+	var parent, left, top, scale, <modListNumber, <>selector, <function, <selectorValue;
 	*new {
 		arg parent, left, top, scale = 1, modListNumber = 0;
 		^super.newCopyArgs(parent,left,top,scale, modListNumber).initInputSelector(parent, left, top, scale, modListNumber);
@@ -587,6 +593,7 @@ InputSelector {
 
 	initInputSelector {
 		selector = PopUpMenu.new(parent, Rect(left, top, 45*scale, 15*scale));
+		selectorValue = 0;
 		selector.font = Font("Helvetica", 8.3*scale, true);
 		//selector.canFocus_(true);
 		selector.stringColor = Color.new255(220, 220, 250, 240);
@@ -597,6 +604,7 @@ InputSelector {
 			~updateInputSelectors.wait;
 			{selector.items = ~moduleList.collect({|item| item.asString})}.defer;
 		}).play;
+		~allInputSelectors.add(this);
 	}
 
 	action_ {
@@ -622,13 +630,18 @@ InputSelector {
 
 	value_ {
 		arg val;
-		^selector.value = val;
+		selector.value = val;
+		selectorValue = val;
 	}
 
 	valueAction_{
 		arg input;
 		selector.valueAction = input;
 
+	}
+
+	update {
+		selector.value = selectorValue ?? {0};
 	}
 }
 
@@ -647,7 +660,7 @@ FadeField {
 			});
 		});
 		field.mouseDownAction_({|item| item.string = ""});
-		field.background = ~colourList.at(nDef.key).blend(Color.grey, 0.5);
+		field.background = (~colourList.at(nDef.key) ?? {Color.new(0.7, 0.5, 0.5, 0.8)}).blend(Color.grey, 0.5);
 		field.string_("fade").stringColor_(Color.white);
 		field.font_(Font("Helvetica", fontSize));
 

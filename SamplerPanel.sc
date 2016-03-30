@@ -320,8 +320,10 @@ SamplerPanel : ANASPanel {
 		{
 			if (loadList.at(\selectors).notNil, {
 				selectors.do({|item, index|
-					item.selector.value = loadList.at(\selectors)[index];
-					item.selector.background = (~colourList.at(item.selector.item.asSymbol) ?? {~colourList.at(\none)}).blend(Color.grey, 0.5);
+					var loadValue = loadList.at(\selectors)[index];
+					var selectorItem = ~moduleList.at(loadValue);
+					item.value = loadList.at(\selectors)[index].postln;
+					item.selector.background = (~colourList.at(selectorItem) ?? {~colourList.at(\none)}).blend(Color.grey, 0.3);
 				});
 			});
 			sampleMenu.value_(loadList.at(\sampleMenu) ?? {0});

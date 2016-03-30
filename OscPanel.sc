@@ -130,7 +130,7 @@ To fade output sends in, use the fadetime field on the output panel instead.");
 		});
 		oscType.toolTip_("Use this menu to select the oscillator type.");
 		oscType.allowsReselection = true;
-		oscType.background = ~colourList.at(nDef.key).blend(Color.grey, 0.4);
+		oscType.background = (~colourList.at(nDef.key) ?? {Color.new(0.7, 0.5, 0.5, 0.8)}).blend(Color.grey, 0.4);
 		distortSelector = PopUpMenu.new(composite, Rect(109, 280, 81, 17));
 		distortSelector.background = Color.new255(217, 51, 90, 155).blend(Color.grey, 0.8);
 		distortSelector.items_(["no dist", "tanh", "clip2", "distort", "fold2"]);
@@ -231,7 +231,7 @@ To fade output sends in, use the fadetime field on the output panel instead.");
 
 	sync {
 		syncToClock = 1;
-		clockPanel.clock.schedAbs(clockPanel.clock.nextTimeOnGrid, {
+		~a.clock.clock.schedAbs(~a.clock.clock.nextTimeOnGrid, {
 			nDef.set(\sync, 1);
 			nDef.set(\t_reset, 1);
 		});
@@ -284,7 +284,7 @@ To fade output sends in, use the fadetime field on the output panel instead.");
 			\noteArray, noteArray,
 			\noteArrayField, noteArrayField.value,
 			\transpose, transpose,
-			\transposeField, transposeField.value.postln,
+			\transposeField, transposeField.value,
 			\distort, distort,
 			\distortSelector, distortSelector.value,
 		]);
