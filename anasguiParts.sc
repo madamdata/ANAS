@@ -351,7 +351,7 @@ Ctrl-shift-click to remove automation.");
 		{knob1.value = loadList.at(\knob) ?? {default};}.defer;
 		selectors.do({|item, index|
 			var selectorSymbol = ("selector" ++ (index+1)).asSymbol;
-			var loadValue = loadList.at(selectorSymbol);
+			var loadValue = loadList.at(selectorSymbol) ?? {default};
 			var selectorItem = ~moduleList.at(loadValue);
 			{
 				item.value_(loadValue);
@@ -360,7 +360,6 @@ Ctrl-shift-click to remove automation.");
 				//~a.saves.at(\kord).at(\7)[\atk][\selector]
 				//~a.moduleSockets[7].panel.labelKnob1.selectors[0].value
 		});
-
 	}
 }
 

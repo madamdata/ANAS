@@ -431,7 +431,11 @@ www.adamadhiyatma.com \n agargara.bandcamp.com");
 		arg file;
 		var loadList;
 		loadList = saves.at(file.asSymbol);
-		~outPuts.do({|out| out.outList = List.new});
+		~outPuts.do({|out, index|
+			var outSymbol = ("out"++(index+1)).asSymbol.postln;
+			out.outList = List.new;
+			out.load(loadList.at(outSymbol));
+		});
 		patterns[0].load(loadList.at(\pattern1));
 		patterns[1].load(loadList.at(\pattern2));
 		patterns[2].load(loadList.at(\pattern3));
@@ -441,6 +445,7 @@ www.adamadhiyatma.com \n agargara.bandcamp.com");
 		this.updateModuleList;
 		moduleSockets.do({|item| item.rebuild;});
 		~outPuts.do({|item| item.rebuild;});
+		//~a.saves.at(\filtFeedback).at(\out2).at(\volume)
 	}
 
 }
