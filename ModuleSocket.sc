@@ -32,6 +32,7 @@ ModuleSocket {
 	loadPanel {
 		arg whatKind, nDefName;
 		module = whatKind; //store the module type in variable 'module'
+		Ndef(nDefName).mold(1, \audio);
 		if (panel.notNil) {panel.composite.close; panel.nDef.free};
 			panel = whatKind.new(composite, Rect(0, 0, composite.bounds.width, composite.bounds.height), Ndef(nDefName), ~outPuts);
 		panelField.front;

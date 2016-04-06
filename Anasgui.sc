@@ -168,9 +168,13 @@ AnasGui {
 					\osc3, Color.new255(217,94,90, 140),
 					\osc4, Color.new255(110,75,242, 140),
 					\osc5, Color.new255(18,50,155, 140),
+					\osc6, Color.new255(120, 40, 200, 150),
 					\adsr1, Color.new255(70, 60, 50, 140),
 					\adsr2, Color.new255(10, 10, 50, 140),
-					\del1, Color.new255(0, 0, 0, 180),
+					\del1, Color.new255(20, 0, 0, 180),
+					\del2, Color.new255(0, 80, 50, 180),
+					\del3, Color.new255(0, 100, 120, 150),
+					\del4, Color.new255(40, 130, 170, 150),
 					\mult1, Color.new255(232, 215, 196, 160),
 					\filt1, Color.new255(220, 180, 85, 140),
 					\out1, Color.new255(255, 50, 70, 170),
@@ -315,7 +319,7 @@ www.adamadhiyatma.com \n agargara.bandcamp.com");
 			item.selector.items = ~moduleList;
 			item.update;
 		})}.defer;
-
+		//{0.5.wait; {~allInputSelectors.do({|item| item.setColour})}.defer;}.fork;
 	}
 
 	updateFocus { //check every panel to see if it has focus. if it is, change the label to reflect focus
@@ -430,7 +434,7 @@ www.adamadhiyatma.com \n agargara.bandcamp.com");
 	load {
 		arg file;
 		var loadList;
-		loadList = saves.at(file.asSymbol);
+		loadList = saves.at(file.asSymbol); //load dictionary
 		~outPuts.do({|out, index|
 			var outSymbol = ("out"++(index+1)).asSymbol.postln;
 			out.outList = List.new;
@@ -444,6 +448,7 @@ www.adamadhiyatma.com \n agargara.bandcamp.com");
 		});
 		this.updateModuleList;
 		moduleSockets.do({|item| item.rebuild;});
+		patterns.do({|item| item.rebuild});
 		~outPuts.do({|item| item.rebuild;});
 		//~a.saves.at(\filtFeedback).at(\out2).at(\volume)
 	}

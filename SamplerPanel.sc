@@ -42,12 +42,7 @@ SamplerPanel : ANASPanel {
 				[0, 49], {
 					this.rebuild;
 					keyRoutine.reset;
-					{
-						selectors.do({|item, index|
-							item.value_(~moduleList.indexOf(inputList[index]));
-							item.selector.background = (~colourList.at(item.selector.item.asSymbol) ?? {~colourList.at(\none)}).blend(Color.grey, 0.3);
-						});
-					}.defer;
+					{inputBank.update}.defer;
 				},
 				[1048576, 18], {selectors[0].valueAction_(1)},
 				[1048576, 19], {selectors[0].valueAction_(2)},
@@ -61,42 +56,13 @@ SamplerPanel : ANASPanel {
 				[0, 15], {outputButtons[3].flipRebuild},
 				[0, 0], {
 					composite.keyDownAction_(setInputAction);
-					selectors.do({|item| item.selector.background_(Color.red)});
+					{inputBank.setRed}.defer;
 				},
 			);
-			nDef.key.asString.postln;
+			//nDef.key.asString.postln;
 			true;
 		};
-		setInputAction = {|v,c,m,u,k|
-			var keys = [m,k];
-			switch(keys,
-				[0, 49], {
-					this.rebuild;
-					keyRoutine.reset;
-					composite.keyDownAction_(standardAction);
-					{
-						selectors.do({|item, index|
-							item.value_(~moduleList.indexOf(inputList[index]));
-							item.selector.background = (~colourList.at(item.selector.item.asSymbol) ?? {~colourList.at(\none)}).blend(Color.grey, 0.3);
-						});
-					}.defer;
-				},
-				[0, 50], {whichPanel = \same; keyRoutine.next},
-				[0, 12], {whichPanel = \none; keyRoutine.next},
-				[0, 18], {whichPanel = \osc1; keyRoutine.next},
-				[0, 19], {whichPanel = \osc2; keyRoutine.next},
-				[0, 20], {whichPanel = \osc3; keyRoutine.next},
-				[0, 21], {whichPanel = \osc4; keyRoutine.next},
-				[0,23], {whichPanel = \osc5; keyRoutine.next},
-				[131072, 18], {whichPanel = \del1; keyRoutine.next},
-				[131072, 19], {whichPanel = \adsr1; keyRoutine.next},
-				[131072, 20], {whichPanel = \adsr2; keyRoutine.next},
-				[131072, 21], {whichPanel = \filt1; keyRoutine.next},
-				[131072, 23], {whichPanel = \sampler; keyRoutine.next},
-				[131072, 22], {whichPanel = \mult1; keyRoutine.next},
-			);
-			true;
-		};
+
 		composite.canFocus_(true).keyDownAction_(standardAction);
 		//END KEYBOARD CONTROL
 		composite.background = ~colourList.at(nDef.key) ?? {Color.new255(50, 50, 50, 50)};
@@ -112,7 +78,8 @@ SamplerPanel : ANASPanel {
 		label2.stringColor = Color.new(1,1,1,0.4);
 		label2.align = \center;
 		label2.background = Color(0,0,0,0);
-		selectors = 0!4;
+		inputBank = InputBank.new(composite, Rect(0, 20, 192, 30), this);
+		/*selectors = 0!4;
 		4.do({|i|
 			selectors[i] = InputSelector.new(composite, i*48+2, 20)
 		});
@@ -123,7 +90,7 @@ SamplerPanel : ANASPanel {
 				selector.background = (~colourList.at(selector.item.asSymbol) ?? {~colourList.at(\none)}).blend(Color.grey, 0.5);
 				this.rebuild;
 			};
-		});
+		});*/
 		labelKnob1 = LabelKnob.new(composite, 2, 37, "Rate", this, 1, specs.at(\Rate), specs.at(\Rate).unmap(1));
 		labelKnob2 = LabelKnob.new(composite, 49, 37, "Volume", this, 1, specs.at(\Volume));
 		labelKnob3 = LabelKnob.new(composite, 96, 37, "writeMix", this, 1, default: 1);
@@ -293,6 +260,7 @@ SamplerPanel : ANASPanel {
 			\currentBuffer, currentBuffer,
 			\sampleMenu, sampleMenu.value,
 			\inputList, inputList,
+			\inputBank, inputBank.save,
 			\selectors, selectors.collect({|item| item.value}),
 			\outputButton, outputButtons.collect({|item| item.value}),
 			\lVal, sampleSlider.lVal,
@@ -317,15 +285,8 @@ SamplerPanel : ANASPanel {
 		this.setBuf(currentBuffer);
 		this.refresh;
 		inputList = loadList.at(\inputList) ?? {\none!4};
+		inputBank.load(loadList.at(\inputBank));
 		{
-			if (loadList.at(\selectors).notNil, {
-				selectors.do({|item, index|
-					var loadValue = loadList.at(\selectors)[index];
-					var selectorItem = ~moduleList.at(loadValue);
-					item.value = loadList.at(\selectors)[index].postln;
-					item.selector.background = (~colourList.at(selectorItem) ?? {~colourList.at(\none)}).blend(Color.grey, 0.3);
-				});
-			});
 			sampleMenu.value_(loadList.at(\sampleMenu) ?? {0});
 			interpolationButton.value=(loadList.at(\interpolationButton) ?? {0});
 		}.defer;

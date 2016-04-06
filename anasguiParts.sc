@@ -331,7 +331,11 @@ Ctrl-shift-click to remove automation.");
 
 		]);
 		selectors.do({|item, index|
-			saveList.put(("selector" ++ (index+1)).asSymbol, item.value); //annoying but for backward compatibility purposes i have to increment the index by 1, so selectors[0] loads the item at \selector1, etc
+			var saveSymbol = ("selector" ++ (index+1)).asSymbol;
+			var colourSymbol = (saveSymbol ++ "colour").asSymbol;
+			saveList.put(saveSymbol, item.value); //annoying but for backward compatibility purposes i have to increment the index by 1, so selectors[0] loads the item at \selector1, etc
+			saveList.put(colourSymbol, item.selector.background);
+
 		});
 		^saveList;
 	}
@@ -340,10 +344,10 @@ Ctrl-shift-click to remove automation.");
 		arg loadList;
 		loadList = loadList ?? {Dictionary.new};
 		modList = loadList.at(\modList) ?? {[\none, \none, \none]};
-		oscPanel.nDef.set(("knob"++param.asString).asSymbol, (spec.map(loadList.at(\knob) ?? {default})));
+		oscPanel.nDef.set(("knob"++param.asString).asSymbol, (spec.map(loadList.at(\knob) ?? {default}))); //set ndef param
 		if (~midiLock == 0, { //don't load MIDI mapping if midilock is on
 		if(midiFunc.notNil, {this.deMap}); //if there is already a midifunc, free it.\
-		if (loadList.at(\msgNum).notNil, {
+		if (loadList.at(\msgNum).notNil, { //load the midi mapping from the loadlist
 			this.mapToKnob(loadList.at(\msgNum));
 		});
 		});
@@ -351,12 +355,13 @@ Ctrl-shift-click to remove automation.");
 		{knob1.value = loadList.at(\knob) ?? {default};}.defer;
 		selectors.do({|item, index|
 			var selectorSymbol = ("selector" ++ (index+1)).asSymbol;
+			var colourSymbol = (selectorSymbol ++ "colour").asSymbol;
 			var loadValue = loadList.at(selectorSymbol) ?? {default};
-			var selectorItem = ~moduleList.at(loadValue);
-			{
-				item.value_(loadValue);
-				item.selector.background = (~colourList.at(selectorItem) ?? {~colourList.at(\none)}).blend(Color.grey, 0.3);
-			}.defer;
+			item.selectorValue_(loadValue); //can't set value directly because moduleList has to be updated, which will reset the value to 0. selectorValue stores the proper value independent of the gui object, which will be updated with inputSelector.update
+			item.selector.background_(loadList.at(colourSymbol));
+		/*	{
+
+			}.defer;*/
 				//~a.saves.at(\kord).at(\7)[\atk][\selector]
 				//~a.moduleSockets[7].panel.labelKnob1.selectors[0].value
 		});
@@ -584,7 +589,7 @@ LFOKnob {
 
 
 InputSelector {
-	var parent, left, top, scale, <modListNumber, <>selector, <function, <selectorValue;
+	var parent, left, top, scale, <modListNumber, <>selector, <function, <>selectorValue;
 	*new {
 		arg parent, left, top, scale = 1, modListNumber = 0;
 		^super.newCopyArgs(parent,left,top,scale, modListNumber).initInputSelector(parent, left, top, scale, modListNumber);
@@ -620,6 +625,7 @@ InputSelector {
 
 	setColour {
 		selector.background = (~colourList.at(selector.item.asSymbol) ?? {~colourList.at(\none)}).blend(Color.grey, 0.5);
+		//selector.background = Color.red;
 
 	}
 
@@ -642,6 +648,54 @@ InputSelector {
 	update {
 		selector.value = selectorValue ?? {0};
 	}
+}
+
+InputBank {
+	var parent, bounds, panel, composite, selectors;
+	*new { |parent, bounds, panel| ^super.newCopyArgs(parent, bounds, panel).initInputBank;}
+
+	initInputBank {
+		composite = CompositeView.new(parent, bounds);
+		selectors = 0!4;
+		4.do({|i|
+			selectors[i] = InputSelector.new(composite, 3 + (47*i), 0);
+			selectors[i].action_({|selector| panel.inputList[i] = selector.item; panel.rebuild}).selector.background_(~colourList.at(\none));
+
+		});
+	}
+
+	update {
+		panel.inputList.do({|item, index|
+			selectors[index].value = ~moduleList.indexOf(item);
+			selectors[index].setColour;
+		});
+	}
+
+	setRed {
+		selectors.do({|item|
+			item.selector.background_(Color.red);
+		});
+	}
+	save {
+		var saveList = Dictionary.new;
+		selectors.do({|selector, index|
+			saveList.put(index.asSymbol, selector.value);
+			saveList.put(("colour" ++ index).asSymbol, selector.selector.background);
+		});
+		^saveList;
+		//doesn't save inputList. that gets saved in the parent Panel.
+	}
+
+	load {
+		arg loadList;
+		loadList = loadList ?? {Dictionary.new};
+		selectors.do({|selector, index|
+			selector.value_(loadList.at(index.asSymbol));
+			selector.selector.background_(loadList.at(("colour"++index).asSymbol));
+		})
+	}
+
+
 }
 
 FadeField {
