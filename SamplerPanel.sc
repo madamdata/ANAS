@@ -311,7 +311,7 @@ SamplerPanel : ANASPanel {
 }
 
 TrigButton {
-	var parent, bounds, string, oscPanel, colours, <composite, <button, <trigSwitch, <selectors, <inputList;
+	var parent, bounds, string, oscPanel, colours, <composite, <button, <trigSwitch, <selectors, <inputList, <inputs;
 	*new {
 		arg parent, bounds, string, oscPanel, colours;
 		^super.newCopyArgs(parent, bounds, string, oscPanel, colours).initTrigButton;
@@ -320,6 +320,7 @@ TrigButton {
 	initTrigButton {
 		var buttonBounds, trigBounds, selectorBounds, totalHeight;
 		inputList = \none!2;
+		inputs = (Ndef(\none));
 		selectors = 0!2;
 		composite = CompositeView.new(parent, bounds);
 		button = Button.new(composite, Rect(1,0,composite.bounds.width - 2, composite.bounds.height/3));
@@ -333,13 +334,14 @@ TrigButton {
 			selectors[i].selector.background_(~colourList.at(\none));
 		});
 		selectors.do({|item, index|
-			item.selector.action_({|selector| this.setInput(selector.item, index); oscPanel.rebuild;});
+			item.selector.action_({|selector| this.setInput(selector.item, index); item.setColour; oscPanel.rebuild;});
 		});
 	}
 	doAction {}
 	setInput {
 		arg which, index;
 		inputList[index] = which.asSymbol;
+		inputs = inputList.sum({|item| Ndef(item.asSymbol)});
 	}
 
 	save {
@@ -347,7 +349,8 @@ TrigButton {
 		saveList = Dictionary.new;
 		saveList.putPairs([
 			\inputList, inputList,
-			\selectors, selectors.collect({|item| item.value})
+			\selectors, selectors.collect({|item| item.value}),
+			\colours, selectors.collect({|item| item.selector.background});
 		]);
 		^saveList;
 	}
@@ -356,9 +359,11 @@ TrigButton {
 		arg loadList;
 		loadList = loadList ?? {Dictionary.new};
 		inputList = loadList.at(\inputList) ?? [\none, \none];
+		inputs = inputList.sum({|item| Ndef(item.asSymbol)});
 		if(loadList.at(\selectors).notNil, {{
 			selectors.do({|item, index|
-				item.value_(loadList.at(\selectors)[index])
+				item.value_(loadList.at(\selectors)[index]);
+				if (loadList.at(\colours).notNil, {item.selector.background_(loadList.at(\colours)[index])});
 			})
 		}.defer;});
 	}

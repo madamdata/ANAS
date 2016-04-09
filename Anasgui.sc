@@ -16,7 +16,7 @@ AnasGui {
 	}
 
 	*initClass {
-		version = "ANAS v1.1-change_panels";
+		version = "ANAS v1.15-change_panels";
 		this.loadEventTypes; //load events for Patterns library control
 		//initialize file structure
 		anasFolder = PathName(AnasGui.filenameSymbol.asString.dirname);
@@ -228,6 +228,7 @@ www.adamadhiyatma.com \n agargara.bandcamp.com");
 				moduleObjects = 0!13;
 				~updateInputSelectors = Condition.new(false);
 				clock = ClockPanel.new(composite, Rect(1000, guiPositions.at(\topRowTop), 98, guiPositions.at(\topRowHeight)), Ndef(\clock), this);
+				//~clock = clock;
 				out1 = OutPanel.new(composite, 1000, guiPositions.at(\firstRowPanels), Ndef(\out1));
 				out2 = OutPanel.new(composite, 1000, out1.bottom, Ndef(\out2));
 				out3 = OutPanel.new(composite, 1000, out2.bottom, Ndef(\out3));
@@ -235,7 +236,7 @@ www.adamadhiyatma.com \n agargara.bandcamp.com");
 				~outPuts = [out1, out2, out3, out4];
 				moduleSockets = 0!13;
 				13.do({|i| moduleSockets[i] = ModuleSocket.new(composite, guiBounds[i], this)});
-				[[OscPanel, \osc1], [OscPanel, \osc2], [OscPanel, \osc3], [OscPanel, \osc4], [OscPanel, \osc5], [DelayPanel, \del1], [MultiPlexPanel, \mult1], [ADSRPanel, \adsr1], [ADSRPanel, \adsr2], [FilterPanel, \filt1], [SamplerPanel, \sampler], [InputPanel, \in1], [InputPanel, \in2]].do({|item, index|
+				[[OscPanel, \osc1], [OscPanel, \osc2], [OscPanel, \osc3], [OscPanel, \osc4], [DrumPanel, \osc5], [DelayPanel, \del1], [MultiPlexPanel, \mult1], [ADSRPanel, \adsr1], [ADSRPanel, \adsr2], [FilterPanel, \filt1], [SamplerPanel, \sampler], [InputPanel, \in1], [InputPanel, \in2]].do({|item, index|
 					moduleSockets[index].loadPanel(item[0], item[1]);
 				});
 

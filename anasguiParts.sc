@@ -74,7 +74,7 @@ OutputButton {
 }
 
 LabelKnob {
-	var parent, left, top, <>string, oscPanel, scale, <>spec, <>default, <>numSelectors, <composite, <>knob1, <>knob1label, <>action, param, <>selector1, <>selector2, <>selector3, <>selectors, <>saveList, <>modList, <>midiFunc, <>mapped, <keyRoutine, <whichPanel, <automationList, prevTime, <recording, <automationRoutine, startTime, <oscFunc, oscString;
+	var parent, left, top, <>string, oscPanel, scale, <>spec, <>default, <>numSelectors, <composite, <>knob1, <>knob1label, <>action, param, <>selector1, <>selector2, <>selector3, <>selectors, <>saveList, <>modList, <modInputs, <>midiFunc, <>mapped, <keyRoutine, <whichPanel, <automationList, prevTime, <recording, <automationRoutine, startTime, <oscFunc, oscString;
 	*new {
 		arg parent, left, top, string, oscPanel, scale = 1, spec = ControlSpec(0,1), default = 0.5, numSelectors = 3;
 		^super.newCopyArgs(parent, left, top, string, oscPanel, scale, spec, default, numSelectors).initLabelKnob;
@@ -99,6 +99,7 @@ LabelKnob {
 		mapped = 0;
 		param = string.asSymbol;
 		modList = \none!(numSelectors);
+		modInputs = Ndef(\none);
 		composite = CompositeView.new(parent, Rect(left, top, 47*scale, 96*scale));
 		composite.background_(Color.new255(85, 55, 155, 50));
 		knob1label = StaticText.new(composite, Rect(2*scale, 2*scale, 40*scale, 15*scale));
@@ -227,6 +228,8 @@ Ctrl-shift-click to remove automation.");
 			selectors[i].selector.background_(~colourList.at(\none).blend(Color.grey, 0.3));
 			selectors[i].action_({|item|
 				modList[i] = item.item.asSymbol;
+				selectors[i].selectorValue = item.value;
+				modInputs = modList.sum({|item| Ndef(item.asSymbol)});
 				oscPanel.rebuild;
 				//item.background = (~colourList.at(item.item.asSymbol) ?? {~colourList.at(\none)}).blend(Color.grey, 0.3);
 			});
@@ -249,6 +252,13 @@ Ctrl-shift-click to remove automation.");
 			automationList.add([delta, value]);
 			prevTime = when;
 		});
+
+	}
+
+	doActionPlusUpdate {
+		arg value;
+		this.doAction(value);
+		{knob1.value = value}.defer;
 
 	}
 
@@ -344,6 +354,7 @@ Ctrl-shift-click to remove automation.");
 		arg loadList;
 		loadList = loadList ?? {Dictionary.new};
 		modList = loadList.at(\modList) ?? {[\none, \none, \none]};
+		modInputs = modList.sum({|item| Ndef(item.asSymbol)});
 		oscPanel.nDef.set(("knob"++param.asString).asSymbol, (spec.map(loadList.at(\knob) ?? {default}))); //set ndef param
 		if (~midiLock == 0, { //don't load MIDI mapping if midilock is on
 		if(midiFunc.notNil, {this.deMap}); //if there is already a midifunc, free it.\
@@ -886,10 +897,13 @@ ClockPanel {
 
 	reSyncAll {
 		[\osc1, \osc2, \osc3, \osc4, \osc5].do({|item|
-			if(anasGui.perform(item).syncToClock == 1, {anasGui.perform(item).sync});
+			//if(anasGui.perform(item).syncToClock == 1, {anasGui.perform(item).sync});
 		});
 		anasGui.patterns.do({|item|
 			item.sync;
+		});
+		anasGui.moduleSockets.do({|item|
+			if (item.module == DrumPanel, {item.panel.sync})
 		});
 	}
 	rebuild {

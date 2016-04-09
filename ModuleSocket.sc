@@ -21,11 +21,13 @@ ModuleSocket {
 				{whatKind == "mult"} {whatKind = "MultiPlexPanel"}
 				{whatKind == "filt"} {whatKind = "FilterPanel"}
 				{whatKind == "del"} {whatKind = "DelayPanel"}
+				{whatKind == "drum"} {whatKind = "DrumPanel"}
 			);
 			panel.composite.close;
 			this.loadPanelWithUpdate(whatKind.interpret, nDefName.asSymbol)
 		});
 		panelField.front;
+
 
 	}
 
