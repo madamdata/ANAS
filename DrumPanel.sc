@@ -22,8 +22,8 @@ DrumPanel : ANASPanel {
 		label2.align = \center;
 		label2.background = Color(0,0,0,0);
 		labelKnobs = 0!11;
-		labelKnobs[0] = PresetLabelKnob.new(composite, 2, 20, "Pitch", this, 1, [20, 1000, \exp].asSpec, 0.2, 2);
-		labelKnobs[1] = PresetLabelKnob.new(composite, 49, 20, "Dec", this, 1, [0.1, 1.8, \exp].asSpec, 0.75, 2);
+		labelKnobs[0] = PresetLabelKnob.new(composite, 2, 20, "Pitch", this, 1, [40, 1000, \exp].asSpec, 0.2, 2);
+		labelKnobs[1] = PresetLabelKnob.new(composite, 49, 20, "Dec", this, 1, [0.05, 1.8, \exp].asSpec, 0.75, 2);
 		labelKnobs[2] = PresetLabelKnob.new(composite, 96, 20, "Level", this, 1, [0,1].asSpec, 1, 2);
 		labelKnobs[3] = PresetLabelKnob.new(composite, 143, 20, "Mutate", this, 1, [0, 3].asSpec, 0.2, 2);
 		labelKnobs[4] = PresetLabelKnob.new(composite, 2, 96, "pDec", this, 1, [0.001, 1, \exp].asSpec, 0.5, 1);
@@ -35,6 +35,7 @@ DrumPanel : ANASPanel {
 		labelKnobs[10] = PresetLabelKnob.new(composite, 96, 160, "Distort", this, 1, [1,10].asSpec, 0, 1);
 		presets.do({|preset|
 			labelKnobs.do({|knob| preset.putPairs(knob.savePreset)});
+			preset.put(\reverse, 0);
 		});
 		trigButton = DrumTrigButton.new(composite, Rect(143, 170, 47, 60), "trig", this, [Color.grey, Color.grey]);
 		//trigButton.action_({|button| nDef.set(\t_trig, 1)});
@@ -43,13 +44,14 @@ DrumPanel : ANASPanel {
 		reverseButton.action_({|button|
 			reverse = button.value;
 			nDef.set(\reverse, reverse);
+			presets[currentPreset].put(\reverse, reverse);
 		});
 		durPat = Pdefn(((nDef.key) ++ "durPat").asSymbol, Pn(0.3));
 		presetPat = Pdefn(((nDef.key) ++ "presetPat").asSymbol, Pn(0)).asStream;
 		pDef = Pdef(nDef.key,
 			Pbind(
 				\midinote, \rest,
-				\xyz, Pfunc({var which = presetPat.next; this.recallPreset(which); this.blinkPreset(which); nDef.set(\t_trig, 1)}),
+				\xyz, Pfunc({var which = presetPat.next;  this.recallPreset(which); nDef.set(\t_trig, 1); this.blinkPreset(which);}),
 				\dur, durPat,
 			)
 		).play(~a.clock.clock);
@@ -74,7 +76,7 @@ DrumPanel : ANASPanel {
 		});
 		presetField = TextField.new(composite, Rect(3, 238, 187, 20)).background_(Color.new(0.4, 0.3, 0.1, 0.5)).stringColor_(Color.white).value_("0");
 		presetField.action_({|thisField|
-			var presets = thisField.value.tr($ , $/).split.asFloat;
+			var presets = thisField.value.tr($ , $/).split.collect({|item| item.interpret});
 			Pdefn(((nDef.key) ++ "presetPat").asSymbol, Pseq(presets, inf));
 
 		});
@@ -88,37 +90,38 @@ DrumPanel : ANASPanel {
 	rebuild {
 		Ndef(nDef.key, {
 			arg knobPitch = 200, knobLevel = 1, knobDec = 0.2, knobpDec = 0.1, knobCurve = -4, knobpLevel = 1, t_trig = 0, reverse=0, knobNoise = 0.5, knobMutate = 1, knobShape = 0.5, knobFilt = 9000, knobDistort = 1, knobComp = 0.5;
-			var sig, env, pEnv, pitchEnv, noiseEnv, pitchIn, decIn, pDecIn, curveIn, trigIn, shapeIn, filtIn, mutateIn, distortIn, atk = 0.008, pAtk = 0.005, timeDiff, mPitch, mpDec, mDec, mCurve, mNoise, mReverse, noiseIn, noise, nDecIn, nCurve;
+			var sig, env, pEnv, pitchEnv, noiseEnv, pitchIn, decIn, pDecIn, curveIn, trigIn, shapeIn, filtIn, mutateIn, distortIn, atk = 0.008, pAtk = 0.006, timeDiff, mPitch, mpDec, mDec, mCurve, mNoise, mReverse, noiseIn, noise, nDecIn, nCurve;
 			trigIn = t_trig + trigButton.inputs;
 			mutateIn = LinLin.ar(labelKnobs[3].modInputs, -1, 1, 0.1, 1.9);
 			mutateIn = mutateIn * knobMutate;
-			mPitch = LFNoise0.kr(knobMutate * 3.3 * (knobpDec + 0.3), mutateIn*(-0.1), 2);
+			mPitch = LFNoise1.kr(knobMutate * 3.3 * (knobpDec + 0.3)).range(0.9, 1.1);
 			mDec = LFSaw.kr(knobMutate*5.7 * (knobDec + 1), 0.8).range(0.6, mutateIn+0.6);
-			mpDec = LFSaw.kr(knobMutate*2.1, 0.3, mutateIn*0.75, 1);
+			mpDec = LFSaw.kr(knobMutate*2.1, 0.3).range(0.6, 1.4);
 			mCurve = LFSaw.kr(knobMutate*2.3, 0.4, mutateIn, 1);
 			mNoise = LFPar.kr(knobMutate*1.6, 0.23, mutateIn*0.5, 1);
 			mReverse = (Select.kr(TRand.kr(0, 0.8, trigIn) * mutateIn, [1, -1]) * (reverse*2-1)).max(0);
-			pDecIn = LinLin.ar(labelKnobs[4].modInputs, -1, 1, 0.2, 1.8);
-			pDecIn = (knobpDec * mpDec * pDecIn).max(0.005);
 			decIn = LinLin.ar(labelKnobs[1].modInputs, -1, 1, 0.1, 1.9);
 			decIn = (knobDec * mDec * decIn).max(0.004);
+			pDecIn = LinLin.ar(labelKnobs[4].modInputs, -1, 1, 0.1, 1.9);
+			pDecIn = (knobpDec *  mpDec * pDecIn).max(0.004).poll;
 			curveIn = knobCurve * mCurve;
+			timeDiff = A2K.kr(decIn - pDecIn).max(0.005);
+			pitchEnv = Select.ar(mReverse, [
+				EnvGen.ar(Env.new([0,1,0,0], [pAtk, pDecIn, timeDiff]), trigIn, knobpLevel),
+				EnvGen.ar(Env.new([0,0,1,0], [0.01, pDecIn, pAtk]), trigIn, knobpLevel)
+			]);
 			env = Select.ar(mReverse, [
 				EnvGen.ar(Env.perc(atk, decIn, 1, curveIn), trigIn),
-				EnvGen.ar(Env.perc(decIn, atk, 1, (curveIn*(-1))), trigIn)
+				EnvGen.ar(Env.new([0,0,1,0], [0.01, decIn, atk], (curveIn*(-1))), trigIn)
 			]);
-			nDecIn = A2K.kr(knobNoise * 0.15 * decIn);
+			nDecIn = A2K.kr(knobNoise * 0.13 * decIn);
 			noiseEnv = Select.ar(mReverse, [
 				EnvGen.ar(Env.perc(atk, nDecIn, 1, curveIn), trigIn, knobNoise),
 				EnvGen.ar(Env.perc(nDecIn, atk, 1, (curveIn * (-1))), trigIn, knobNoise)
 			]);
-			timeDiff = (decIn - pDecIn).max(0);
-			pitchEnv = Select.ar(mReverse, [
-				EnvGen.ar(Env.new([0,1,0,0], [pAtk, pDecIn, timeDiff]), trigIn, knobpLevel),
-				EnvGen.ar(Env.new([0,0,1,0], [timeDiff, pDecIn, pAtk]), trigIn, knobpLevel)
-			]);
+
 			pitchIn = LinExp.ar(labelKnobs[0].modInputs, -1, 1, 0.1, 2.5);
-			pitchIn = (knobPitch * (pitchEnv + 1) * pitchIn).max(20).min(20000) * mPitch;
+			pitchIn = (knobPitch * (pitchEnv + 1) * pitchIn).max(50).min(18000) * mPitch;
 			//noiseIn = knobNoise * 0.5 * mNoise;
 			noise = HPF.ar(WhiteNoise.ar(0.3), 400, 1.4);
 			noise = noise * noiseEnv;
@@ -151,6 +154,7 @@ DrumPanel : ANASPanel {
 		~a.clock.clock.schedAbs(~a.clock.clock.nextTimeOnGrid, {
 			pDef.reset;
 			durPat.reset;
+			presetPat.reset;
 		});
 
 	}
@@ -163,15 +167,16 @@ DrumPanel : ANASPanel {
 			1, {labelKnobs.do({|item| item.doActionWithoutSave(presetList[item.string.asSymbol])})}
 		);
 		reverse = presetList[\reverse];
-		{reverseButton.value_(reverse)}.defer;
+		nDef.set(\reverse, reverse);
+		//{reverseButton.value_(reverse)}.defer;
 	}
 
 	recallPresetWithUpdateNoChange {
 		arg which;
 		var presetList = presets[which];
 		labelKnobs.do({|item| {item.knob1.value_(presetList[item.string.asSymbol])}.defer});
-		reverse = presetList[\reverse];
-		{reverseButton.value_(reverse)}.defer;
+		//reverse = presetList[\reverse];
+		{reverseButton.value_(presetList[\reverse])}.defer;
 
 	}
 
@@ -219,7 +224,7 @@ DrumPanel : ANASPanel {
 		{
 			patternField.value = loadList[\patternField];
 			presetField.value = loadList[\presetField];
-			multField.value = loadList[\mult];
+			multField.value = loadList[\multField];
 		}.defer;
 		this.updateReverse;
 		this.rebuild;

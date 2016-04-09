@@ -451,6 +451,7 @@ www.adamadhiyatma.com \n agargara.bandcamp.com");
 		moduleSockets.do({|item| item.rebuild;});
 		patterns.do({|item| item.rebuild});
 		~outPuts.do({|item| item.rebuild;});
+		clock.reSyncAll;
 		//~a.saves.at(\filtFeedback).at(\out2).at(\volume)
 	}
 
