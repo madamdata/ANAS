@@ -1,5 +1,5 @@
 DrumPanel : ANASPanel {
-	var <labelKnobs, <outputButtons, <trigButton, reverseButton, reverse, buf, patternField, pDef, durPat, multField, presetButtons, <presets, presetPat, editMode, editButton, <currentPreset, presetField;
+	var <labelKnobs, <outputButtons, <trigButton, reverseButton, reverse, buf, patternField, pDef, durPat, multField, presetButtons, <presets, presetPat, editMode, editButton, <currentPreset, presetField, presetOverlays;
 
 	*new {
 		arg parent, bounds, nDef, outs;
@@ -15,6 +15,7 @@ DrumPanel : ANASPanel {
 		currentPreset = 0;
 		editMode = 1;
 		presetButtons = 0!4;
+		presetOverlays = 0!4;
 		label2 = StaticText.new(composite, Rect(0, 0, 190, 20));
 		label2.string = nDef.key.asString;
 		label2.font = Font("Helvetica", 22, true);
@@ -59,26 +60,37 @@ DrumPanel : ANASPanel {
 		patternField.action_({|thisField|
 			var durations = thisField.value.tr($ , $/).split.collect({|item| item.interpret});
 			if (multField.value != "0", {Pdefn(((nDef.key) ++ "durPat").asSymbol, Pseq(durations * multField.value.interpret, inf))});
+			presetPat.reset;
+			durPat.reset;
 		});
 		multField = TextField.new(composite, Rect(138, 280, 50, 20)).background_(Color.new(0.4, 0.15, 0.1,
 		0.3)).stringColor_(Color.white).value_(0.25);
 		multField.action_({|thisField|
 			var durations = patternField.value.tr($ , $/).split.asFloat;
 			if (thisField.value != "0", {Pdefn(((nDef.key) ++ "durPat").asSymbol, Pseq(durations * thisField.value.interpret, inf))});
+			presetPat.reset;
+			durPat.reset;
 		});
 		4.do({|i|
+			presetOverlays[i] = CompositeView.new(composite, Rect(20*i + 2, 223, 20, 15)).background_(Color.new255(210,210, 210, 50)).acceptsMouse_(false);
 			presetButtons[i] = Button.new(composite, Rect(20 * i + 2, 223, 20, 15));
-			presetButtons[i].states_([[i.asString, Color.white, Color.new255(140, 100, 30, 140)], [i.asString, Color.white, Color.new255(190, 80, 40, 190)]]);
-			presetButtons[i].action_({
+			presetButtons[i].states_([[i.asString, Color.white, Color.new255(140, 100, 30, 100)], [i.asString, Color.white, Color.new255(190, 80, 40, 180)]]);
+			presetButtons[i].action_({|thisButton|
 				currentPreset = i;
 				this.recallPresetWithUpdateNoChange(i);
+				presetOverlays.do({|overlay, index| if (index == currentPreset, { //change overlay color to reflect currentPreset
+					overlay.background_(Color.new255(230, 230, 10, 200));
+				}, {overlay.background_(Color.new255(210,210,210,100))}
+				)
+				});
 			});
 		});
 		presetField = TextField.new(composite, Rect(3, 238, 187, 20)).background_(Color.new(0.4, 0.3, 0.1, 0.5)).stringColor_(Color.white).value_("0");
 		presetField.action_({|thisField|
 			var presets = thisField.value.tr($ , $/).split.collect({|item| item.interpret});
 			Pdefn(((nDef.key) ++ "presetPat").asSymbol, Pseq(presets, inf));
-
+			presetPat.reset;
+			durPat.reset;
 		});
 		outputButtons = Array.newClear(outs.size);
 		outs.do({|whichOut, index|
@@ -103,7 +115,7 @@ DrumPanel : ANASPanel {
 			decIn = LinLin.ar(labelKnobs[1].modInputs, -1, 1, 0.1, 1.9);
 			decIn = (knobDec * mDec * decIn).max(0.004);
 			pDecIn = LinLin.ar(labelKnobs[4].modInputs, -1, 1, 0.1, 1.9);
-			pDecIn = (knobpDec *  mpDec * pDecIn).max(0.004).poll;
+			pDecIn = (knobpDec *  mpDec * pDecIn).max(0.004);
 			curveIn = knobCurve * mCurve;
 			timeDiff = A2K.kr(decIn - pDecIn).max(0.005);
 			pitchEnv = Select.ar(mReverse, [
@@ -117,7 +129,7 @@ DrumPanel : ANASPanel {
 			nDecIn = A2K.kr(knobNoise * 0.13 * decIn);
 			noiseEnv = Select.ar(mReverse, [
 				EnvGen.ar(Env.perc(atk, nDecIn, 1, curveIn), trigIn, knobNoise),
-				EnvGen.ar(Env.perc(nDecIn, atk, 1, (curveIn * (-1))), trigIn, knobNoise)
+				EnvGen.ar(Env.new([0,0,1,0], [0.01, nDecIn, atk], (curveIn*(-1))), trigIn, knobNoise)
 			]);
 
 			pitchIn = LinExp.ar(labelKnobs[0].modInputs, -1, 1, 0.1, 2.5);
@@ -134,7 +146,7 @@ DrumPanel : ANASPanel {
 			sig = SinOsc.ar(pitchIn);
 			sig = Shaper.ar(buf, (sig*shapeIn*3) )* shapeIn + (sig * (1-shapeIn)) * knobLevel;
 			sig = sig * env + noise;
-			sig = MoogLadder.ar(sig, filtIn, 0.5, 2.2) * 2.3;
+			sig = MoogLadder.ar(sig*1.3, filtIn, 0.5, 2.2) * 2.0;
 			sig = Compander.ar(sig, sig, 0.7, 1, 0.5, 0.008, 0.065, mul:1.3);
 			sig = (sig * distortIn).clip2;
 			//sig = SinOsc.ar(440);
