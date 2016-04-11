@@ -1,5 +1,5 @@
 ANASPanel {
-	var parent, <bounds, <nDef, <outs, <composite, subunits, <label1, <label2, <focusList, <focus, <lock,  <thingsToSave, keyRoutine, standardAction, setInputAction, <whichPanel, <inputList, inputBank;
+	var parent, <bounds, <nDef, <outs, <composite, subunits, <label1, <label2, <focusList, <focus, <lock,  <thingsToSave, keyRoutine, standardAction, setInputAction, <whichPanel, <inputList, <inputBank;
 
 	*new {
 		arg parent, bounds, nDef;
@@ -29,19 +29,21 @@ ANASPanel {
 					composite.keyDownAction_(standardAction);
 					{inputBank.update}.defer;
 				},
-				[0, 50], {whichPanel = \same; keyRoutine.next},
-				[0, 12], {whichPanel = \none; keyRoutine.next},
-				[0, 18], {whichPanel = \osc1; keyRoutine.next},
-				[0, 19], {whichPanel = \osc2; keyRoutine.next},
-				[0, 20], {whichPanel = \osc3; keyRoutine.next},
-				[0, 21], {whichPanel = \osc4; keyRoutine.next},
-				[0,23], {whichPanel = \osc5; keyRoutine.next},
-				[131072, 18], {whichPanel = \del1; keyRoutine.next},
-				[131072, 19], {whichPanel = \adsr1; keyRoutine.next},
-				[131072, 20], {whichPanel = \adsr2; keyRoutine.next},
-				[131072, 21], {whichPanel = \filt1; keyRoutine.next},
-				[131072, 23], {whichPanel = \sampler; keyRoutine.next},
-				[131072, 22], {whichPanel = \mult1; keyRoutine.next},
+				[0,50], {whichPanel = \none; keyRoutine.next},
+				[0,18], {whichPanel = ~moduleList[1]; keyRoutine.next},
+				[0,19], {whichPanel = ~moduleList[2]; keyRoutine.next},
+				[0,20], {whichPanel = ~moduleList[3]; keyRoutine.next},
+				[0,21], {whichPanel = ~moduleList[4]; keyRoutine.next},
+				[0,23], {whichPanel = ~moduleList[5]; keyRoutine.next},
+				[131072, 18], {whichPanel = ~moduleList[6]; keyRoutine.next},
+				[131072, 19], {whichPanel = ~moduleList[7]; keyRoutine.next},
+				[131072, 20], {whichPanel = ~moduleList[8]; keyRoutine.next},
+				[131072, 21], {whichPanel = ~moduleList[9]; keyRoutine.next},
+				[131072, 23], {whichPanel = ~moduleList[10]; keyRoutine.next},
+				[131072, 22], {whichPanel = ~moduleList[11]; keyRoutine.next},
+				[524288, 18], {whichPanel = \pattern1; keyRoutine.next},
+				[524288, 19], {whichPanel = \pattern2; keyRoutine.next},
+				[524288, 20], {whichPanel = \pattern3; keyRoutine.next},
 			);
 			true;
 		};

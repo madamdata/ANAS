@@ -143,22 +143,26 @@ Ctrl-shift-click to remove automation.");
 					{
 						selectors.do({|item, index|
 							item.value_(~moduleList.indexOf(modList[index]));
-							item.selector.background = (~colourList.at(item.selector.item.asSymbol) ?? {~colourList.at(\none)}).blend(Color.grey, 0.3);
+							item.background = (~colourList.at(item.item.asSymbol) ?? {~colourList.at(\none)});
+							item.update;
 						});
 					}.defer;
 				},
-				[0,50], {whichPanel = \same; keyRoutine.next},
-				[0,18], {whichPanel = \osc1; keyRoutine.next},
-				[0,19], {whichPanel = \osc2; keyRoutine.next},
-				[0,20], {whichPanel = \osc3; keyRoutine.next},
-				[0,21], {whichPanel = \osc4; keyRoutine.next},
-				[0,23], {whichPanel = \osc5; keyRoutine.next},
-				[131072, 18], {whichPanel = \del1; keyRoutine.next},
-				[131072, 19], {whichPanel = \adsr1; keyRoutine.next},
-				[131072, 20], {whichPanel = \adsr2; keyRoutine.next},
-				[131072, 21], {whichPanel = \filt1; keyRoutine.next},
-				[131072, 23], {whichPanel = \sampler; keyRoutine.next},
-				[131072, 22], {whichPanel = \mult1; keyRoutine.next},
+				[0,50], {whichPanel = \none; keyRoutine.next},
+				[0,18], {whichPanel = ~moduleList[1]; keyRoutine.next},
+				[0,19], {whichPanel = ~moduleList[2]; keyRoutine.next},
+				[0,20], {whichPanel = ~moduleList[3]; keyRoutine.next},
+				[0,21], {whichPanel = ~moduleList[4]; keyRoutine.next},
+				[0,23], {whichPanel = ~moduleList[5]; keyRoutine.next},
+				[131072, 18], {whichPanel = ~moduleList[6]; keyRoutine.next},
+				[131072, 19], {whichPanel = ~moduleList[7]; keyRoutine.next},
+				[131072, 20], {whichPanel = ~moduleList[8]; keyRoutine.next},
+				[131072, 21], {whichPanel = ~moduleList[9]; keyRoutine.next},
+				[131072, 23], {whichPanel = ~moduleList[10]; keyRoutine.next},
+				[131072, 22], {whichPanel = ~moduleList[11]; keyRoutine.next},
+				[524288, 18], {whichPanel = \pattern1; keyRoutine.next},
+				[524288, 19], {whichPanel = \pattern2; keyRoutine.next},
+				[524288, 20], {whichPanel = \pattern3; keyRoutine.next},
 				[2097152, 126], {knob1.valueAction = (knob1.value + 0.01)},
 				[2097152, 125], {knob1.valueAction = (knob1.value - 0.01)},
 				[2097152, 123], {knob1.valueAction = (knob1.value - 0.122)},
@@ -224,11 +228,10 @@ Ctrl-shift-click to remove automation.");
 
 		selectors = 0!(numSelectors);
 		numSelectors.do({|i|
-			selectors[i] = InputSelector.new(composite, 1*scale, (15*i+48)*scale, scale);
-			selectors[i].selector.background_(~colourList.at(\none).blend(Color.grey, 0.3));
-			selectors[i].action_({|item|
-				modList[i] = item.item.asSymbol;
-				selectors[i].selectorValue = item.value;
+			selectors[i] = Selector.new(composite, Rect(1*scale, (15*i+48)*scale, 47, 13));
+			selectors[i].background_(~colourList.at(\none).blend(Color.grey, 0.3));
+			selectors[i].action_({|thisSelector|
+				modList[i] = thisSelector.item.asSymbol;
 				modInputs = modList.sum({|item| Ndef(item.asSymbol)});
 				oscPanel.rebuild;
 				//item.background = (~colourList.at(item.item.asSymbol) ?? {~colourList.at(\none)}).blend(Color.grey, 0.3);
@@ -315,8 +318,9 @@ Ctrl-shift-click to remove automation.");
 		{knob1.value = default}.defer;
 		modList = \none!(numSelectors);
 		{selectors.do({|item|
-			item.selector.value = 0;
-			item.selector.background = ~colourList.at(\none).blend(Color.grey, 0.4);
+			item.value = 0;
+			item.update;
+			item.background = ~colourList.at(\none).blend(Color.grey, 0.4);
 		})}.defer;
 
 	}
@@ -324,8 +328,8 @@ Ctrl-shift-click to remove automation.");
 	resetSelectors {
 		modList = \none!(numSelectors);
 		{selectors.do({|item|
-			item.selector.value = 0;
-			item.selector.background = ~colourList.at(\none).blend(Color.grey, 0.4);
+			item.value = 0;
+			item.background = ~colourList.at(\none).blend(Color.grey, 0.4);
 		})}.defer;
 
 	}
@@ -344,7 +348,7 @@ Ctrl-shift-click to remove automation.");
 			var saveSymbol = ("selector" ++ (index+1)).asSymbol;
 			var colourSymbol = (saveSymbol ++ "colour").asSymbol;
 			saveList.put(saveSymbol, item.value); //annoying but for backward compatibility purposes i have to increment the index by 1, so selectors[0] loads the item at \selector1, etc
-			saveList.put(colourSymbol, item.selector.background);
+			saveList.put(colourSymbol, item.background);
 
 		});
 		^saveList;
@@ -368,11 +372,9 @@ Ctrl-shift-click to remove automation.");
 			var selectorSymbol = ("selector" ++ (index+1)).asSymbol;
 			var colourSymbol = (selectorSymbol ++ "colour").asSymbol;
 			var loadValue = loadList.at(selectorSymbol) ?? {default};
-			item.selectorValue_(loadValue); //can't set value directly because moduleList has to be updated, which will reset the value to 0. selectorValue stores the proper value independent of the gui object, which will be updated with inputSelector.update
-			item.selector.background_(loadList.at(colourSymbol));
-		/*	{
+			item.value_(loadValue); //can't set value directly because moduleList has to be updated, which will reset the value to 0. selectorValue stores the proper value independent of the gui object, which will be updated with inputSelector.update
+			item.background_(loadList.at(colourSymbol));
 
-			}.defer;*/
 				//~a.saves.at(\kord).at(\7)[\atk][\selector]
 				//~a.moduleSockets[7].panel.labelKnob1.selectors[0].value
 		});
@@ -659,6 +661,11 @@ InputSelector {
 	update {
 		selector.value = selectorValue ?? {0};
 	}
+
+	background_ {
+		arg val;
+		selector.background_(val);
+	}
 }
 
 InputBank {
@@ -669,8 +676,9 @@ InputBank {
 		composite = CompositeView.new(parent, bounds);
 		selectors = 0!4;
 		4.do({|i|
-			selectors[i] = InputSelector.new(composite, 3 + (47*i), 0);
-			selectors[i].action_({|selector| panel.inputList[i] = selector.item; panel.rebuild}).selector.background_(~colourList.at(\none));
+			selectors[i] = Selector.new(composite, Rect(3 + (47*i), 0, 46, 15));
+			selectors[i].action_({|selector| panel.inputList[i] = selector.item; panel.rebuild}).background_(~colourList.at(\none));
+		//	~a.moduleSockets[9].panel.inputBank.update
 
 		});
 	}
@@ -678,20 +686,21 @@ InputBank {
 	update {
 		panel.inputList.do({|item, index|
 			selectors[index].value = ~moduleList.indexOf(item);
+			selectors[index].update;
 			selectors[index].setColour;
 		});
 	}
 
 	setRed {
 		selectors.do({|item|
-			item.selector.background_(Color.red);
+			item.background_(Color.red);
 		});
 	}
 	save {
 		var saveList = Dictionary.new;
 		selectors.do({|selector, index|
 			saveList.put(index.asSymbol, selector.value);
-			saveList.put(("colour" ++ index).asSymbol, selector.selector.background);
+			saveList.put(("colour" ++ index).asSymbol, selector.background);
 		});
 		^saveList;
 		//doesn't save inputList. that gets saved in the parent Panel.
@@ -702,7 +711,7 @@ InputBank {
 		loadList = loadList ?? {Dictionary.new};
 		selectors.do({|selector, index|
 			selector.value_(loadList.at(index.asSymbol));
-			selector.selector.background_(loadList.at(("colour"++index).asSymbol));
+			selector.background_(loadList.at(("colour"++index).asSymbol));
 		})
 	}
 
@@ -915,8 +924,157 @@ ClockPanel {
 		});
 
 	}
+}
+
+Selector {
+	var <parent, <bounds, <composite, <items, <value, <item, <>action, menu, menuBounds, previousColor, <>menuAttached;
+
+	*new {|parent, bounds| ^super.newCopyArgs(parent,bounds).initSelector}
+
+	initSelector {
+		var widthLimit = Window.screenBounds.width - 418;
+		menuAttached = 0;
+		value = 0;
+		menuBounds = [
+			(bounds.left+parent.bounds.left+parent.parent.bounds.left+parent.parent.parent.bounds.left + 46)
+			.min(widthLimit),
+			(bounds.top+parent.bounds.top+parent.parent.bounds.top+parent.parent.parent.bounds.top),
+		];
+		composite = StaticText.new(parent, bounds).align_(\center).stringColor_(Color.new255(240,225,240, 230));
+		composite.string_("none").font_(Font("Helvetica", 11, false));
+		items = List.new;
+		composite.background_(Color.new255(180, 100, 100, 160)).acceptsMouse_(true);
+		composite.mouseDownAction_({|thisView|
+			var menu = SelectorMenu.instances[0];
+		    if (menuAttached == 0, {
+				if (menu.selector.notNil, {menu.detach});
+				previousColor = thisView.background;
+				thisView.background_(Color.new255(235, 170, 40, 245));
+				menu.visible_(true)
+				.selector_(this)
+				.moveTo(menuBounds[0], menuBounds[1]);
+				menuAttached = 1;
+			}, { menu.close;
+				menuAttached = 0;
+			});
+		});
+		~allInputSelectors.add(this);
+	}
+
+	value_ {
+		arg val;
+		value = val;
+		item = items[value];
+	}
+
+	items_ {
+		arg val;
+		items = val;
+		item = items[value];
+		this.update;
+	}
+
+	background {
+		^composite.background;
+	}
+
+	background_ {
+		arg val;
+		composite.background_(val);
+	}
+
+	stringColor {
+		^composite.stringColor;
+	}
+
+	stringColor_ {
+		arg val;
+		composite.stringColor_(val);
+	}
+
+	absoluteBounds {
+		^composite.absoluteBounds;
+	}
+
+	doAction {
+		action.value(this);
+	}
+
+	update {
+		composite.string_(item);
+	}
+
+	setColour {
+		composite.background = (~colourList.at(item.asSymbol) ?? {~colourList.at(\none)});
+	}
+
+	setPreviousColor {
+		composite.background_(previousColor);
+	}
+}
 
 
+SelectorMenu {
+	classvar <instances;
+	var parent, <>selector, window;
+
+	*new {|parent| instances = List.new; ^super.newCopyArgs(parent).initSelectorMenu}
+
+	initSelectorMenu {
+		var bounds;
+		this.class.instances.add(this);
+		bounds= Rect.new(0,0,238,128);
+		window = FlowView.new(parent, bounds, 3@3, 3@3).visible_(false);
+		window.mouseDownAction_({|view|
+			window.visible_(false);
+			selector.setPreviousColor;
+			"hi".postln;
+		});
+		window.background_(Color.new255(235, 170, 40, 245));
+		//window.addFlowLayout(2@2, 2@2);
+		~moduleList.do({|item, index|
+		StaticText.new(window, 44@22)
+			.string_(item.asString)
+			.background_(~colourList.at(item.asSymbol))
+			.stringColor_(Color.white)
+			.align_(\center)
+			.font_(Font("Helvetica", 11, true))
+			.mouseDownAction_({|thisview|
+				selector.value_(index);
+				selector.doAction;
+				selector.update;
+				selector.background_(thisview.background);
+				selector.menuAttached = 0;
+				window.visible_(false);
+				true;
+			});
+		});
+
+	}
+
+	setSelector {
+		arg sel;
+		selector = sel;
+	}
+
+	close {
+		window.visible_(false);
+		selector.setPreviousColor;
+	}
+
+	detach {
+		if (selector.menuAttached == 1, {selector.setPreviousColor});
+	}
+
+	visible_ {
+		arg val;
+		window.visible_(val);
+	}
+
+	moveTo {
+		arg whereX, whereY;
+		window.moveTo(whereX, whereY);
+	}
 
 
 }

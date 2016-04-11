@@ -2,13 +2,28 @@
 keyboard window control
 volume knobs for everything?
 invert input (?)
-GIT TESTING GIT TESTING
-GIT TESTING 2 GIT TESTING
-git 3 testing git 3 testing
 */
 AnasGui {
-	classvar <>launcher, launchButton, recompileButton, closeButton, configButton, configWindow, reopenButton, pathFields, configText, saveConfigButton, <version, <config, <anasFolder, <anasDir, <>loadPath, <>recordPath, <>netAddress, <>oscMessageSender, isAlwaysOnTop;
-	var <>loadPath, <>recordPath, <>window, <clock, <>osc1, <>osc2, <>osc3, <>osc4, <>osc5, <>out1, <>out2, <>out3, <>out4, <>del1, <>mult1, <>adsr1, <>adsr2, <>filt1, <>midipanel, <>sampler, <>in1, <in2, <>patterns, composite, <>saveList, <>savePath, <>whichFolder, <>fileName, fileNameField, saveButton, recordButton, openRecordingsButton, recordFileName, <>recordPanel, <>loadMenu, <>menuEntries, <>folderMenu, <>folderEntries, <>loadPathFolders, <>moduleList, <>saves, img, header, closeButton, <moduleObjects, <moduleSockets, <midiLockButton, <guiPositions, <guiBounds, <oscSend;
+
+	classvar <>launcher, launchButton, recompileButton, closeButton,
+	configButton, configWindow, reopenButton, pathFields,
+	configText, saveConfigButton, <version, <config,
+	<anasFolder, <anasDir, <>loadPath, <>recordPath,
+	<>netAddress, <>oscMessageSender, isAlwaysOnTop;
+
+	var <>loadPath, <>recordPath, <>window, <clock,
+	<>osc1, <>osc2, <>osc3, <>osc4,
+	<>osc5, <>out1, <>out2, <>out3,
+	<>out4, <>del1, <>mult1, <>adsr1,
+	<>adsr2, <>filt1, <>midipanel, <>sampler,
+	<>in1, <in2, <>patterns, composite,
+	<>saveList, <>savePath, <>whichFolder, <>fileName,
+	fileNameField, saveButton, recordButton, openRecordingsButton,
+	recordFileName, <>recordPanel, <>loadMenu, <>menuEntries,
+	<>folderMenu, <>folderEntries, <>loadPathFolders, <>moduleList,
+	<>saves, img, header, closeButton, <moduleObjects,
+	<moduleSockets, <midiLockButton, <guiPositions, <guiBounds,
+	<oscSend, <selectorMenu, <sortedModuleNames;
 
 	*new {^super.new.initAnasGui}
 
@@ -41,6 +56,7 @@ AnasGui {
 			});
 		});
 		// ------------------------------------ !  initialize file structure ---------------------------
+
 		Window.closeAll; //close all windows
 		this.loadEventTypes; //load events for Patterns library control
 		{0.5.wait; (version ++ " installed").postln;}.fork; //startup blip to indicate ANAS Version
@@ -84,17 +100,22 @@ AnasGui {
 		});
 	}
 
+// ----------------------------- INSTANCE METHODS -----------------------------
+
 	initAnasGui {
 		var loadPath, recordPath;
-		////define global variables
+
+		//define global variables
 		~midiLock = 0;
 		~updateInputSelectors = Condition.new(false);
 		~allInputSelectors = List.new;
 
-		////define OSC communications addresses
-		netAddress = NetAddr.new("localhost", 9090); // send OSC messages to localhost:9090
-		oscMessageSender = OSCdef.newMatching(\messageSender, { arg msg, time;
-			//  netAddress.sendMsg("/renoise/transport/start"); // send sync messages to renoise? @TODO
+		//define OSC communications addresses
+		//// send OSC messages to localhost:9090
+		netAddress = NetAddr.new("localhost", 9090);
+		////  netAddress.sendMsg("/renoise/transport/start"); // send sync messages to renoise? @TODO
+		oscMessageSender = OSCdef.newMatching(\messageSender, {
+			arg msg, time;
 		},'/anas/bang');
 		oscSend = NetAddr.new("10.0.3.251", 58100);
 
@@ -106,6 +127,7 @@ AnasGui {
 			//initialize and load all the preset files
 			loadPathFolders = loadPath.folders;
 			whichFolder = loadPath.folders[0];
+
 			//iterate through folders, opening the files and loading the contents into the dictionary "saves"
 			loadPathFolders.do({|item|
 				var temp = List.new;
@@ -183,6 +205,7 @@ AnasGui {
 				\osc4, Color.new255(110,75,242, 140),
 				\osc5, Color.new255(18,50,155, 140),
 				\osc6, Color.new255(120, 40, 200, 150),
+				\drum1, Color.new255(220, 150, 100, 160),
 				\adsr1, Color.new255(70, 60, 50, 140),
 				\adsr2, Color.new255(10, 10, 50, 140),
 				\del1, Color.new255(20, 0, 0, 180),
@@ -213,8 +236,10 @@ AnasGui {
 				window.alwaysOnTop = isAlwaysOnTop;
 				window.background = Color.new255(255, 200, 210, 200);
 				window.onClose = {Ndef.clear};
+
 				//////create composite view to contain panels
 				composite = CompositeView.new(window, Rect(2, 2, 1100, 725));
+
 				////keyboard control - shortcuts to select panels
 				composite.canFocus_(true).keyDownAction_({|v,c,m,u,k|
 					var keys = [m, k];
@@ -240,7 +265,7 @@ AnasGui {
 					);
 				});
 				////// clicking anywhere outside a panel returns focus to the compositeview
-				composite.mouseDownAction_({this.updateFocus});
+				composite.mouseDownAction_({this.updateFocus;});
 
 				//////Display Header image
 				//////image works differently on Linux, or so I've heard. for now, header image only appears in OS X.
@@ -301,23 +326,51 @@ www.adamadhiyatma.com \n agargara.bandcamp.com");
 
 				////tell inputSelectors what the list of modules is.
 				this.updateModuleList;
+				selectorMenu = SelectorMenu.new(composite);
 
 				// ************************************ !! MODULES/PANELS ****************************************
 				// ^^^^^^^^^^^^^^^^^^^^^^^^^^^ Top of Window Controls ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+				////Field for savefile name entry
 				fileNameField = TextField.new(composite, Rect(guiPositions.at(\fifthColumnLeft), guiPositions.at(\topRowTop), 110, guiPositions.at(\topRowHeight)));
 				fileNameField.background_(Color.new255(100, 80, 80, 100)).stringColor_(Color.white);
 				fileNameField.action_({|field| fileName = field.value});
 				fileNameField.toolTip_("Type the name of the preset you wish to save in here and PRESS ENTER before saving.");
-				saveButton = Button.new(composite, Rect(guiPositions.at(\fourthColumnLeft) + 132,  guiPositions.at(\topRowTop), 59, guiPositions.at(\topRowHeight)));
-				saveButton.states_([["Save ->", Color.white, Color.new255(200,135, 185, 180)]]).font_(Font("Helvetica", 13, true));
+
+				////"save preset" button
+				saveButton = Button.new(composite,
+					Rect(
+						guiPositions.at(\fourthColumnLeft) + 132,
+						guiPositions.at(\topRowTop), 59,
+						guiPositions.at(\topRowHeight)
+				));
+				saveButton.states_([["Save ->", Color.white, Color.new255(200,135, 185, 180)]]
+				).font_(Font("Helvetica", 13, true));
 				saveButton.action_({this.save; (fileName.asString ++ " saved").postln;});
-				openRecordingsButton = Button.new(composite, Rect(guiPositions.at(\secondColumnLeft), guiPositions.at(\topRowTop), 92, guiPositions.at(\topRowHeight)));
-				openRecordingsButton.states_([["Rec Folder", Color.white, Color.new255(30, 30, 150, 150)]]).font_(Font("Helvetica", 12, true));
+
+				////"open recordings folder" button
+				openRecordingsButton = Button.new(composite,
+					Rect(
+						guiPositions.at(\secondColumnLeft),
+						guiPositions.at(\topRowTop), 92,
+						guiPositions.at(\topRowHeight)
+				));
+				openRecordingsButton.states_([["Rec Folder",	Color.white,Color.new255(30, 30, 150, 150)]]
+				).font_(Font("Helvetica", 12, true));
 				openRecordingsButton.action_({
 					this.class.recordPath.fullPath.openOS;
 					window.visible = false;
 				});
-				recordButton = Button.new(composite, Rect(guiPositions.at(\secondColumnLeft) + 96, guiPositions.at(\topRowTop), 96, guiPositions.at(\topRowHeight)));
+
+				////"record audio" button
+				recordButton = Button.new(composite,
+					Rect(
+						guiPositions.at(\secondColumnLeft) + 96,
+						guiPositions.at(\topRowTop),
+						96,
+						guiPositions.at(\topRowHeight)
+					)
+				);
 				recordButton.font = Font("Helvetica", 11);
 				recordButton.states_([
 					["record ->", Color.white, Color.new255(155, 35, 35, 150)],
@@ -330,31 +383,70 @@ www.adamadhiyatma.com \n agargara.bandcamp.com");
 						Server.local.record(recordPath.fullPath ++ recordFileName ++ ".wav");
 					}, {Server.local.stopRecording});
 				});
-				recordPanel = TextField.new(composite, Rect(guiPositions.at(\thirdColumnLeft), guiPositions.at(\topRowTop), 100, guiPositions.at(\topRowHeight)));
+
+				////Field for name of recording file
+				recordPanel = TextField.new(composite,
+					Rect(
+						guiPositions.at(\thirdColumnLeft),
+						guiPositions.at(\topRowTop),
+						100,
+						guiPositions.at(\topRowHeight)
+					)
+				);
 				recordPanel.background = Color.new255(80, 80, 80, 150);
 				recordPanel.action_({|panel| recordFileName = panel.value.asString}).stringColor_(Color.white);
 				recordPanel.toolTip_("Type the name of the recording you wish to save here and PRESS ENTER before recording.");
-				folderMenu = PopUpMenu.new(composite, Rect(guiPositions.at(\thirdColumnLeft) + 102, guiPositions.at(\topRowTop), 90, guiPositions.at(\topRowHeight)));
+
+				////Folder Menu
+				folderMenu = PopUpMenu.new(composite,
+					Rect(
+						guiPositions.at(\thirdColumnLeft) + 102,
+						guiPositions.at(\topRowTop),
+						90,
+						guiPositions.at(\topRowHeight)
+					)
+				);
 				folderMenu.items_(folderEntries).background_(Color.new255(150, 135, 135, 180)).toolTip_("Use this menu to select a folder of presets.");
 				folderMenu.action_({|menu|
 					menu.value.postln;
 					whichFolder = loadPathFolders[menu.value];
 					this.updateMenuEntries;
 				});
-				loadMenu = PopUpMenu.new(composite, Rect(guiPositions.at(\fourthColumnLeft), guiPositions.at(\topRowTop), 130, guiPositions.at(\topRowHeight)));
+
+				////Preset Menu
+				loadMenu = PopUpMenu.new(composite,
+					Rect(
+						guiPositions.at(\fourthColumnLeft),
+						guiPositions.at(\topRowTop),
+						130,
+						guiPositions.at(\topRowHeight)
+					)
+				);
 				loadMenu.items_(menuEntries).background_(Color.new255(130, 120, 195, 180).blend(Color.grey, 0.3));
 				loadMenu.action_({|menu|
 					this.load(menuEntries.at(menu.value));
 				});
 				loadMenu.allowsReselection_(true).toolTip_("Use this menu to select and load presets.");
-				midiLockButton = Button.new(composite, Rect(guiPositions.at(\fifthColumnLeft) + 112, guiPositions.at(\topRowTop), 80, guiPositions.at(\topRowHeight)));
+
+				////Midi Lock Button
+				midiLockButton = Button.new(composite,
+					Rect(
+						guiPositions.at(\fifthColumnLeft) + 112,
+						guiPositions.at(\topRowTop),
+						80,
+						guiPositions.at(\topRowHeight)
+					)
+				);
 				midiLockButton.states_([
 					["MIDI unlocked", Color.white, Color.new255(50, 50, 50, 200)],
 					["MIDI locked", Color.white, Color.new255(200, 40, 40, 150)]
 				]).font_(Font("Helvetica", 11, true));
 				midiLockButton.action_({|button| ~midiLock = button.value}).toolTip_("When this button is set to 'MIDI Locked', loading presets will not load their associated midi mappings. \n Otherwise, mappings will follow the ones that were saved in the preset. \n Useful for live performances.");
+
+			////#########################  !! Actual Gui Code - must be deferred  ####################
 			}.defer;
 			0.5.wait;
+
 			//rebuild all ndefs
 			moduleSockets.do({|item| item.rebuild});
 			0.05.wait;
@@ -374,7 +466,10 @@ www.adamadhiyatma.com \n agargara.bandcamp.com");
 		[\out1, \out2, \out3, \out4] ++
 		[\pattern1, \pattern2, \pattern3, \noteBus];
 		{~allInputSelectors.do({|item|
-			item.selector.items = ~moduleList;
+			switch(item.class,
+				InputSelector, {item.selector.items = ~moduleList},
+				Selector, {item.items = ~moduleList},
+			);
 			item.update;
 		})}.defer;
 		//{0.5.wait; {~allInputSelectors.do({|item| item.setColour})}.defer;}.fork;

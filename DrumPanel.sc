@@ -1,5 +1,5 @@
 DrumPanel : ANASPanel {
-	var <labelKnobs, <outputButtons, <trigButton, reverseButton, reverse, buf, patternField, pDef, durPat, multField, presetButtons, <presets, presetPat, editMode, editButton, <currentPreset, presetField, presetOverlays;
+	var <labelKnobs, <outputButtons, <trigButton, reverseButton, reverse, buf, patternField, pDef, durPat, multField, presetButtons, <presets, presetPat, editMode, editButton, <currentPreset, presetField, lagField, lagPat, presetOverlays;
 
 	*new {
 		arg parent, bounds, nDef, outs;
@@ -49,28 +49,59 @@ DrumPanel : ANASPanel {
 		});
 		durPat = Pdefn(((nDef.key) ++ "durPat").asSymbol, Pn(0.3));
 		presetPat = Pdefn(((nDef.key) ++ "presetPat").asSymbol, Pn(0)).asStream;
+		lagPat = Pdefn(((nDef.key) ++ "lagPat").asSymbol, Pn(0)).asStream;
 		pDef = Pdef(nDef.key,
 			Pbind(
 				\midinote, \rest,
-				\xyz, Pfunc({var which = presetPat.next;  this.recallPreset(which); nDef.set(\t_trig, 1); this.blinkPreset(which);}),
-				\dur, durPat,
+				\dur, durPat + lagPat,
+				\xyz, Pfunc({|thisEvent|
+					var which = presetPat.next;  this.recallPreset(which); nDef.set(\t_trig, 1); this.blinkPreset(which);
+				}),
 			)
 		).play(~a.clock.clock);
+
+		//pattern field
 		patternField = TextField.new(composite, Rect(3, 258, 185, 20)).background_(Color.new(0.35, 0.2, 0.12, 0.3)).stringColor_(Color.white).value_(1);
 		patternField.action_({|thisField|
 			var durations = thisField.value.tr($ , $/).split.collect({|item| item.interpret});
 			if (multField.value != "0", {Pdefn(((nDef.key) ++ "durPat").asSymbol, Pseq(durations * multField.value.interpret, inf))});
 			presetPat.reset;
 			durPat.reset;
+			lagPat.reset;
 		});
-		multField = TextField.new(composite, Rect(138, 280, 50, 20)).background_(Color.new(0.4, 0.15, 0.1,
+
+		//mult field
+		multField = TextField.new(composite, Rect(143, 280, 45, 20)).background_(Color.new(0.4, 0.15, 0.1,
 		0.3)).stringColor_(Color.white).value_(0.25);
 		multField.action_({|thisField|
 			var durations = patternField.value.tr($ , $/).split.asFloat;
 			if (thisField.value != "0", {Pdefn(((nDef.key) ++ "durPat").asSymbol, Pseq(durations * thisField.value.interpret, inf))});
 			presetPat.reset;
 			durPat.reset;
+			lagPat.reset;
 		});
+
+		//lag field
+		lagField = TextField.new(composite, Rect(96, 280, 45, 20)).background_(Color.new(0.4, 0.15, 0.1,
+		0.3)).stringColor_(Color.white).value_(0);
+		lagField.action_({|thisField|
+			var durations = thisField.value.tr($ , $/).split.asFloat;
+			Pdefn(((nDef.key) ++ "lagPat").asSymbol, Pseq(durations, inf)).postcs;
+			presetPat.reset;
+			durPat.reset;
+			lagPat.reset;
+		});
+
+		//preset field
+		presetField = TextField.new(composite, Rect(3, 238, 187, 20)).background_(Color.new(0.4, 0.3, 0.1, 0.5)).stringColor_(Color.white).value_("0");
+		presetField.action_({|thisField|
+			var presets = thisField.value.tr($ , $/).split.collect({|item| item.interpret});
+			Pdefn(((nDef.key) ++ "presetPat").asSymbol, Pseq(presets, inf));
+			presetPat.reset;
+			durPat.reset;
+		});
+
+		//preset buttons and overlays
 		4.do({|i|
 			presetOverlays[i] = CompositeView.new(composite, Rect(20*i + 2, 223, 20, 15)).background_(Color.new255(210,210, 210, 50)).acceptsMouse_(false);
 			presetButtons[i] = Button.new(composite, Rect(20 * i + 2, 223, 20, 15));
@@ -79,19 +110,14 @@ DrumPanel : ANASPanel {
 				currentPreset = i;
 				this.recallPresetWithUpdateNoChange(i);
 				presetOverlays.do({|overlay, index| if (index == currentPreset, { //change overlay color to reflect currentPreset
-					overlay.background_(Color.new255(230, 230, 10, 200));
+					overlay.background_(Color.new255(250, 240, 5, 255));
 				}, {overlay.background_(Color.new255(210,210,210,100))}
 				)
 				});
 			});
 		});
-		presetField = TextField.new(composite, Rect(3, 238, 187, 20)).background_(Color.new(0.4, 0.3, 0.1, 0.5)).stringColor_(Color.white).value_("0");
-		presetField.action_({|thisField|
-			var presets = thisField.value.tr($ , $/).split.collect({|item| item.interpret});
-			Pdefn(((nDef.key) ++ "presetPat").asSymbol, Pseq(presets, inf));
-			presetPat.reset;
-			durPat.reset;
-		});
+
+
 		outputButtons = Array.newClear(outs.size);
 		outs.do({|whichOut, index|
 			outputButtons[index] = OutputButton.new(composite, 2+((80/outs.size)*index), 282, (80/outs.size), nDef, whichOut);
