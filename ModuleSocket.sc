@@ -22,6 +22,7 @@ ModuleSocket {
 				{whatKind == "filt"} {whatKind = "FilterPanel"}
 				{whatKind == "del"} {whatKind = "DelayPanel"}
 				{whatKind == "drum"} {whatKind = "DrumPanel"}
+				{whatKind == "comp"} {whatKind = "CompPanel"}
 			);
 			panel.composite.close;
 			this.loadPanelWithUpdate(whatKind.interpret, nDefName.asSymbol)

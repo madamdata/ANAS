@@ -7,12 +7,14 @@ OutputButton {
 
 	initOutputButton {
 		arg parent, left, top, width, in, outPanel;
+		var string;
 		oscPath = ("/" ++ in.key.asString ++ "/" ++ outPanel.nDef.key.asString).asSymbol;
 		isOn = 0;
+		string = (if (width > 15, {outPanel.nDef.key.asString}, {outPanel.nDef.key.asString.drop(3)}));
 		button = Button.new(parent, Rect(left, top, width, 15));
 		button.states_([
-			[outPanel.nDef.key.asString, Color.white.blend(Color.grey, 0.5), ~colourList.at(outPanel.nDef.key).blend(Color.grey, 0.8).blend(Color.black, 0.3)],
-			[outPanel.nDef.key.asString, Color.white, ~colourList.at(outPanel.nDef.key)]]);
+			[string, Color.white.blend(Color.grey, 0.5), ~colourList.at(outPanel.nDef.key).blend(Color.grey, 0.8).blend(Color.black, 0.3)],
+			[string, Color.white, ~colourList.at(outPanel.nDef.key)]]);
 		button.action_({|button|
 			if (button.value == 1, { //update list of oscs to be output, rebuild ndef
 				outPanel.outList.add(in.key.asSymbol);
@@ -100,7 +102,7 @@ LabelKnob {
 		param = string.asSymbol;
 		modList = \none!(numSelectors);
 		modInputs = Ndef(\none);
-		composite = CompositeView.new(parent, Rect(left, top, 47*scale, 96*scale));
+		composite = CompositeView.new(parent, Rect(left, top, 47*scale, (15*numSelectors+47)*scale));
 		composite.background_(Color.new255(85, 55, 155, 50));
 		knob1label = StaticText.new(composite, Rect(2*scale, 2*scale, 40*scale, 15*scale));
 		knob1label.align = \left;
@@ -138,6 +140,7 @@ Ctrl-shift-click to remove automation.");
 			switch(keys,
 				[0,15], {this.reset;oscPanel.rebuild},
 				[0,49], {
+					modInputs = modList.sum({|item| Ndef(item.asSymbol)});
 					oscPanel.rebuild;
 					keyRoutine.reset;
 					{
@@ -317,6 +320,7 @@ Ctrl-shift-click to remove automation.");
 		this.doAction(default);
 		{knob1.value = default}.defer;
 		modList = \none!(numSelectors);
+		modInputs = modList.sum({|item| Ndef(item.asSymbol)});
 		{selectors.do({|item|
 			item.value = 0;
 			item.update;
@@ -676,7 +680,7 @@ InputBank {
 		composite = CompositeView.new(parent, bounds);
 		selectors = 0!4;
 		4.do({|i|
-			selectors[i] = Selector.new(composite, Rect(3 + (47*i), 0, 46, 15));
+			selectors[i] = Selector.new(composite, Rect(2 + (47*i), 0, 46, 15));
 			selectors[i].action_({|selector| panel.inputList[i] = selector.item; panel.rebuild}).background_(~colourList.at(\none));
 		//	~a.moduleSockets[9].panel.inputBank.update
 

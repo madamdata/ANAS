@@ -23,7 +23,7 @@ AnasGui {
 	<>folderMenu, <>folderEntries, <>loadPathFolders, <>moduleList,
 	<>saves, img, header, closeButton, <moduleObjects,
 	<moduleSockets, <midiLockButton, <guiPositions, <guiBounds,
-	<oscSend, <selectorMenu, <sortedModuleNames;
+	<oscSend, <selectorMenu;
 
 	*new {^super.new.initAnasGui}
 
@@ -205,7 +205,9 @@ AnasGui {
 				\osc4, Color.new255(110,75,242, 140),
 				\osc5, Color.new255(18,50,155, 140),
 				\osc6, Color.new255(120, 40, 200, 150),
-				\drum1, Color.new255(220, 150, 100, 160),
+				\drum1, Color.new255(230, 190, 180, 170),
+				\drum2, Color.new255(250, 80, 30, 160),
+				\comp1, Color.new255(240, 170, 150, 165),
 				\adsr1, Color.new255(70, 60, 50, 140),
 				\adsr2, Color.new255(10, 10, 50, 140),
 				\del1, Color.new255(20, 0, 0, 180),
@@ -304,12 +306,12 @@ www.adamadhiyatma.com \n agargara.bandcamp.com");
 					[OscPanel, \osc3],
 					[OscPanel, \osc4],
 					[DrumPanel, \drum1],
-					[DelayPanel, \del1],
-					[MultiPlexPanel, \mult1],
+					[ReverbPanel, \rev1],
+					[CompPanel, \comp1],
 					[ADSRPanel, \adsr1],
 					[ADSRPanel, \adsr2],
 					[FilterPanel, \filt1],
-					[SamplerPanel, \sampler],
+					[DrumPanel, \drum2],
 					[InputPanel, \in1],
 					[InputPanel, \in2]
 				].do({|item, index|
@@ -516,7 +518,7 @@ www.adamadhiyatma.com \n agargara.bandcamp.com");
 	initNdefs {
 		Ndef.clear;
 		Ndef(\dummy, {Silent.ar});
-		Ndef(\none, {DC.ar(0)});
+		Ndef(\none, {DC.ar(0)}).ar;
 		Ndef(\osc1, {
 			arg knobfreq = 0.5, knobamp = 0.5, knobtone = 0, knobpreFilter = 0.5, knobwidth = 0.5, knobdistort = 0, freqMin = 40, freqMax = 12000;
 			var sig, freqIn=Silent.ar, ampIn=Silent.ar, toneIn=Silent.ar, preFilterIn=Silent.ar,widthIn = Silent.ar, distortIn = Silent.ar, knobFreqIn, knobpreFilterIn, knobwidthIn, knobdistortIn;

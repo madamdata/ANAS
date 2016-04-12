@@ -11,11 +11,11 @@ DrumPanel : ANASPanel {
 		buf = Buffer.alloc(Server.local, 512, 1, {|buf| buf.sine1Msg([1,1,1,1,1,1], true, true)});
 		focus = 0;
 		reverse = 0;
-		presets = Dictionary.new!4;
+		presets = Dictionary.new!6;
 		currentPreset = 0;
 		editMode = 1;
-		presetButtons = 0!4;
-		presetOverlays = 0!4;
+		presetButtons = 0!6;
+		presetOverlays = 0!6;
 		label2 = StaticText.new(composite, Rect(0, 0, 190, 20));
 		label2.string = nDef.key.asString;
 		label2.font = Font("Helvetica", 22, true);
@@ -27,20 +27,22 @@ DrumPanel : ANASPanel {
 		labelKnobs[1] = PresetLabelKnob.new(composite, 49, 20, "Dec", this, 1, [0.05, 1.8, \exp].asSpec, 0.75, 2);
 		labelKnobs[2] = PresetLabelKnob.new(composite, 96, 20, "Level", this, 1, [0,1].asSpec, 1, 2);
 		labelKnobs[3] = PresetLabelKnob.new(composite, 143, 20, "Mutate", this, 1, [0, 3].asSpec, 0.2, 2);
-		labelKnobs[4] = PresetLabelKnob.new(composite, 2, 96, "pDec", this, 1, [0.001, 1, \exp].asSpec, 0.5, 1);
-		labelKnobs[5] = PresetLabelKnob.new(composite, 49, 96, "pLevel", this, 1, [0, 8].asSpec, 0.75, 1);
-		labelKnobs[6] = PresetLabelKnob.new(composite, 96, 96, "Noise", this, 1, [0,1].asSpec, 0.4, 1);
-		labelKnobs[7] = PresetLabelKnob.new(composite, 143, 96, "Curve", this, 1, [-8, 8].asSpec, 0.3, 1);
-		labelKnobs[8] = PresetLabelKnob.new(composite, 2, 160, "Shape", this, 1, [0, 0.55].asSpec, default:0.1, numSelectors: 1);
-		labelKnobs[9] = PresetLabelKnob.new(composite, 49, 160, "Filt", this, 1, [150, 12000, \exp].asSpec, 0.8, 1);
-		labelKnobs[10] = PresetLabelKnob.new(composite, 96, 160, "Distort", this, 1, [1,10].asSpec, 0, 1);
+		labelKnobs[4] = PresetLabelKnob.new(composite, 2, 97, "pDec", this, 1, [0.001, 1, \exp].asSpec, 0.5, 1);
+		labelKnobs[5] = PresetLabelKnob.new(composite, 49, 97, "pLevel", this, 1, [0, 8].asSpec, 0.75, 1);
+		labelKnobs[6] = PresetLabelKnob.new(composite, 96, 97, "Noise", this, 1, [0,1].asSpec, 0.4, 1);
+		labelKnobs[7] = PresetLabelKnob.new(composite, 143, 97, "Curve", this, 1, [-8, 8].asSpec, 0.3, 1);
+		labelKnobs[8] = PresetLabelKnob.new(composite, 2, 159, "Shape", this, 1, [0, 0.55].asSpec, default:0.1, numSelectors: 1);
+		labelKnobs[9] = PresetLabelKnob.new(composite, 49, 159, "Filt", this, 1, [150, 12000, \exp].asSpec, 0.8, 1);
+		labelKnobs[10] = PresetLabelKnob.new(composite, 96, 159, "Distort", this, 1, [1,10].asSpec, 0, 1);
 		presets.do({|preset|
 			labelKnobs.do({|knob| preset.putPairs(knob.savePreset)});
 			preset.put(\reverse, 0);
 		});
-		trigButton = DrumTrigButton.new(composite, Rect(143, 170, 47, 60), "trig", this, [Color.grey, Color.grey]);
-		//trigButton.action_({|button| nDef.set(\t_trig, 1)});
-		reverseButton = Button.new(composite, Rect(143, 220, 47, 15));
+		//trig button
+		trigButton = DrumTrigButton.new(composite, Rect(143, 160, 47, 60), "trig", this, [Color.grey, Color.grey]);
+
+		//reverse envelope button
+		reverseButton = Button.new(composite, Rect(143, 210, 47, 15));
 		reverseButton.states_([["rev", Color.white, Color.black], ["rev", Color.white, Color.red]]);
 		reverseButton.action_({|button|
 			reverse = button.value;
@@ -85,8 +87,8 @@ DrumPanel : ANASPanel {
 		lagField = TextField.new(composite, Rect(96, 280, 45, 20)).background_(Color.new(0.4, 0.15, 0.1,
 		0.3)).stringColor_(Color.white).value_(0);
 		lagField.action_({|thisField|
-			var durations = thisField.value.tr($ , $/).split.asFloat;
-			Pdefn(((nDef.key) ++ "lagPat").asSymbol, Pseq(durations, inf)).postcs;
+			var lags = thisField.value.tr($ , $/).split.asFloat;
+			Pdefn(((nDef.key) ++ "lagPat").asSymbol, Pstep(Pseq(lags, inf), 0.5));
 			presetPat.reset;
 			durPat.reset;
 			lagPat.reset;
@@ -102,7 +104,7 @@ DrumPanel : ANASPanel {
 		});
 
 		//preset buttons and overlays
-		4.do({|i|
+		6.do({|i|
 			presetOverlays[i] = CompositeView.new(composite, Rect(20*i + 2, 223, 20, 15)).background_(Color.new255(210,210, 210, 50)).acceptsMouse_(false);
 			presetButtons[i] = Button.new(composite, Rect(20 * i + 2, 223, 20, 15));
 			presetButtons[i].states_([[i.asString, Color.white, Color.new255(140, 100, 30, 100)], [i.asString, Color.white, Color.new255(190, 80, 40, 180)]]);
@@ -172,8 +174,8 @@ DrumPanel : ANASPanel {
 			sig = SinOsc.ar(pitchIn);
 			sig = Shaper.ar(buf, (sig*shapeIn*3) )* shapeIn + (sig * (1-shapeIn)) * knobLevel;
 			sig = sig * env + noise;
-			sig = MoogLadder.ar(sig*1.3, filtIn, 0.5, 2.2) * 2.0;
-			sig = Compander.ar(sig, sig, 0.7, 1, 0.5, 0.008, 0.065, mul:1.3);
+			sig = MoogLadder.ar(sig*1.3, filtIn, 0.5, 2.2) * 2.2;
+			sig = Compander.ar(sig, sig, 0.7, 1, 0.5, 0.008, 0.065, mul:1.6);
 			sig = (sig * distortIn).clip2;
 			//sig = SinOsc.ar(440);
 			sig;
@@ -237,20 +239,23 @@ DrumPanel : ANASPanel {
 			\patternField, patternField.value,
 			\presetField, presetField.value,
 			\multField, multField.value,
+			\lagField, lagField.value,
 			]);
 		^saveList;
 	}
 
 	load {
 		arg loadList;
-		var durations, presetSeq, mult;
+		var durations, presetSeq, mult, lags;
 		loadList = loadList ?? {Dictionary.new};
 		presets = loadList[\presets];
 		durations = loadList[\patternField].tr($ , $/).split.collect({|item| item.interpret});
 		presetSeq =  loadList[\presetField].tr($ , $/).split.collect({|item| item.interpret});
+		lags = loadList[\lagField].tr($ , $/).split.collect({|item| item.interpret});
 		mult = loadList[\multField].interpret;
 		Pdefn(((nDef.key) ++ "durPat").asSymbol, Pseq(durations * mult, inf));
 		Pdefn(((nDef.key) ++ "presetPat").asSymbol, Pseq(presetSeq, inf));
+		Pdefn(((nDef.key) ++ "lagPat").asSymbol, Pstep(Pseq(lags, inf), 0.5));
 		labelKnobs.do({|item| item.load(loadList.at(item.string.asSymbol))});
 		trigButton.load(loadList.at(\trigButton));
 		reverse = loadList.at(\reverse);
@@ -263,6 +268,7 @@ DrumPanel : ANASPanel {
 			patternField.value = loadList[\patternField];
 			presetField.value = loadList[\presetField];
 			multField.value = loadList[\multField];
+			lagField.value = loadList.at(\lagField);
 		}.defer;
 		this.updateReverse;
 		this.rebuild;

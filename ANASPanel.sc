@@ -1,5 +1,5 @@
 ANASPanel {
-	var parent, <bounds, <nDef, <outs, <composite, subunits, <label1, <label2, <focusList, <focus, <lock,  <thingsToSave, keyRoutine, standardAction, setInputAction, <whichPanel, <inputList, <inputBank;
+	var parent, <bounds, <nDef, <outs, <outputButtons, <composite, subunits, <label1, <label2, <focusList, <focus, <lock,  <thingsToSave, keyRoutine, standardAction, setInputAction, <whichPanel, <inputList, <inputBank;
 
 	*new {
 		arg parent, bounds, nDef;
@@ -47,6 +47,35 @@ ANASPanel {
 			);
 			true;
 		};
+		//key control -------
+		standardAction = {|v,c,m,u,k|
+			var keys = [m, k];
+			switch(keys,
+				[0, 49], {
+					this.rebuild;
+					keyRoutine.reset;
+					{inputBank.update}.defer;
+				},
+				[0,18], {this.focusOn(0)},
+				[0,19], {this.focusOn(1)},
+				[0,20], {this.focusOn(2)},
+				[0,21], {this.focusOn(3)},
+				[131072,18], {this.focusOn(4)},
+				[131072,19], {this.focusOn(5)},
+				[131072,20], {this.focusOn(6)},
+				[0, 12], {outputButtons[0].flipRebuild},
+				[0, 13], {outputButtons[1].flipRebuild},
+				[0, 14], {outputButtons[2].flipRebuild},
+				[0, 15], {outputButtons[3].flipRebuild},
+				[0, 0], {
+					composite.keyDownAction_(setInputAction);
+					inputBank.setRed;
+				},
+			);
+			nDef.key.asString.postln;
+			true;
+		};
+		composite.keyDownAction_(standardAction);
 		^this;
 	}
 
