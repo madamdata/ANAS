@@ -2,10 +2,10 @@ ReverbPanel : ANASPanel {
 	var labelKnobs;
 
 	*new {|parent, bounds, nDef, outs|
-		^super.newCopyArgs(parent,bounds,nDef, outs).initCompPanel;
+		^super.newCopyArgs(parent,bounds,nDef, outs).initReverbPanel;
 	}
 
-	initCompPanel {
+	initReverbPanel {
 		this.initANASPanel;
 
 		// label
@@ -71,6 +71,7 @@ ReverbPanel : ANASPanel {
 		this.rebuild;
 
 	}
+
 
 
 }

@@ -208,6 +208,7 @@ AnasGui {
 				\drum1, Color.new255(230, 190, 180, 170),
 				\drum2, Color.new255(250, 80, 30, 160),
 				\comp1, Color.new255(240, 170, 150, 165),
+				\noise1, Color.new255(245, 100, 215, 160),
 				\adsr1, Color.new255(70, 60, 50, 140),
 				\adsr2, Color.new255(10, 10, 50, 140),
 				\del1, Color.new255(20, 0, 0, 180),
@@ -307,11 +308,11 @@ www.adamadhiyatma.com \n agargara.bandcamp.com");
 					[OscPanel, \osc4],
 					[DrumPanel, \drum1],
 					[ReverbPanel, \rev1],
-					[CompPanel, \comp1],
+					[NoisePanel, \noise1],
 					[ADSRPanel, \adsr1],
 					[ADSRPanel, \adsr2],
 					[FilterPanel, \filt1],
-					[DrumPanel, \drum2],
+					[SamplerPanel, \drum2],
 					[InputPanel, \in1],
 					[InputPanel, \in2]
 				].do({|item, index|
@@ -327,8 +328,8 @@ www.adamadhiyatma.com \n agargara.bandcamp.com");
 				patterns[2] = PatternPanel.new(composite, 736, guiPositions.at(\thirdRowPanels), Ndef(\pattern3), this);
 
 				////tell inputSelectors what the list of modules is.
-				this.updateModuleList;
 				selectorMenu = SelectorMenu.new(composite);
+				this.updateModuleList;
 
 				// ************************************ !! MODULES/PANELS ****************************************
 				// ^^^^^^^^^^^^^^^^^^^^^^^^^^^ Top of Window Controls ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -467,7 +468,9 @@ www.adamadhiyatma.com \n agargara.bandcamp.com");
 		moduleSockets.collect({|item| item.nDef.key}).flatten ++   //flatten in anticipation of future updates where module sockets may contain multiple panels and return an array of keys rather than just one.
 		[\out1, \out2, \out3, \out4] ++
 		[\pattern1, \pattern2, \pattern3, \noteBus];
-		{~allInputSelectors.do({|item|
+		{
+			selectorMenu.updateItems;
+			~allInputSelectors.do({|item|
 			switch(item.class,
 				InputSelector, {item.selector.items = ~moduleList},
 				Selector, {item.items = ~moduleList},

@@ -1035,7 +1035,12 @@ SelectorMenu {
 			"hi".postln;
 		});
 		window.background_(Color.new255(235, 170, 40, 245));
-		//window.addFlowLayout(2@2, 2@2);
+		this.updateItems;
+
+	}
+
+	updateItems {
+		window.children.do({|child| child.close});
 		~moduleList.do({|item, index|
 		StaticText.new(window, 44@22)
 			.string_(item.asString)
@@ -1053,6 +1058,7 @@ SelectorMenu {
 				true;
 			});
 		});
+		window.reflowAll;
 
 	}
 

@@ -1,5 +1,5 @@
 DrumPanel : ANASPanel {
-	var <labelKnobs, <outputButtons, <trigButton, reverseButton, reverse, buf, patternField, pDef, durPat, multField, presetButtons, <presets, presetPat, editMode, editButton, <currentPreset, presetField, lagField, lagPat, presetOverlays;
+	var <labelKnobs, <outputButtons, <trigButton, reverseButton, reverse, buf, patternField, pDef, durPat, multField, presetButtons, <presets, presetPat, editMode, editButton, <currentPreset, presetField, lagField, lagPat, presetOverlays, task, quant, lag, lagTask, mult, <>step, <>presetStep, <>lagStep, unlink;
 
 	*new {
 		arg parent, bounds, nDef, outs;
@@ -14,6 +14,10 @@ DrumPanel : ANASPanel {
 		presets = Dictionary.new!6;
 		currentPreset = 0;
 		editMode = 1;
+		step = 0;
+		lag = 0;
+		mult = 0.25;
+		unlink = 0;
 		presetButtons = 0!6;
 		presetOverlays = 0!6;
 		label2 = StaticText.new(composite, Rect(0, 0, 190, 20));
@@ -49,24 +53,57 @@ DrumPanel : ANASPanel {
 			nDef.set(\reverse, reverse);
 			presets[currentPreset].put(\reverse, reverse);
 		});
-		durPat = Pdefn(((nDef.key) ++ "durPat").asSymbol, Pn(0.3));
-		presetPat = Pdefn(((nDef.key) ++ "presetPat").asSymbol, Pn(0)).asStream;
-		lagPat = Pdefn(((nDef.key) ++ "lagPat").asSymbol, Pn(0)).asStream;
+
+		//pattern definitions
+		//durPat = Pdefn(((nDef.key) ++ "durPat").asSymbol, Pn(0.3));
+		durPat = [1];
+		//presetPat = Pdefn(((nDef.key) ++ "presetPat").asSymbol, Pn(0)).asStream;
+		presetPat = [0];
+		//lagPat = Pdefn(((nDef.key) ++ "lagPat").asSymbol, Pn(0));
+		lagPat = 0;
 		pDef = Pdef(nDef.key,
-			Pbind(
+/*		Pbind(
 				\midinote, \rest,
 				\dur, durPat + lagPat,
 				\xyz, Pfunc({|thisEvent|
 					var which = presetPat.next;  this.recallPreset(which); nDef.set(\t_trig, 1); this.blinkPreset(which);
 				}),
-			)
+			)*/
 		).play(~a.clock.clock);
+		quant = Quant.new(1, 0, 0);
+		task = Task{
+			step = 0;
+			presetStep = 0;
+			loop {
+				var preset = if (unlink == 0, {presetPat.wrapAt(step).next}, {presetPat.at(presetStep).next});
+				var waitTime = (durPat.at(step).next * mult);
+				~a.clock.clock.sched(lag, {
+					nDef.set(\t_trig, 1);
+					this.recallPreset(preset);
+					this.blinkPreset(preset);
+				});
+				waitTime.wait;
+				step = (step + 1) % durPat.size;
+				presetStep = (presetStep + 1)%presetPat.size;
+			}
+
+		}.play(~a.clock.clock, false, quant);
+
+		lagTask = Task{
+			lagStep = 0;
+			loop {
+				if (lagStep%2 == 0, {lag = 0}, {lag = lagPat});
+				lagStep = lagStep + 1 % 2;
+				0.5.wait;
+			}
+		}.play(~a.clock.clock, false, quant);
+
 
 		//pattern field
 		patternField = TextField.new(composite, Rect(3, 258, 185, 20)).background_(Color.new(0.35, 0.2, 0.12, 0.3)).stringColor_(Color.white).value_(1);
 		patternField.action_({|thisField|
 			var durations = thisField.value.tr($ , $/).split.collect({|item| item.interpret});
-			if (multField.value != "0", {Pdefn(((nDef.key) ++ "durPat").asSymbol, Pseq(durations * multField.value.interpret, inf))});
+			durPat = durations;
 			presetPat.reset;
 			durPat.reset;
 			lagPat.reset;
@@ -78,6 +115,9 @@ DrumPanel : ANASPanel {
 		multField.action_({|thisField|
 			var durations = patternField.value.tr($ , $/).split.asFloat;
 			if (thisField.value != "0", {Pdefn(((nDef.key) ++ "durPat").asSymbol, Pseq(durations * thisField.value.interpret, inf))});
+			mult = thisField.value.asFloat;
+			//prevent crashes caused by loop{0.wait}
+			if (mult == 0, {mult = 1});
 			presetPat.reset;
 			durPat.reset;
 			lagPat.reset;
@@ -89,6 +129,7 @@ DrumPanel : ANASPanel {
 		lagField.action_({|thisField|
 			var lags = thisField.value.tr($ , $/).split.asFloat;
 			Pdefn(((nDef.key) ++ "lagPat").asSymbol, Pstep(Pseq(lags, inf), 0.5));
+			lagPat = thisField.value.asFloat;
 			presetPat.reset;
 			durPat.reset;
 			lagPat.reset;
@@ -96,9 +137,24 @@ DrumPanel : ANASPanel {
 
 		//preset field
 		presetField = TextField.new(composite, Rect(3, 238, 187, 20)).background_(Color.new(0.4, 0.3, 0.1, 0.5)).stringColor_(Color.white).value_("0");
+
+		//function for parsing input strings into arrays of numbers and patterns
 		presetField.action_({|thisField|
-			var presets = thisField.value.tr($ , $/).split.collect({|item| item.interpret});
-			Pdefn(((nDef.key) ++ "presetPat").asSymbol, Pseq(presets, inf));
+			var presets = thisField.value.tr($ , $/).split.collect({|item|
+				var list = List.new, return;
+				if (item == "u", {return = item}, {
+					if  (item.size <= 1, {return = item.asInteger}, {
+						item.do({|char| list.add(char.asString)});
+						if (list.last == "?", {return = Prand(list.drop(-1).asInteger, inf).asStream},
+							{return = Pseq(list.asInteger, inf).asStream});
+					});
+				});
+				return;
+			});
+			//if "u" is appended, set unlink to 1, causing the scheduler to count steps on presetStep rather than step
+			// - separate preset and duration patterns. Otherwise, preset pattern runs on the duration step counter.
+			presetPat = if (presets.last.postln == "u", {unlink = 1; presets.drop(-1)},  {unlink = 0; presets});
+			unlink.postln;
 			presetPat.reset;
 			durPat.reset;
 		});
@@ -191,10 +247,12 @@ DrumPanel : ANASPanel {
 	}
 
 	sync {
+		pDef.stop;
 		~a.clock.clock.schedAbs(~a.clock.clock.nextTimeOnGrid, {
-			pDef.reset;
 			durPat.reset;
 			presetPat.reset;
+			lagPat.reset;
+			pDef.play(~a.clock.clock);
 		});
 
 	}
@@ -246,16 +304,13 @@ DrumPanel : ANASPanel {
 
 	load {
 		arg loadList;
-		var durations, presetSeq, mult, lags;
+		var durations, presetSeq, lags;
 		loadList = loadList ?? {Dictionary.new};
 		presets = loadList[\presets];
-		durations = loadList[\patternField].tr($ , $/).split.collect({|item| item.interpret});
+		durPat = loadList[\patternField].tr($ , $/).split.collect({|item| item.interpret});
 		presetSeq =  loadList[\presetField].tr($ , $/).split.collect({|item| item.interpret});
 		lags = loadList[\lagField].tr($ , $/).split.collect({|item| item.interpret});
 		mult = loadList[\multField].interpret;
-		Pdefn(((nDef.key) ++ "durPat").asSymbol, Pseq(durations * mult, inf));
-		Pdefn(((nDef.key) ++ "presetPat").asSymbol, Pseq(presetSeq, inf));
-		Pdefn(((nDef.key) ++ "lagPat").asSymbol, Pstep(Pseq(lags, inf), 0.5));
 		labelKnobs.do({|item| item.load(loadList.at(item.string.asSymbol))});
 		trigButton.load(loadList.at(\trigButton));
 		reverse = loadList.at(\reverse);
@@ -272,6 +327,23 @@ DrumPanel : ANASPanel {
 		}.defer;
 		this.updateReverse;
 		this.rebuild;
+	}
+
+	interpretString {
+		arg string;
+		var values = string.tr($ , $/).split.collect({|item|
+			var list = List.new, return;
+			if (item == "u", {return = item}, {
+				if  (item.size <= 1, {return = item.asInteger}, {
+					item.do({|char| list.add(char.asString)});
+					if (list.last == "?", {return = Prand(list.drop(-1).asInteger, inf).asStream},
+						{return = Pseq(list.asInteger, inf).asStream});
+				});
+			});
+			return;
+		});
+		^values;
+
 	}
 
 
