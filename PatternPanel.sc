@@ -146,7 +146,7 @@ Input: This panel will accept a signal input and output its next value when the 
 
 	sync {
 		anasGui.clock.clock.schedAbs(anasGui.clock.clock.nextTimeOnGrid, {
-			Tdef(nDef.key).reset;
+			Tdef(nDef.key).reset.play;
 			valPat.reset;
 			durPat.reset;
 			legatoPat.reset;

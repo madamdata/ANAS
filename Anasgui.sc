@@ -28,7 +28,7 @@ AnasGui {
 	*new {^super.new.initAnasGui}
 
 	*initClass {
-		version = "ANAS v1.15-change_panels";
+		version = "ANAS v1.2-change_panels";
 
 		//--------------------------------  initialize file structure ------------------------------------
 		anasFolder = PathName(AnasGui.filenameSymbol.asString.dirname);
@@ -209,12 +209,13 @@ AnasGui {
 				\drum2, Color.new255(250, 80, 30, 160),
 				\comp1, Color.new255(240, 170, 150, 165),
 				\noise1, Color.new255(245, 100, 215, 160),
-				\adsr1, Color.new255(70, 60, 50, 140),
+				\adsr1, Color.new255(90, 70, 60, 150),
 				\adsr2, Color.new255(10, 10, 50, 140),
 				\del1, Color.new255(20, 0, 0, 180),
 				\del2, Color.new255(0, 80, 50, 180),
 				\del3, Color.new255(0, 100, 120, 150),
 				\del4, Color.new255(40, 130, 170, 150),
+				\rev1, Color.new255(50, 60, 70, 170),
 				\mult1, Color.new255(232, 215, 196, 160),
 				\filt1, Color.new255(220, 180, 85, 140),
 				\out1, Color.new255(255, 50, 70, 170),
@@ -312,7 +313,7 @@ www.adamadhiyatma.com \n agargara.bandcamp.com");
 					[ADSRPanel, \adsr1],
 					[ADSRPanel, \adsr2],
 					[FilterPanel, \filt1],
-					[SamplerPanel, \drum2],
+					[DrumPanel, \drum2],
 					[InputPanel, \in1],
 					[InputPanel, \in2]
 				].do({|item, index|

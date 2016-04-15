@@ -24,7 +24,7 @@ DrumPanel : ANASPanel {
 		label2.string = nDef.key.asString;
 		label2.font = Font("Helvetica", 22, true);
 		label2.stringColor = Color.new(1,1,1,0.4);
-		label2.align = \center;
+		label2.align = \left;
 		label2.background = Color(0,0,0,0);
 		labelKnobs = 0!11;
 		labelKnobs[0] = PresetLabelKnob.new(composite, 2, 20, "Pitch", this, 1, [40, 1000, \exp].asSpec, 0.2, 2);
@@ -38,10 +38,7 @@ DrumPanel : ANASPanel {
 		labelKnobs[8] = PresetLabelKnob.new(composite, 2, 159, "Shape", this, 1, [0, 0.55].asSpec, default:0.1, numSelectors: 1);
 		labelKnobs[9] = PresetLabelKnob.new(composite, 49, 159, "Filt", this, 1, [150, 12000, \exp].asSpec, 0.8, 1);
 		labelKnobs[10] = PresetLabelKnob.new(composite, 96, 159, "Distort", this, 1, [1,10].asSpec, 0, 1);
-		presets.do({|preset|
-			labelKnobs.do({|knob| preset.putPairs(knob.savePreset)});
-			preset.put(\reverse, 0);
-		});
+		this.loadDefaultPresets;
 		//trig button
 		trigButton = DrumTrigButton.new(composite, Rect(143, 160, 47, 60), "trig", this, [Color.grey, Color.grey]);
 
@@ -55,20 +52,10 @@ DrumPanel : ANASPanel {
 		});
 
 		//pattern definitions
-		//durPat = Pdefn(((nDef.key) ++ "durPat").asSymbol, Pn(0.3));
-		durPat = [1];
-		//presetPat = Pdefn(((nDef.key) ++ "presetPat").asSymbol, Pn(0)).asStream;
+		durPat = [2];
 		presetPat = [0];
-		//lagPat = Pdefn(((nDef.key) ++ "lagPat").asSymbol, Pn(0));
 		lagPat = 0;
 		pDef = Pdef(nDef.key,
-/*		Pbind(
-				\midinote, \rest,
-				\dur, durPat + lagPat,
-				\xyz, Pfunc({|thisEvent|
-					var which = presetPat.next;  this.recallPreset(which); nDef.set(\t_trig, 1); this.blinkPreset(which);
-				}),
-			)*/
 		).play(~a.clock.clock);
 		quant = Quant.new(1, 0, 0);
 		task = Task{
@@ -100,10 +87,10 @@ DrumPanel : ANASPanel {
 
 
 		//pattern field
-		patternField = TextField.new(composite, Rect(3, 258, 185, 20)).background_(Color.new(0.35, 0.2, 0.12, 0.3)).stringColor_(Color.white).value_(1);
+		patternField = TextField.new(composite, Rect(3, 258, 185, 20)).background_(Color.new(0.35, 0.2, 0.12, 0.3)).stringColor_(Color.white).value_(2);
 		patternField.action_({|thisField|
 			var durations = thisField.value.tr($ , $/).split.collect({|item| item.interpret});
-			durPat = durations;
+			durPat = this.interpretString(thisField.value);
 			presetPat.reset;
 			durPat.reset;
 			lagPat.reset;
@@ -180,6 +167,7 @@ DrumPanel : ANASPanel {
 		outs.do({|whichOut, index|
 			outputButtons[index] = OutputButton.new(composite, 2+((80/outs.size)*index), 282, (80/outs.size), nDef, whichOut);
 		});
+		this.recallPresetWithUpdate(0);
 		this.rebuild;
 	}
 
@@ -249,6 +237,8 @@ DrumPanel : ANASPanel {
 	sync {
 		pDef.stop;
 		~a.clock.clock.schedAbs(~a.clock.clock.nextTimeOnGrid, {
+			task.reset;
+			lagTask.reset;
 			durPat.reset;
 			presetPat.reset;
 			lagPat.reset;
@@ -269,6 +259,13 @@ DrumPanel : ANASPanel {
 		//{reverseButton.value_(reverse)}.defer;
 	}
 
+	recallPresetWithUpdate {
+		arg which;
+		this.recallPreset(which);
+		this.recallPresetWithUpdateNoChange(which);
+
+	}
+
 	recallPresetWithUpdateNoChange {
 		arg which;
 		var presetList = presets[which];
@@ -284,6 +281,104 @@ DrumPanel : ANASPanel {
 			if (i == which, {{button.value =1}.defer}, {{button.value = 0}.defer});
 		});
 
+	}
+
+	loadDefaultPresets {
+		presets[0] =	Dictionary.newFrom([
+			\Pitch, 0.1,
+			\Dec, 0.45,
+			\Level, 0.7,
+			\Mutate, 0,
+			\pDec, 0.5,
+			\pLevel, 0.7,
+			\Noise, 0.4,
+			\Curve, 0.3,
+			\Shape, 0.02,
+			\Filt, 0.5,
+			\Distort, 0
+		]);
+		presets[1] =	Dictionary.newFrom([
+			\Pitch, 0.3,
+			\Dec, 1,
+			\Level, 0,
+			\Mutate, 0.1,
+			\pDec, 1,
+			\pLevel, 0.7,
+			\Noise, 0.8,
+			\Curve, 0.8,
+			\Shape, 0.02,
+			\Filt, 0.7,
+			\Distort, 0.2
+		]);
+		presets[2] =	Dictionary.newFrom([
+			\Pitch, 0.2,
+			\Dec, 0.15,
+			\Level, 0,
+			\Mutate, 0.4,
+			\pDec, 0.95,
+			\pLevel, 0.8,
+			\Noise, 0.4,
+			\Curve, 0.2,
+			\Shape, 0.22,
+			\Filt, 0.85,
+			\Distort, 0
+		]);
+		presets[3] =	Dictionary.newFrom([
+			\Pitch, 1,
+			\Dec, 0.2,
+			\Level, 0.5,
+			\Mutate, 0,
+			\pDec, 1,
+			\pLevel, 1,
+			\Noise, 0.1,
+			\Curve, 1,
+			\Shape, 0.1,
+			\Filt, 0.6,
+			\Distort, 0
+		]);
+		presets[4] =	Dictionary.newFrom([
+			\Pitch, 1,
+			\Dec, 0.5,
+			\Level, 0.7,
+			\Mutate, 0,
+			\pDec, 0.5,
+			\pLevel, 0,
+			\Noise, 0.4,
+			\Curve, 0.3,
+			\Shape, 0.02,
+			\Filt, 0.5,
+			\Distort, 0
+		]);
+		presets[5] =	Dictionary.newFrom([
+			\Pitch, 1,
+			\Dec, 0.5,
+			\Level, 0.7,
+			\Mutate, 0,
+			\pDec, 0.5,
+			\pLevel, 0,
+			\Noise, 0.4,
+			\Curve, 0.3,
+			\Shape, 0.02,
+			\Filt, 0.5,
+			\Distort, 0
+		]);
+	}
+
+	interpretString {
+		arg string;
+		var values = string.tr($ , $/).split.collect({|item|
+			var list = List.new, return;
+			if (item == "u", {return = item}, {
+				if  (item.size <= 1, {return = item.asInteger}, {
+					item.do({|char| list.add(char.asString)});
+					if (list.last == "?", {return = Prand(list.drop(-1).asInteger, inf).asStream},
+						{return = Pseq(list.asInteger, inf).asStream});
+				});
+			});
+			return;
+		});
+		values = values.removeAll(nil);
+		^values;
 	}
 
 	save {
@@ -307,8 +402,8 @@ DrumPanel : ANASPanel {
 		var durations, presetSeq, lags;
 		loadList = loadList ?? {Dictionary.new};
 		presets = loadList[\presets];
-		durPat = loadList[\patternField].tr($ , $/).split.collect({|item| item.interpret});
-		presetSeq =  loadList[\presetField].tr($ , $/).split.collect({|item| item.interpret});
+		durPat = this.interpretString(loadList.at(\patternField));
+		presetPat =  this.interpretString(loadList.at(\presetField));
 		lags = loadList[\lagField].tr($ , $/).split.collect({|item| item.interpret});
 		mult = loadList[\multField].interpret;
 		labelKnobs.do({|item| item.load(loadList.at(item.string.asSymbol))});
@@ -328,24 +423,6 @@ DrumPanel : ANASPanel {
 		this.updateReverse;
 		this.rebuild;
 	}
-
-	interpretString {
-		arg string;
-		var values = string.tr($ , $/).split.collect({|item|
-			var list = List.new, return;
-			if (item == "u", {return = item}, {
-				if  (item.size <= 1, {return = item.asInteger}, {
-					item.do({|char| list.add(char.asString)});
-					if (list.last == "?", {return = Prand(list.drop(-1).asInteger, inf).asStream},
-						{return = Pseq(list.asInteger, inf).asStream});
-				});
-			});
-			return;
-		});
-		^values;
-
-	}
-
 
 
 }
@@ -396,6 +473,6 @@ PresetLabelKnob : LabelKnob {
 
 	savePreset {
 		^[string.asSymbol, knob1.value];
-
 	}
+
 }
