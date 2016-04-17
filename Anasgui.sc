@@ -28,9 +28,8 @@ AnasGui {
 	*new {^super.new.initAnasGui}
 
 	*initClass {
-		version = "ANAS v1.0 - Master";
 		this.loadEventTypes;
-		version = "ANAS v1.2-change_panels";
+		version = "ANAS v1.2-WEAVER";
 
 		//--------------------------------  initialize file structure ------------------------------------
 		anasFolder = PathName(AnasGui.filenameSymbol.asString.dirname);
