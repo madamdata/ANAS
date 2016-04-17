@@ -153,6 +153,7 @@ AnasGui {
 					[0,53], {window.visible = false;},
 					//tab key - reset focus
 					[0, 48], {composite.focus(true); "composite focus".postln;this.updateFocus},
+					[524288, 48], {composite.visible_(false)},
 					//cmd+enter - activate sampler record
 					[1048576, 36], {sampler.recordButton.button.valueAction = (1-sampler.recordButton.button.value)},
 					[524288, 36], {sampler.overdubButton.button.valueAction = (1-sampler.overdubButton.button.value)},
