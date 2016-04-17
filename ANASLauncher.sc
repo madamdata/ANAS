@@ -40,6 +40,7 @@ ANASLauncher {
 		configButton = Button.new(launcher, Rect(194, 2, 94, 15));
 		configButton.states_([["Configure", Color.black, Color.new255(150, 100, 210)]]);
 		configButton.action_({
+			var devices = Platform.case(\osx, { ServerOptions.devices }, { ["N/A"] });
 			//configuration window
 			configWindow = Window.new("ANAS Configuration", Rect(1200, 170, 400, 240));
 			configWindow.front.background_(Color.new255(170, 120, 210, 215));
@@ -56,11 +57,11 @@ ANASLauncher {
 			pathFields[1] = TextField.new(configWindow, Rect(5, 80, 390, 25)).background_(Color(1,1,1,0.3));
 			pathFields[1].string = (AnasGui.recordPath??{PathName.new}).fullPath;
 			inDeviceSelector = PopUpMenu.new(configWindow, Rect(150, 110, 200, 20));
-			inDeviceSelector.items_(ServerOptions.devices);
+			inDeviceSelector.items_(devices);
 			configText[2] = StaticText.new(configWindow, Rect(5, 110, 120, 25));
 			configText[2].stringColor_(Color.white).font_(Font("Helvetica", 11)).string_("3. Select input device.");
 			outDeviceSelector = PopUpMenu.new(configWindow, Rect(150, 135, 200, 20));
-			outDeviceSelector.items_(ServerOptions.devices);
+			outDeviceSelector.items_(devices);
 			configText[3] = StaticText.new(configWindow, Rect(5, 135, 120, 25));
 			configText[3].stringColor_(Color.white).font_(Font("Helvetica", 11)).string_("4. Select output device.");
 			saveConfigButton = Button.new(configWindow, Rect(150, 160, 100, 25));
