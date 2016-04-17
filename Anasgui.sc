@@ -313,7 +313,7 @@ www.adamadhiyatma.com \n agargara.bandcamp.com");
 					[ADSRPanel, \adsr1],
 					[ADSRPanel, \adsr2],
 					[FilterPanel, \filt1],
-					[DrumPanel, \drum2],
+					[DelayPanel, \del1],
 					[InputPanel, \in1],
 					[InputPanel, \in2]
 				].do({|item, index|
@@ -466,7 +466,7 @@ www.adamadhiyatma.com \n agargara.bandcamp.com");
 	updateModuleList {
 		~moduleList =  //this is how all the input selectors know what their menu items are, and more
 		[\none] ++
-		moduleSockets.collect({|item| item.nDef.key}).flatten ++   //flatten in anticipation of future updates where module sockets may contain multiple panels and return an array of keys rather than just one.
+		moduleSockets.collect({|item| item.nDefNames}).flatten ++   //flatten in anticipation of future updates where module sockets may contain multiple panels and return an array of keys rather than just one.
 		[\out1, \out2, \out3, \out4] ++
 		[\pattern1, \pattern2, \pattern3, \noteBus];
 		{
@@ -579,6 +579,7 @@ www.adamadhiyatma.com \n agargara.bandcamp.com");
 			\pattern1, patterns[0].save,
 			\pattern2, patterns[1].save,
 			\pattern3, patterns[2].save,
+			\tempo, clock.clock.tempo,
 		]);
 		moduleSockets.do({|item, index|
 			saveList.put(index.asSymbol, item.save);
@@ -609,6 +610,7 @@ www.adamadhiyatma.com \n agargara.bandcamp.com");
 		moduleSockets.do({|item| item.rebuild;});
 		patterns.do({|item| item.rebuild});
 		~outPuts.do({|item| item.rebuild;});
+		clock.clock.tempo = loadList.at(\tempo) ?? {2};
 		clock.reSyncAll;
 		//~a.saves.at(\filtFeedback).at(\out2).at(\volume)
 	}

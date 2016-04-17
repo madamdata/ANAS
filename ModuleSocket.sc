@@ -74,6 +74,7 @@ ModuleSocket {
 		panel.rebuild;
 	}
 	nDef {^panel.nDef}
+	nDefNames {^panel.nDefNames}
 
 
 }

@@ -1020,7 +1020,7 @@ Selector {
 
 SelectorMenu {
 	classvar <instances;
-	var parent, <>selector, window;
+	var parent, <>selector, <window;
 
 	*new {|parent| instances = List.new; ^super.newCopyArgs(parent).initSelectorMenu}
 
@@ -1040,6 +1040,7 @@ SelectorMenu {
 	}
 
 	updateItems {
+		var selectorMenu = this;
 		window.children.do({|child| child.close});
 		~moduleList.do({|item, index|
 		StaticText.new(window, 44@22)

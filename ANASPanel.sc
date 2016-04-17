@@ -86,6 +86,11 @@ ANASPanel {
 
 	}
 
+
+	nDefNames {
+		^nDef.key.asSymbol;
+	}
+
 	save {
 		var saveList = Dictionary.new;
 		thingsToSave.keysValuesDo({|key, value|

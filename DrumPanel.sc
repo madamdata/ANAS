@@ -1,5 +1,5 @@
 DrumPanel : ANASPanel {
-	var <labelKnobs, <outputButtons, <trigButton, reverseButton, reverse, buf, patternField, pDef, durPat, multField, presetButtons, <presets, presetPat, editMode, editButton, <currentPreset, presetField, lagField, lagPat, presetOverlays, task, quant, lag, lagTask, mult, <>step, <>presetStep, <>lagStep, unlink;
+	var <controlKey, <controlDef, <labelKnobs, <outputButtons, <trigButton, reverseButton, reverse, buf, patternField, pDef, durPat, multField, presetButtons, <presets, presetPat, editMode, editButton, <currentPreset, presetField, lagField, lagPat, presetOverlays, task, quant, lag, lagTask, mult, <>step, <>presetStep, <>lagStep, unlink;
 
 	*new {
 		arg parent, bounds, nDef, outs;
@@ -13,6 +13,8 @@ DrumPanel : ANASPanel {
 		reverse = 0;
 		presets = Dictionary.new!6;
 		currentPreset = 0;
+		controlKey = (nDef.key ++ "ctrl").asSymbol;
+		controlDef = Ndef(controlKey);
 		editMode = 1;
 		step = 0;
 		lag = 0;
@@ -26,7 +28,7 @@ DrumPanel : ANASPanel {
 		label2.stringColor = Color.new(1,1,1,0.4);
 		label2.align = \left;
 		label2.background = Color(0,0,0,0);
-		labelKnobs = 0!11;
+		labelKnobs = 0!12;
 		labelKnobs[0] = PresetLabelKnob.new(composite, 2, 20, "Pitch", this, 1, [40, 1000, \exp].asSpec, 0.2, 2);
 		labelKnobs[1] = PresetLabelKnob.new(composite, 49, 20, "Dec", this, 1, [0.05, 1.8, \exp].asSpec, 0.75, 2);
 		labelKnobs[2] = PresetLabelKnob.new(composite, 96, 20, "Level", this, 1, [0,1].asSpec, 1, 2);
@@ -38,12 +40,13 @@ DrumPanel : ANASPanel {
 		labelKnobs[8] = PresetLabelKnob.new(composite, 2, 159, "Shape", this, 1, [0, 0.55].asSpec, default:0.1, numSelectors: 1);
 		labelKnobs[9] = PresetLabelKnob.new(composite, 49, 159, "Filt", this, 1, [150, 12000, \exp].asSpec, 0.8, 1);
 		labelKnobs[10] = PresetLabelKnob.new(composite, 96, 159, "Distort", this, 1, [1,10].asSpec, 0, 1);
+		labelKnobs[11] = PresetCtrlKnob.new(composite, 143, 159, "Ctrl", this, 1, [-1,1].asSpec, 0.5, 1);
 		this.loadDefaultPresets;
 		//trig button
-		trigButton = DrumTrigButton.new(composite, Rect(143, 160, 47, 60), "trig", this, [Color.grey, Color.grey]);
+		trigButton = DrumTrigButton.new(composite, Rect(143, 230, 47, 58), "trig", this, [Color.grey, Color.grey]);
 
 		//reverse envelope button
-		reverseButton = Button.new(composite, Rect(143, 210, 47, 15));
+		reverseButton = Button.new(composite, Rect(143, 215, 47, 15));
 		reverseButton.states_([["rev", Color.white, Color.black], ["rev", Color.white, Color.red]]);
 		reverseButton.action_({|button|
 			reverse = button.value;
@@ -58,12 +61,23 @@ DrumPanel : ANASPanel {
 		pDef = Pdef(nDef.key,
 		).play(~a.clock.clock);
 		quant = Quant.new(1, 0, 0);
+
+		lagTask = Task{
+			lagStep = 0;
+			loop {
+				if (lagStep%2 == 1, {lag = 0}, {lag = lagPat});
+				lagStep = lagStep + 1 % 2;
+				0.5.wait;
+			}
+		}.play(~a.clock.clock, false, quant);
 		task = Task{
 			step = 0;
 			presetStep = 0;
 			loop {
 				var preset = if (unlink == 0, {presetPat.wrapAt(step).next}, {presetPat.at(presetStep).next});
 				var waitTime = (durPat.at(step).next * mult);
+				step;
+				if (step == 0, {lagTask.reset});
 				~a.clock.clock.sched(lag, {
 					nDef.set(\t_trig, 1);
 					this.recallPreset(preset);
@@ -76,18 +90,9 @@ DrumPanel : ANASPanel {
 
 		}.play(~a.clock.clock, false, quant);
 
-		lagTask = Task{
-			lagStep = 0;
-			loop {
-				if (lagStep%2 == 0, {lag = 0}, {lag = lagPat});
-				lagStep = lagStep + 1 % 2;
-				0.5.wait;
-			}
-		}.play(~a.clock.clock, false, quant);
-
 
 		//pattern field
-		patternField = TextField.new(composite, Rect(3, 258, 185, 20)).background_(Color.new(0.35, 0.2, 0.12, 0.3)).stringColor_(Color.white).value_(2);
+		patternField = TextField.new(composite, Rect(3, 258, 138, 20)).background_(Color.new(0.35, 0.2, 0.12, 0.3)).stringColor_(Color.white).value_(2);
 		patternField.action_({|thisField|
 			var durations = thisField.value.tr($ , $/).split.collect({|item| item.interpret});
 			durPat = this.interpretString(thisField.value);
@@ -123,7 +128,7 @@ DrumPanel : ANASPanel {
 		});
 
 		//preset field
-		presetField = TextField.new(composite, Rect(3, 238, 187, 20)).background_(Color.new(0.4, 0.3, 0.1, 0.5)).stringColor_(Color.white).value_("0");
+		presetField = TextField.new(composite, Rect(3, 238, 138, 20)).background_(Color.new(0.4, 0.3, 0.1, 0.5)).stringColor_(Color.white).value_("0");
 
 		//function for parsing input strings into arrays of numbers and patterns
 		presetField.action_({|thisField|
@@ -223,9 +228,12 @@ DrumPanel : ANASPanel {
 			sig = (sig * distortIn).clip2;
 			//sig = SinOsc.ar(440);
 			sig;
+		});
 
-
-		})
+		Ndef(controlKey, {
+			arg knobCtrl = 1;
+			SinOsc.ar(0, 0, 0, knobCtrl);
+		}).ar;
 
 	}
 
@@ -252,7 +260,7 @@ DrumPanel : ANASPanel {
 		var presetList = presets[which];
 		switch(editMode,
 			0, {labelKnobs.do({|item| item.doActionWithoutSavePlusUpdate(presetList[item.string.asSymbol])})},
-			1, {labelKnobs.do({|item| item.doActionWithoutSave(presetList[item.string.asSymbol])})}
+			1, {labelKnobs.do({|item| item.doActionWithoutSave(presetList[item.string.asSymbol]??{0})})}
 		);
 		reverse = presetList[\reverse];
 		nDef.set(\reverse, reverse);
@@ -290,12 +298,13 @@ DrumPanel : ANASPanel {
 			\Level, 0.7,
 			\Mutate, 0,
 			\pDec, 0.5,
-			\pLevel, 0.7,
+			\pLevel, 0.45,
 			\Noise, 0.4,
 			\Curve, 0.3,
 			\Shape, 0.02,
 			\Filt, 0.5,
-			\Distort, 0
+			\Distort, 0,
+			\Ctrl, 0
 		]);
 		presets[1] =	Dictionary.newFrom([
 			\Pitch, 0.3,
@@ -308,7 +317,8 @@ DrumPanel : ANASPanel {
 			\Curve, 0.8,
 			\Shape, 0.02,
 			\Filt, 0.7,
-			\Distort, 0.2
+			\Distort, 0.2,
+			\Ctrl, 0
 		]);
 		presets[2] =	Dictionary.newFrom([
 			\Pitch, 0.2,
@@ -321,7 +331,8 @@ DrumPanel : ANASPanel {
 			\Curve, 0.2,
 			\Shape, 0.22,
 			\Filt, 0.85,
-			\Distort, 0
+			\Distort, 0,
+			\Ctrl, 0
 		]);
 		presets[3] =	Dictionary.newFrom([
 			\Pitch, 1,
@@ -334,7 +345,8 @@ DrumPanel : ANASPanel {
 			\Curve, 1,
 			\Shape, 0.1,
 			\Filt, 0.6,
-			\Distort, 0
+			\Distort, 0,
+			\Ctrl, 0
 		]);
 		presets[4] =	Dictionary.newFrom([
 			\Pitch, 1,
@@ -347,7 +359,8 @@ DrumPanel : ANASPanel {
 			\Curve, 0.3,
 			\Shape, 0.02,
 			\Filt, 0.5,
-			\Distort, 0
+			\Distort, 0,
+			\Ctrl, 0
 		]);
 		presets[5] =	Dictionary.newFrom([
 			\Pitch, 1,
@@ -360,7 +373,8 @@ DrumPanel : ANASPanel {
 			\Curve, 0.3,
 			\Shape, 0.02,
 			\Filt, 0.5,
-			\Distort, 0
+			\Distort, 0,
+			\Ctrl, 0
 		]);
 	}
 
@@ -380,6 +394,12 @@ DrumPanel : ANASPanel {
 		values = values.removeAll(nil);
 		^values;
 	}
+
+	nDefNames {
+		^[nDef.key.asSymbol, controlKey];
+
+	}
+
 
 	save {
 		var saveList = Dictionary.new;
@@ -403,8 +423,10 @@ DrumPanel : ANASPanel {
 		loadList = loadList ?? {Dictionary.new};
 		presets = loadList[\presets];
 		durPat = this.interpretString(loadList.at(\patternField));
-		presetPat =  this.interpretString(loadList.at(\presetField));
-		lags = loadList[\lagField].tr($ , $/).split.collect({|item| item.interpret});
+		presetPat =  this.interpretString(loadList.at(\presetField)).postln;
+		presetPat = if (presetPat.last.postln == "u", {unlink = 1; presetPat.drop(-1)},  {unlink = 0; presetPat});
+		lagPat = loadList[\lagField].asFloat;
+		lag = 0;
 		mult = loadList[\multField].interpret;
 		labelKnobs.do({|item| item.load(loadList.at(item.string.asSymbol))});
 		trigButton.load(loadList.at(\trigButton));
@@ -422,6 +444,14 @@ DrumPanel : ANASPanel {
 		}.defer;
 		this.updateReverse;
 		this.rebuild;
+	}
+
+	close {
+		composite.close;
+		nDef.free;
+		//task.stop;
+		//lagTask.stop;
+
 	}
 
 
@@ -462,6 +492,49 @@ PresetLabelKnob : LabelKnob {
 	doActionWithoutSavePlusUpdate {
 						arg value;
 		oscPanel.nDef.set(("knob"++param.asString).asSymbol, spec.map(value));
+		if (recording == 1, {
+			var delta = (Main.elapsedTime - startTime - prevTime);
+			var when = Main.elapsedTime - startTime;
+			automationList.add([delta, value]);
+			prevTime = when;
+		});
+		{knob1.value = value}.defer;
+	}
+
+	savePreset {
+		^[string.asSymbol, knob1.value];
+	}
+
+}
+
+PresetCtrlKnob : PresetLabelKnob {
+
+		doAction {
+				arg value;
+		oscPanel.controlDef.set(("knob"++param.asString).asSymbol, spec.map(value));
+		if (recording == 1, {
+			var delta = (Main.elapsedTime - startTime - prevTime);
+			var when = Main.elapsedTime - startTime;
+			automationList.add([delta, value]);
+			prevTime = when;
+		});
+		oscPanel.presets[oscPanel.currentPreset][string.asSymbol] = value;
+	}
+
+	doActionWithoutSave {
+		arg value;
+		oscPanel.controlDef.set(("knob"++param.asString).asSymbol, spec.map(value));
+		if (recording == 1, {
+			var delta = (Main.elapsedTime - startTime - prevTime);
+			var when = Main.elapsedTime - startTime;
+			automationList.add([delta, value]);
+			prevTime = when;
+		});
+
+	}
+	doActionWithoutSavePlusUpdate {
+						arg value;
+		oscPanel.controlDef.set(("knob"++param.asString).asSymbol, spec.map(value));
 		if (recording == 1, {
 			var delta = (Main.elapsedTime - startTime - prevTime);
 			var when = Main.elapsedTime - startTime;
