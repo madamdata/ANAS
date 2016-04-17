@@ -35,7 +35,8 @@ ADSRPanel : ANASPanel {
 		labelKnob5 = LabelKnob.new(composite, 2, 134, "Level", this);
 		labelKnob6 = LFOKnob.new(composite, 49, 134, "auto", this);
 		labelKnob7 = LabelKnob.new(composite, 96, 134, "Curve", this, 1, specs[4], 0.5, 0);
-		selectors = 0!4;
+		inputBank = InputBank.new(composite, Rect(0, 20, 192, 30), this);
+		/*selectors = 0!4;
 		4.do({|i|
 			selectors[i] = InputSelector.new(composite, i*48+2, 20);
 		});
@@ -46,7 +47,7 @@ ADSRPanel : ANASPanel {
 				selector.background = (~colourList.at(selector.item.asSymbol) ?? {~colourList.at(\none)}).blend(Color.grey, 0.5);
 				this.rebuild;
 		};
-		});
+		});*/
 		focusList = [labelKnob1, labelKnob2, labelKnob3, labelKnob4, labelKnob5, labelKnob6];
 
 		Ndef(nDef.key.asSymbol, {
@@ -70,12 +71,7 @@ ADSRPanel : ANASPanel {
 				[0, 49], {
 					this.rebuild;
 					keyRoutine.reset;
-					{
-						selectors.do({|item, index|
-							item.value_(~moduleList.indexOf(inputList[index]));
-							item.selector.background = (~colourList.at(item.selector.item.asSymbol) ?? {~colourList.at(\none)}).blend(Color.grey, 0.3);
-						});
-					}.defer;
+					{inputBank.update}.defer;
 				},
 				[1048576, 18], {selectors[0].valueAction_(1)},
 				[1048576, 19], {selectors[0].valueAction_(2)},
@@ -88,40 +84,10 @@ ADSRPanel : ANASPanel {
 				[131072,20], {this.focusOn(6)},
 				[0, 0], {
 					composite.keyDownAction_(setInputAction);
-					selectors.do({|item| item.selector.background_(Color.red)});
+					inputBank.setRed;
 				},
 			);
 			nDef.key.asString.postln;
-			true;
-		};
-		setInputAction = {|v,c,m,u,k|
-			var keys = [m,k];
-			switch(keys,
-				[0, 49], {
-					this.rebuild;
-					keyRoutine.reset;
-					composite.keyDownAction_(standardAction);
-					{
-						selectors.do({|item, index|
-							item.value_(~moduleList.indexOf(inputList[index]));
-							item.selector.background = (~colourList.at(item.selector.item.asSymbol) ?? {~colourList.at(\none)}).blend(Color.grey, 0.3);
-						});
-					}.defer;
-				},
-				[0, 50], {whichPanel = \same; keyRoutine.next},
-				[0, 12], {whichPanel = \none; keyRoutine.next},
-				[0, 18], {whichPanel = \osc1; keyRoutine.next},
-				[0, 19], {whichPanel = \osc2; keyRoutine.next},
-				[0, 20], {whichPanel = \osc3; keyRoutine.next},
-				[0, 21], {whichPanel = \osc4; keyRoutine.next},
-				[0,23], {whichPanel = \osc5; keyRoutine.next},
-				[131072, 18], {whichPanel = \del1; keyRoutine.next},
-				[131072, 19], {whichPanel = \adsr1; keyRoutine.next},
-				[131072, 20], {whichPanel = \adsr2; keyRoutine.next},
-				[131072, 21], {whichPanel = \filt1; keyRoutine.next},
-				[131072, 23], {whichPanel = \sampler; keyRoutine.next},
-				[131072, 22], {whichPanel = \mult1; keyRoutine.next},
-			);
 			true;
 		};
 		composite.keyDownAction_(standardAction);
@@ -198,7 +164,8 @@ ADSRPanel : ANASPanel {
 			\level, labelKnob5.save,
 			\auto, labelKnob6.save,
 			\curve, labelKnob7.save,
-			\inputList, inputList
+			\inputList, inputList,
+			\inputBank, inputBank.save,
 		]);
 		^saveList;
 
@@ -215,12 +182,8 @@ ADSRPanel : ANASPanel {
 		labelKnob5.load(loadList.at(\level) ?? {nil});
 		labelKnob6.load(loadList.at(\auto) ?? {nil});
 		labelKnob7.load(loadList.at(\curve) ?? {nil});
-		inputList.do({|item, index|
-			{
-				selectors[index].value_(~moduleList.indexOf(item));
-				selectors[index].selector.background = (~colourList.at(item) ?? {Color.new255(200, 200, 200, 200)}).blend(Color.grey, 0.5);
-			}.defer;
-		});
+		inputBank.load(loadList.at(\inputBank));
+
 		this.rebuild;
 	}
 

@@ -18,7 +18,8 @@ MultiPlexPanel : ANASPanel {
 		labelKnob1 = LabelKnob.new(composite, 2, 35, "fade", this);
 		labelKnob2 = LabelKnob.new(composite, 49, 35, "volume", this);
 		labelKnob3 = LFOKnob.new(composite, 96, 35, "lfo", this);
-		selectors = 0!4;
+		inputBank = InputBank.new(composite, Rect(0, 20, 192, 30), this);
+		/*selectors = 0!4;
 		4.do({|i|
 			selectors[i] = InputSelector.new(composite, i*48+2, 18)
 		});
@@ -30,7 +31,7 @@ MultiPlexPanel : ANASPanel {
 				selector.background = (~colourList.at(selector.item.asSymbol) ?? {~colourList.at(\none)}).blend(Color.grey, 0.4);
 			this.rebuild;
 		};
-		});
+		});*/
 		outputButtons = Array.newClear(outs.size);
 		outs.do({|whichOut, index|
 			outputButtons[index] = OutputButton.new(composite, 2 +((80/outs.size)*index), 130, (80/outs.size), nDef, whichOut);
@@ -43,12 +44,7 @@ MultiPlexPanel : ANASPanel {
 				[0, 49], {
 					this.rebuild;
 					keyRoutine.reset;
-					{
-						selectors.do({|item, index|
-							item.value_(~moduleList.indexOf(inputList[index]));
-							item.selector.background = (~colourList.at(item.selector.item.asSymbol) ?? {~colourList.at(\none)}).blend(Color.grey, 0.3);
-						});
-					}.defer;
+					{inputBank.update}.defer;
 				},
 				[1048576, 18], {selectors[0].valueAction_(1)},
 				[1048576, 19], {selectors[0].valueAction_(2)},
@@ -62,40 +58,10 @@ MultiPlexPanel : ANASPanel {
 				[0, 15], {outputButtons[3].flipRebuild},
 				[0, 0], {
 					composite.keyDownAction_(setInputAction);
-					selectors.do({|item| item.selector.background_(Color.red)});
+					inputBank.setRed;
 				},
 			);
 			nDef.key.asString.postln;
-			true;
-		};
-		setInputAction = {|v,c,m,u,k|
-			var keys = [m,k];
-			switch(keys,
-				[0, 49], {
-					this.rebuild;
-					keyRoutine.reset;
-					composite.keyDownAction_(standardAction);
-					{
-						selectors.do({|item, index|
-							item.value_(~moduleList.indexOf(inputList[index]));
-							item.selector.background = (~colourList.at(item.selector.item.asSymbol) ?? {~colourList.at(\none)}).blend(Color.grey, 0.3);
-						});
-					}.defer;
-				},
-				[0, 50], {whichPanel = \same; keyRoutine.next},
-				[0, 12], {whichPanel = \none; keyRoutine.next},
-				[0, 18], {whichPanel = \osc1; keyRoutine.next},
-				[0, 19], {whichPanel = \osc2; keyRoutine.next},
-				[0, 20], {whichPanel = \osc3; keyRoutine.next},
-				[0, 21], {whichPanel = \osc4; keyRoutine.next},
-				[0,23], {whichPanel = \osc5; keyRoutine.next},
-				[131072, 18], {whichPanel = \del1; keyRoutine.next},
-				[131072, 19], {whichPanel = \adsr1; keyRoutine.next},
-				[131072, 20], {whichPanel = \adsr2; keyRoutine.next},
-				[131072, 21], {whichPanel = \filt1; keyRoutine.next},
-				[131072, 23], {whichPanel = \sampler; keyRoutine.next},
-				[131072, 22], {whichPanel = \mult1; keyRoutine.next},
-			);
 			true;
 		};
 		composite.keyDownAction_(standardAction);
@@ -159,6 +125,7 @@ MultiPlexPanel : ANASPanel {
 			\labelKnob2, labelKnob2.save,
 			\labelKnob3, labelKnob3.save,
 			\inputList, inputList,
+			\inputBank, inputBank.save,
 			\outputButton, outputButtons.collect{|button| button.value},
 		]);
 		^saveList;
@@ -175,12 +142,13 @@ MultiPlexPanel : ANASPanel {
 		labelKnob1.load(loadList.at(\labelKnob1)??{nil});
 		labelKnob2.load(loadList.at(\labelKnob2)??{nil});
 		labelKnob3.load(loadList.at(\labelKnob3)??{nil});
-		inputList.do({|item, index|
+		inputBank.load(loadList.at(\inputBank));
+		/*inputList.do({|item, index|
 			{
 				selectors[index].value_(~moduleList.indexOf(item));
 				selectors[index].selector.background = (~colourList.at(item) ?? {Color.new255(200, 200, 200, 200)}).blend(Color.grey, 0.5);
 			}.defer;
-		});
+		});*/
 
 		outputButtons.do({|item, index|
 			var isOn = (loadList.at(\outputButton).asArray[index]) ?? {0};

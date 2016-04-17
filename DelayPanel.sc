@@ -1,17 +1,16 @@
-DelayPanel {
-	var <>parent, <>left, <>top, <>nDef, <>outs, <>composite, <>labelKnob1, <>labelKnob2, <>labelKnob3, <>labelKnob4, <>selectors, <>outputButtons, <>inputList, <>buffer, <>loadList, <label, <label2, <focusList, <focus, standardAction, setInputAction, keyRoutine, whichPanel;
+DelayPanel : ANASPanel {
+	var <>labelKnob1, <>labelKnob2, <>labelKnob3, <>labelKnob4, <>selectors, <>outputButtons, <>buffer, <>loadList;
 	*new {
-		arg parent, left, top, nDef, outs;
-		^super.newCopyArgs(parent, left, top, nDef, outs).initDelayPanel(parent, left, top, nDef, outs);
+		arg parent, bounds, nDef, outs;
+		^super.newCopyArgs(parent, bounds, nDef, outs).initDelayPanel;
 	}
 
 	initDelayPanel {
-		arg parent, left, top, nDef, outs;
+		this.initANASPanel;
 		focus = 0;
 		buffer = Buffer.alloc(Server.local, Server.local.sampleRate * 5, 1);
-		inputList = [\none, \none, \none, \none];
+		inputList = \none!4;
 		nDef.fadeTime = 5;
-		composite = CompositeView.new(parent, Rect(left, top, 192, 150));
 		keyRoutine = Routine{
 			4.do({|i|
 				if (whichPanel != \same, {
@@ -26,12 +25,7 @@ DelayPanel {
 				[0, 49], {
 					this.rebuild;
 					keyRoutine.reset;
-					{
-						selectors.do({|item, index|
-							item.value_(~moduleList.indexOf(inputList[index]));
-							item.selector.background = (~colourList.at(item.selector.item.asSymbol) ?? {~colourList.at(\none)}).blend(Color.grey, 0.3);
-						});
-					}.defer;
+					{inputBank.update}.defer;
 				},
 				[1048576, 18], {selectors[0].valueAction_(1); "hi".postln},
 				[1048576, 19], {selectors[0].valueAction_(2)},
@@ -45,46 +39,16 @@ DelayPanel {
 				[0, 15], {outputButtons[3].flipRebuild},
 				[0, 0], {
 					composite.keyDownAction_(setInputAction);
-					selectors.do({|item| item.selector.background_(Color.red)});
+					inputBank.setRed;
 				},
 			);
 			nDef.key.asString.postln;
 			true;
 		};
-		setInputAction = {|v,c,m,u,k|
-			var keys = [m,k];
-			switch(keys,
-				[0, 49], {
-					this.rebuild;
-					keyRoutine.reset;
-					composite.keyDownAction_(standardAction);
-					{
-						selectors.do({|item, index|
-							item.value_(~moduleList.indexOf(inputList[index]));
-							item.selector.background = (~colourList.at(item.selector.item.asSymbol) ?? {~colourList.at(\none)}).blend(Color.grey, 0.3);
-						});
-					}.defer;
-				},
-				[0, 50], {whichPanel = \same; keyRoutine.next},
-				[0, 12], {whichPanel = \none; keyRoutine.next},
-				[0, 18], {whichPanel = \osc1; keyRoutine.next},
-				[0, 19], {whichPanel = \osc2; keyRoutine.next},
-				[0, 20], {whichPanel = \osc3; keyRoutine.next},
-				[0, 21], {whichPanel = \osc4; keyRoutine.next},
-				[0,23], {whichPanel = \osc5; keyRoutine.next},
-				[131072, 18], {whichPanel = \del1; keyRoutine.next},
-				[131072, 19], {whichPanel = \adsr1; keyRoutine.next},
-				[131072, 20], {whichPanel = \adsr2; keyRoutine.next},
-				[131072, 21], {whichPanel = \filt1; keyRoutine.next},
-				[131072, 23], {whichPanel = \sampler; keyRoutine.next},
-				[131072, 22], {whichPanel = \mult1; keyRoutine.next},
-			);
-			true;
-		};
 		composite.canFocus_(true).keyDownAction_(standardAction);
 		composite.background = ~colourList.at(nDef.key.asSymbol);
-		label = StaticText.new(composite, Rect(0, 0, 192, 17));
-		/*label.string = ("" ++ nDef.key.asString.toUpper);
+		/*label = StaticText.new(composite, Rect(0, 0, 192, 17));
+		label.string = ("" ++ nDef.key.asString.toUpper);
 		label.font = Font("courier", 18);
 		label.stringColor = Color.new255(255,255,255,200);
 		label.align = \center;
@@ -95,7 +59,8 @@ DelayPanel {
 		label2.stringColor = Color.new(1,1,1,0.4);
 		label2.align = \center;
 		label2.background = Color(0,0,0,0);
-		selectors = 0!4;
+		inputBank = InputBank.new(composite, Rect(0, 20, 192, 30), this);
+		/*selectors = 0!4;
 		4.do({|i|
 			selectors[i] = InputSelector.new(composite, i*48+2, 18)
 		});
@@ -106,7 +71,7 @@ DelayPanel {
 				selector.background = (~colourList.at(selector.item.asSymbol) ?? {~colourList.at(\none)}).blend(Color.grey, 0.5);
 			this.rebuild;
 		};
-		});
+		});*/
 		labelKnob1 = LabelKnob.new(composite, 2, 35, "delayTime", this);
 		labelKnob2 = LabelKnob.new(composite, 49, 35, "decayTime", this);
 		labelKnob3 = LabelKnob.new(composite, 96, 35, "volume", this);
@@ -190,6 +155,7 @@ DelayPanel {
 			\labelKnob4, labelKnob4.save,
 			\outputButton, outputButtons.collect{|button| button.value},
 			\inputList, inputList,
+			\inputBank, inputBank.save,
 		]);
 		^saveList;
 
@@ -205,12 +171,13 @@ DelayPanel {
 		labelKnob4.load(loadList.at(\labelKnob4) ?? {nil});
 		inputList = loadList.at(\inputList);
 		if (inputList.size < 4, {inputList = (inputList.asArray ++ ((\none)!(4-inputList.size)))});
-		inputList.do({|item, index|
+		/*inputList.do({|item, index|
 			{
 				selectors[index].value_(~moduleList.indexOf(item));
 				selectors[index].selector.background = (~colourList.at(item) ?? {Color.new255(200, 200, 200, 200)}).blend(Color.grey, 0.5);
 			}.defer;
-		});
+		});*/
+		inputBank.load(loadList.at(\inputBank));
 		outputButtons.do({|item, index|
 			var isOn = (loadList.at(\outputButton).asArray[index]) ?? {0};
 			{item.value_(isOn)}.defer;

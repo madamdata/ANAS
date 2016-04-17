@@ -38,18 +38,7 @@ FilterPanel : ANASPanel {
 		labelKnob8 = FilterKnob.new(composite, 143, 104, "filt8", this, 1, spec, freqSpec, 8, [1, 14000]);
 		labelKnob9 = LabelKnob.new(composite, 96, 203, "global", this, 1, globalSpec);
 		labelKnob10 = LabelKnob.new(composite, 143, 203, "LoHi", this, 1);
-		selectors = 0!4;
-		4.do({|i|
-			selectors[i] = InputSelector.new(composite, i*48+2, 20)
-		});
-		selectors.do({|item, index|
-			item.selector.background = ~colourList.at(\none).blend(Color.grey, 0.3);
-			item.selector.action = {|selector|
-				inputList[index] = selector.item.asSymbol;
-				selector.background = (~colourList.at(selector.item.asSymbol) ?? {~colourList.at(\none)}).blend(Color.grey, 0.5);
-			this.rebuild;
-		};
-		});
+		inputBank = InputBank.new(composite, Rect(0, 20, 192, 30), this);
 		outputButtons = Array.newClear(outs.size);
 		outs.do({|whichOut, index|
 			outputButtons[index] = OutputButton.new(composite, 2 +((80/outs.size)*index), 282, (80/outs.size), nDef, whichOut);
@@ -63,12 +52,7 @@ FilterPanel : ANASPanel {
 				[0, 49], {
 					this.rebuild;
 					keyRoutine.reset;
-					{
-						selectors.do({|item, index|
-							item.value_(~moduleList.indexOf(inputList[index]));
-							item.selector.background = (~colourList.at(item.selector.item.asSymbol) ?? {~colourList.at(\none)}).blend(Color.grey, 0.3);
-						});
-					}.defer;
+					{inputBank.update}.defer;
 				},
 				[1048576, 18], {selectors[0].valueAction_(1)},
 				[1048576, 19], {selectors[0].valueAction_(2)},
@@ -88,42 +72,13 @@ FilterPanel : ANASPanel {
 				[0, 15], {outputButtons[3].flipRebuild},
 				[0, 0], {
 					composite.keyDownAction_(setInputAction);
-					selectors.do({|item| item.selector.background_(Color.red)});
+					inputBank.setRed;
 				},
 			);
 			nDef.key.asString.postln;
 			true;
 		};
-		setInputAction = {|v,c,m,u,k|
-			var keys = [m,k];
-			switch(keys,
-				[0, 49], {
-					this.rebuild;
-					keyRoutine.reset;
-					composite.keyDownAction_(standardAction);
-					{
-						selectors.do({|item, index|
-							item.value_(~moduleList.indexOf(inputList[index]));
-							item.selector.background = (~colourList.at(item.selector.item.asSymbol) ?? {~colourList.at(\none)}).blend(Color.grey, 0.3);
-						});
-					}.defer;
-				},
-				[0, 50], {whichPanel = \same; keyRoutine.next},
-				[0, 12], {whichPanel = \none; keyRoutine.next},
-				[0, 18], {whichPanel = \osc1; keyRoutine.next},
-				[0, 19], {whichPanel = \osc2; keyRoutine.next},
-				[0, 20], {whichPanel = \osc3; keyRoutine.next},
-				[0, 21], {whichPanel = \osc4; keyRoutine.next},
-				[0,23], {whichPanel = \osc5; keyRoutine.next},
-				[131072, 18], {whichPanel = \del1; keyRoutine.next},
-				[131072, 19], {whichPanel = \adsr1; keyRoutine.next},
-				[131072, 20], {whichPanel = \adsr2; keyRoutine.next},
-				[131072, 21], {whichPanel = \filt1; keyRoutine.next},
-				[131072, 23], {whichPanel = \sampler; keyRoutine.next},
-				[131072, 22], {whichPanel = \mult1; keyRoutine.next},
-			);
-			true;
-		};
+
 		composite.keyDownAction_(standardAction);
 		this.rebuild;
 	}
@@ -175,6 +130,7 @@ FilterPanel : ANASPanel {
 			\labelKnob10, labelKnob10.save,
 			\selectors, selectors.collect({|item| item.value}),
 			\inputList, inputList,
+			\inputBank, inputBank.save,
 			\outputButton, outputButtons.collect({|item| item.value}),
 		]);
 		^saveList;
@@ -184,14 +140,7 @@ FilterPanel : ANASPanel {
 		arg loadList;
 		loadList = loadList ?? {Dictionary.new};
 		inputList = loadList.at(\inputList) ?? {[\none, \none, \none, \none]};
-		{
-			if (loadList.at(\selectors).notNil, {
-				loadList.at(\selectors).do({|item, index|
-					selectors[index].value_(item);
-					selectors[index].selector.background = (~colourList.at(selectors[index].selector.item.asSymbol) ?? {Color.new255(200, 200, 200, 200)}).blend(Color.grey, 0.5);
-				});
-			})
-		}.defer;
+		inputBank.load(loadList.at(\inputBank));
 		labelKnob1.load(loadList.at(\labelKnob1)??{nil});
 		labelKnob2.load(loadList.at(\labelKnob2)??{nil});
 		labelKnob3.load(loadList.at(\labelKnob3)??{nil});

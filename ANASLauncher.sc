@@ -19,7 +19,7 @@ ANASLauncher {
 			Server.local.options.outDevice = (AnasGui.config.at(\outDevice));
 			Server.local.options.inDevice = (AnasGui.config.at(\inDevice));
 			Server.local.options.numOutputBusChannels_(2);
-			Server.local.options.sampleRate = 96000;
+			Server.local.options.sampleRate = 48000;
 			Server.local.options.hardwareBufferSize_(256);
 			Server.local.options.memSize = (2**16);
 			Server.local.options.blockSize_(256);

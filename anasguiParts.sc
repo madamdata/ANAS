@@ -7,12 +7,14 @@ OutputButton {
 
 	initOutputButton {
 		arg parent, left, top, width, in, outPanel;
+		var string;
 		oscPath = ("/" ++ in.key.asString ++ "/" ++ outPanel.nDef.key.asString).asSymbol;
 		isOn = 0;
+		string = (if (width > 15, {outPanel.nDef.key.asString}, {outPanel.nDef.key.asString.drop(3)}));
 		button = Button.new(parent, Rect(left, top, width, 15));
 		button.states_([
-			[outPanel.nDef.key.asString, Color.white.blend(Color.grey, 0.5), ~colourList.at(outPanel.nDef.key).blend(Color.grey, 0.8).blend(Color.black, 0.3)],
-			[outPanel.nDef.key.asString, Color.white, ~colourList.at(outPanel.nDef.key)]]);
+			[string, Color.white.blend(Color.grey, 0.5), ~colourList.at(outPanel.nDef.key).blend(Color.grey, 0.8).blend(Color.black, 0.3)],
+			[string, Color.white, ~colourList.at(outPanel.nDef.key)]]);
 		button.action_({|button|
 			if (button.value == 1, { //update list of oscs to be output, rebuild ndef
 				outPanel.outList.add(in.key.asSymbol);
@@ -74,7 +76,7 @@ OutputButton {
 }
 
 LabelKnob {
-	var parent, left, top, <>string, oscPanel, scale, <>spec, <>default, <>numSelectors, <composite, <>knob1, <>knob1label, <>action, param, <>selector1, <>selector2, <>selector3, <>selectors, <>saveList, <>modList, <>midiFunc, <>mapped, <keyRoutine, <whichPanel, <automationList, prevTime, <recording, <automationRoutine, startTime, <oscFunc, oscString;
+	var parent, left, top, <>string, oscPanel, scale, <>spec, <>default, <>numSelectors, <composite, <>knob1, <>knob1label, <>action, param, <>selector1, <>selector2, <>selector3, <>selectors, <>saveList, <>modList, <modInputs, <>midiFunc, <>mapped, <keyRoutine, <whichPanel, <automationList, prevTime, <recording, <automationRoutine, startTime, <oscFunc, oscString;
 	*new {
 		arg parent, left, top, string, oscPanel, scale = 1, spec = ControlSpec(0,1), default = 0.5, numSelectors = 3;
 		^super.newCopyArgs(parent, left, top, string, oscPanel, scale, spec, default, numSelectors).initLabelKnob;
@@ -99,7 +101,8 @@ LabelKnob {
 		mapped = 0;
 		param = string.asSymbol;
 		modList = \none!(numSelectors);
-		composite = CompositeView.new(parent, Rect(left, top, 47*scale, 96*scale));
+		modInputs = Ndef(\none);
+		composite = CompositeView.new(parent, Rect(left, top, 47*scale, (15*numSelectors+47)*scale));
 		composite.background_(Color.new255(85, 55, 155, 50));
 		knob1label = StaticText.new(composite, Rect(2*scale, 2*scale, 40*scale, 15*scale));
 		knob1label.align = \left;
@@ -137,27 +140,32 @@ Ctrl-shift-click to remove automation.");
 			switch(keys,
 				[0,15], {this.reset;oscPanel.rebuild},
 				[0,49], {
+					modInputs = modList.sum({|item| Ndef(item.asSymbol)});
 					oscPanel.rebuild;
 					keyRoutine.reset;
 					{
 						selectors.do({|item, index|
 							item.value_(~moduleList.indexOf(modList[index]));
-							item.selector.background = (~colourList.at(item.selector.item.asSymbol) ?? {~colourList.at(\none)}).blend(Color.grey, 0.3);
+							item.background = (~colourList.at(item.item.asSymbol) ?? {~colourList.at(\none)});
+							item.update;
 						});
 					}.defer;
 				},
-				[0,50], {whichPanel = \same; keyRoutine.next},
-				[0,18], {whichPanel = \osc1; keyRoutine.next},
-				[0,19], {whichPanel = \osc2; keyRoutine.next},
-				[0,20], {whichPanel = \osc3; keyRoutine.next},
-				[0,21], {whichPanel = \osc4; keyRoutine.next},
-				[0,23], {whichPanel = \osc5; keyRoutine.next},
-				[131072, 18], {whichPanel = \del1; keyRoutine.next},
-				[131072, 19], {whichPanel = \adsr1; keyRoutine.next},
-				[131072, 20], {whichPanel = \adsr2; keyRoutine.next},
-				[131072, 21], {whichPanel = \filt1; keyRoutine.next},
-				[131072, 23], {whichPanel = \sampler; keyRoutine.next},
-				[131072, 22], {whichPanel = \mult1; keyRoutine.next},
+				[0,50], {whichPanel = \none; keyRoutine.next},
+				[0,18], {whichPanel = ~moduleList[1]; keyRoutine.next},
+				[0,19], {whichPanel = ~moduleList[2]; keyRoutine.next},
+				[0,20], {whichPanel = ~moduleList[3]; keyRoutine.next},
+				[0,21], {whichPanel = ~moduleList[4]; keyRoutine.next},
+				[0,23], {whichPanel = ~moduleList[5]; keyRoutine.next},
+				[131072, 18], {whichPanel = ~moduleList[6]; keyRoutine.next},
+				[131072, 19], {whichPanel = ~moduleList[7]; keyRoutine.next},
+				[131072, 20], {whichPanel = ~moduleList[8]; keyRoutine.next},
+				[131072, 21], {whichPanel = ~moduleList[9]; keyRoutine.next},
+				[131072, 23], {whichPanel = ~moduleList[10]; keyRoutine.next},
+				[131072, 22], {whichPanel = ~moduleList[11]; keyRoutine.next},
+				[524288, 18], {whichPanel = \pattern1; keyRoutine.next},
+				[524288, 19], {whichPanel = \pattern2; keyRoutine.next},
+				[524288, 20], {whichPanel = \pattern3; keyRoutine.next},
 				[2097152, 126], {knob1.valueAction = (knob1.value + 0.01)},
 				[2097152, 125], {knob1.valueAction = (knob1.value - 0.01)},
 				[2097152, 123], {knob1.valueAction = (knob1.value - 0.122)},
@@ -223,10 +231,11 @@ Ctrl-shift-click to remove automation.");
 
 		selectors = 0!(numSelectors);
 		numSelectors.do({|i|
-			selectors[i] = InputSelector.new(composite, 1*scale, (15*i+48)*scale, scale);
-			selectors[i].selector.background_(~colourList.at(\none).blend(Color.grey, 0.3));
-			selectors[i].action_({|item|
-				modList[i] = item.item.asSymbol;
+			selectors[i] = Selector.new(composite, Rect(1*scale, (15*i+48)*scale, 47, 13));
+			selectors[i].background_(~colourList.at(\none).blend(Color.grey, 0.3));
+			selectors[i].action_({|thisSelector|
+				modList[i] = thisSelector.item.asSymbol;
+				modInputs = modList.sum({|item| Ndef(item.asSymbol)});
 				oscPanel.rebuild;
 				//item.background = (~colourList.at(item.item.asSymbol) ?? {~colourList.at(\none)}).blend(Color.grey, 0.3);
 			});
@@ -249,6 +258,13 @@ Ctrl-shift-click to remove automation.");
 			automationList.add([delta, value]);
 			prevTime = when;
 		});
+
+	}
+
+	doActionPlusUpdate {
+		arg value;
+		this.doAction(value);
+		{knob1.value = value}.defer;
 
 	}
 
@@ -304,9 +320,11 @@ Ctrl-shift-click to remove automation.");
 		this.doAction(default);
 		{knob1.value = default}.defer;
 		modList = \none!(numSelectors);
+		modInputs = modList.sum({|item| Ndef(item.asSymbol)});
 		{selectors.do({|item|
-			item.selector.value = 0;
-			item.selector.background = ~colourList.at(\none).blend(Color.grey, 0.4);
+			item.value = 0;
+			item.update;
+			item.background = ~colourList.at(\none).blend(Color.grey, 0.4);
 		})}.defer;
 
 	}
@@ -314,8 +332,8 @@ Ctrl-shift-click to remove automation.");
 	resetSelectors {
 		modList = \none!(numSelectors);
 		{selectors.do({|item|
-			item.selector.value = 0;
-			item.selector.background = ~colourList.at(\none).blend(Color.grey, 0.4);
+			item.value = 0;
+			item.background = ~colourList.at(\none).blend(Color.grey, 0.4);
 		})}.defer;
 
 	}
@@ -331,7 +349,11 @@ Ctrl-shift-click to remove automation.");
 
 		]);
 		selectors.do({|item, index|
-			saveList.put(("selector" ++ (index+1)).asSymbol, item.value); //annoying but for backward compatibility purposes i have to increment the index by 1, so selectors[0] loads the item at \selector1, etc
+			var saveSymbol = ("selector" ++ (index+1)).asSymbol;
+			var colourSymbol = (saveSymbol ++ "colour").asSymbol;
+			saveList.put(saveSymbol, item.value); //annoying but for backward compatibility purposes i have to increment the index by 1, so selectors[0] loads the item at \selector1, etc
+			saveList.put(colourSymbol, item.background);
+
 		});
 		^saveList;
 	}
@@ -340,21 +362,26 @@ Ctrl-shift-click to remove automation.");
 		arg loadList;
 		loadList = loadList ?? {Dictionary.new};
 		modList = loadList.at(\modList) ?? {[\none, \none, \none]};
-		oscPanel.nDef.set(("knob"++param.asString).asSymbol, (spec.map(loadList.at(\knob) ?? {default})));
+		modInputs = modList.sum({|item| Ndef(item.asSymbol)});
+		oscPanel.nDef.set(("knob"++param.asString).asSymbol, (spec.map(loadList.at(\knob) ?? {default}))); //set ndef param
 		if (~midiLock == 0, { //don't load MIDI mapping if midilock is on
 		if(midiFunc.notNil, {this.deMap}); //if there is already a midifunc, free it.\
-		if (loadList.at(\msgNum).notNil, {
+		if (loadList.at(\msgNum).notNil, { //load the midi mapping from the loadlist
 			this.mapToKnob(loadList.at(\msgNum));
 		});
 		});
-		{ //update GUI
-			knob1.value = loadList.at(\knob) ?? {default};
-			selectors.do({|item, index|
-				item.value_(loadList.at(("selector"++(index+1)).asSymbol) ?? {0});
-				item.selector.background = (~colourList.at(item.selector.item.asSymbol) ?? {~colourList.at(\none)}).blend(Color.grey, 0.3);
-			});
-		}.defer;
+		//update GUI
+		{knob1.value = loadList.at(\knob) ?? {default};}.defer;
+		selectors.do({|item, index|
+			var selectorSymbol = ("selector" ++ (index+1)).asSymbol;
+			var colourSymbol = (selectorSymbol ++ "colour").asSymbol;
+			var loadValue = loadList.at(selectorSymbol) ?? {default};
+			item.value_(loadValue); //can't set value directly because moduleList has to be updated, which will reset the value to 0. selectorValue stores the proper value independent of the gui object, which will be updated with inputSelector.update
+			item.background_(loadList.at(colourSymbol));
 
+				//~a.saves.at(\kord).at(\7)[\atk][\selector]
+				//~a.moduleSockets[7].panel.labelKnob1.selectors[0].value
+		});
 	}
 }
 
@@ -562,7 +589,7 @@ LFOKnob {
 		{
 			typeSelector.value_(loadList.at(\typeSelector) ?? {0});
 			inSelector.value_(loadList.at(\inSelector) ?? {0});
-			inSelector.selector.background = (~colourList.at(inSelector.selector.item.asSymbol) ?? {Color.new255(200, 200, 200, 200)}).blend(Color.grey, 0.5)
+			//inSelector.selector.background = (~colourList.at(inSelector.selector.item.asSymbol) ?? {Color.new255(200, 200, 200, 200)}).blend(Color.grey, 0.5)
 		}.defer;
 
 		if (~midiLock == 0, {//don't load MIDI mappings if midilock is on.
@@ -579,7 +606,7 @@ LFOKnob {
 
 
 InputSelector {
-	var parent, left, top, scale, <modListNumber, <>selector, <function;
+	var parent, left, top, scale, <modListNumber, <>selector, <function, <>selectorValue;
 	*new {
 		arg parent, left, top, scale = 1, modListNumber = 0;
 		^super.newCopyArgs(parent,left,top,scale, modListNumber).initInputSelector(parent, left, top, scale, modListNumber);
@@ -587,6 +614,7 @@ InputSelector {
 
 	initInputSelector {
 		selector = PopUpMenu.new(parent, Rect(left, top, 45*scale, 15*scale));
+		selectorValue = 0;
 		selector.font = Font("Helvetica", 8.3*scale, true);
 		//selector.canFocus_(true);
 		selector.stringColor = Color.new255(220, 220, 250, 240);
@@ -597,6 +625,7 @@ InputSelector {
 			~updateInputSelectors.wait;
 			{selector.items = ~moduleList.collect({|item| item.asString})}.defer;
 		}).play;
+		~allInputSelectors.add(this);
 	}
 
 	action_ {
@@ -613,6 +642,7 @@ InputSelector {
 
 	setColour {
 		selector.background = (~colourList.at(selector.item.asSymbol) ?? {~colourList.at(\none)}).blend(Color.grey, 0.5);
+		//selector.background = Color.red;
 
 	}
 
@@ -622,7 +652,8 @@ InputSelector {
 
 	value_ {
 		arg val;
-		^selector.value = val;
+		selector.value = val;
+		selectorValue = val;
 	}
 
 	valueAction_{
@@ -630,6 +661,65 @@ InputSelector {
 		selector.valueAction = input;
 
 	}
+
+	update {
+		selector.value = selectorValue ?? {0};
+	}
+
+	background_ {
+		arg val;
+		selector.background_(val);
+	}
+}
+
+InputBank {
+	var parent, bounds, panel, composite, selectors;
+	*new { |parent, bounds, panel| ^super.newCopyArgs(parent, bounds, panel).initInputBank;}
+
+	initInputBank {
+		composite = CompositeView.new(parent, bounds);
+		selectors = 0!4;
+		4.do({|i|
+			selectors[i] = Selector.new(composite, Rect(2 + (47*i), 0, 46, 15));
+			selectors[i].action_({|selector| panel.inputList[i] = selector.item; panel.rebuild}).background_(~colourList.at(\none));
+		//	~a.moduleSockets[9].panel.inputBank.update
+
+		});
+	}
+
+	update {
+		panel.inputList.do({|item, index|
+			selectors[index].value = ~moduleList.indexOf(item);
+			selectors[index].update;
+			selectors[index].setColour;
+		});
+	}
+
+	setRed {
+		selectors.do({|item|
+			item.background_(Color.red);
+		});
+	}
+	save {
+		var saveList = Dictionary.new;
+		selectors.do({|selector, index|
+			saveList.put(index.asSymbol, selector.value);
+			saveList.put(("colour" ++ index).asSymbol, selector.background);
+		});
+		^saveList;
+		//doesn't save inputList. that gets saved in the parent Panel.
+	}
+
+	load {
+		arg loadList;
+		loadList = loadList ?? {Dictionary.new};
+		selectors.do({|selector, index|
+			selector.value_(loadList.at(index.asSymbol));
+			selector.background_(loadList.at(("colour"++index).asSymbol));
+		})
+	}
+
+
 }
 
 FadeField {
@@ -647,7 +737,7 @@ FadeField {
 			});
 		});
 		field.mouseDownAction_({|item| item.string = ""});
-		field.background = ~colourList.at(nDef.key).blend(Color.grey, 0.5);
+		field.background = (~colourList.at(nDef.key) ?? {Color.new(0.7, 0.5, 0.5, 0.8)}).blend(Color.grey, 0.5);
 		field.string_("fade").stringColor_(Color.white);
 		field.font_(Font("Helvetica", fontSize));
 
@@ -820,10 +910,13 @@ ClockPanel {
 
 	reSyncAll {
 		[\osc1, \osc2, \osc3, \osc4, \osc5].do({|item|
-			if(anasGui.perform(item).syncToClock == 1, {anasGui.perform(item).sync});
+			//if(anasGui.perform(item).syncToClock == 1, {anasGui.perform(item).sync});
 		});
 		anasGui.patterns.do({|item|
 			item.sync;
+		});
+		anasGui.moduleSockets.do({|item|
+			if (item.module == DrumPanel, {item.panel.sync})
 		});
 	}
 	rebuild {
@@ -835,8 +928,164 @@ ClockPanel {
 		});
 
 	}
+}
+
+Selector {
+	var <parent, <bounds, <composite, <items, <value, <item, <>action, menu, menuBounds, previousColor, <>menuAttached;
+
+	*new {|parent, bounds| ^super.newCopyArgs(parent,bounds).initSelector}
+
+	initSelector {
+		var widthLimit = Window.screenBounds.width - 418;
+		menuAttached = 0;
+		value = 0;
+		menuBounds = [
+			(bounds.left+parent.bounds.left+parent.parent.bounds.left+parent.parent.parent.bounds.left + 46)
+			.min(widthLimit),
+			(bounds.top+parent.bounds.top+parent.parent.bounds.top+parent.parent.parent.bounds.top),
+		];
+		composite = StaticText.new(parent, bounds).align_(\center).stringColor_(Color.new255(240,225,240, 230));
+		composite.string_("none").font_(Font("Helvetica", 11, false));
+		items = List.new;
+		composite.background_(Color.new255(180, 100, 100, 160)).acceptsMouse_(true);
+		composite.mouseDownAction_({|thisView|
+			var menu = SelectorMenu.instances[0];
+		    if (menuAttached == 0, {
+				if (menu.selector.notNil, {menu.detach});
+				previousColor = thisView.background;
+				thisView.background_(Color.new255(235, 170, 40, 245));
+				menu.visible_(true)
+				.selector_(this)
+				.moveTo(menuBounds[0], menuBounds[1]);
+				menuAttached = 1;
+			}, { menu.close;
+				menuAttached = 0;
+			});
+		});
+		~allInputSelectors.add(this);
+	}
+
+	value_ {
+		arg val;
+		value = val;
+		item = items[value];
+	}
+
+	items_ {
+		arg val;
+		items = val;
+		item = items[value];
+		this.update;
+	}
+
+	background {
+		^composite.background;
+	}
+
+	background_ {
+		arg val;
+		composite.background_(val);
+	}
+
+	stringColor {
+		^composite.stringColor;
+	}
+
+	stringColor_ {
+		arg val;
+		composite.stringColor_(val);
+	}
+
+	absoluteBounds {
+		^composite.absoluteBounds;
+	}
+
+	doAction {
+		action.value(this);
+	}
+
+	update {
+		composite.string_(item);
+	}
+
+	setColour {
+		composite.background = (~colourList.at(item.asSymbol) ?? {~colourList.at(\none)});
+	}
+
+	setPreviousColor {
+		composite.background_(previousColor);
+	}
+}
 
 
+SelectorMenu {
+	classvar <instances;
+	var parent, <>selector, <window;
+
+	*new {|parent| instances = List.new; ^super.newCopyArgs(parent).initSelectorMenu}
+
+	initSelectorMenu {
+		var bounds;
+		this.class.instances.add(this);
+		bounds= Rect.new(0,0,238,128);
+		window = FlowView.new(parent, bounds, 3@3, 3@3).visible_(false);
+		window.mouseDownAction_({|view|
+			window.visible_(false);
+			selector.setPreviousColor;
+			"hi".postln;
+		});
+		window.background_(Color.new255(235, 170, 40, 245));
+		this.updateItems;
+
+	}
+
+	updateItems {
+		var selectorMenu = this;
+		window.children.do({|child| child.close});
+		~moduleList.do({|item, index|
+		StaticText.new(window, 44@22)
+			.string_(item.asString)
+			.background_(~colourList.at(item.asSymbol))
+			.stringColor_(Color.white)
+			.align_(\center)
+			.font_(Font("Helvetica", 11, true))
+			.mouseDownAction_({|thisview|
+				selector.value_(index);
+				selector.doAction;
+				selector.update;
+				selector.background_(thisview.background);
+				selector.menuAttached = 0;
+				window.visible_(false);
+				true;
+			});
+		});
+		window.reflowAll;
+
+	}
+
+	setSelector {
+		arg sel;
+		selector = sel;
+	}
+
+	close {
+		window.visible_(false);
+		selector.setPreviousColor;
+	}
+
+	detach {
+		if (selector.menuAttached == 1, {selector.setPreviousColor});
+	}
+
+	visible_ {
+		arg val;
+		window.visible_(val);
+	}
+
+	moveTo {
+		arg whereX, whereY;
+		window.moveTo(whereX, whereY);
+	}
 
 
 }

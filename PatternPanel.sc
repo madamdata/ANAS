@@ -7,7 +7,7 @@ PatternPanel {
 	}
 	initPatternPanel {
 		type = \freq;
-		adsr = ~a.adsr1.nDef;
+	    adsr = Ndef(\none);
 		inputList = [\none];
 		receivingInput = 0;
 		inputResponder = InputResponder.new(Ndef((nDef.key.asString++"input").asSymbol), this);
@@ -68,8 +68,8 @@ P1-3: This panel will output the next value when the respective pattern panel 1-
 Input: This panel will accept a signal input and output its next value when the signal crosses from nonpositive to positive.");
 		adsrSelector = PopUpMenu.new(composite, Rect(167, 40, 50, 18));
 		adsrSelector.items_(["adsr1", "adsr2"]);
-		adsrSelector.action_({|selector| adsr = Ndef(selector.item.asSymbol)}).background_(Color.new255(200, 150, 200, 175));
-		adsrSelector.toolTip_("Use this menu to select which adsr gets triggered when this pattern is set to 'note' or 'adsr' modes.");
+		adsrSelector.action_({|selector| adsr = Ndef(selector.item.asSymbol);this.rebuild}).background_(Color.new255(200, 150, 200, 175));
+		adsrSelector.toolTip_("Use this menu to select which adsr gets triggered when this pattern is set to 'note' or 'adsr' modes.").allowsReselection_(true);
 		[typeSelector, syncSelector, adsrSelector].do({|item|
 			item.font_(Font("Helvetica", 11));
 		});
@@ -94,7 +94,7 @@ Input: This panel will accept a signal input and output its next value when the 
 				currentDur = durPat.next;
 				switch(type,
 					\freq, {nDef.set(\input, (valPat.next - 12).midiratio.explin(0.1, 2.5, -1, 1, \min))},
-					\ADSR, {nDef.set(\input, 1);
+					\ADSR, {nDef.set(\input, 1); adsr.set(\t_pgate, 1);
 						{(valPat.next*currentDur).wait;nDef.set(\input, 0)}.fork;
 					}
 				);
@@ -134,7 +134,7 @@ Input: This panel will accept a signal input and output its next value when the 
 					\ADSR, {nDef.set(\input, 1);
 						{(valPat.next*currentDur).wait;nDef.set(\input, 0)}.fork(anasGui.clock.clock);
 					}
-				);
+				);≤≥≥
 				condition.test = true;
 				condition.signal;
 				condition.test = false;
@@ -146,7 +146,7 @@ Input: This panel will accept a signal input and output its next value when the 
 
 	sync {
 		anasGui.clock.clock.schedAbs(anasGui.clock.clock.nextTimeOnGrid, {
-			Tdef(nDef.key).reset;
+			Tdef(nDef.key).reset.play;
 			valPat.reset;
 			durPat.reset;
 			legatoPat.reset;
@@ -168,7 +168,7 @@ Input: This panel will accept a signal input and output its next value when the 
 			\type, type,
 			\adsrSelector, adsrSelector.value,
 			\adsr, adsr.asCompileString,
-			\inputList, inputList,
+			\inputList, inputList,≥
 			\inputSelector, inputSelector.value,
 		]);
 		^saveList;
