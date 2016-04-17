@@ -2,14 +2,7 @@
 keyboard window control
 volume knobs for everything?
 invert input (?)
-<<<<<<< HEAD
-GIT TESTING GIT TESTING
-GIT TESTING 2 GIT TESTING
-git 3 testing git 3 testing
-git 4 testing git 4 testing
-
 */
-
 AnasGui {
 
 	classvar <>launcher, launchButton, recompileButton, closeButton,
