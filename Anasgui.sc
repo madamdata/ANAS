@@ -7,9 +7,9 @@ GIT TESTING GIT TESTING
 GIT TESTING 2 GIT TESTING
 git 3 testing git 3 testing
 git 4 testing git 4 testing
-=======
->>>>>>> 402be06d4ef753e695356bf7165a5b89328f6e4e
+
 */
+
 AnasGui {
 
 	classvar <>launcher, launchButton, recompileButton, closeButton,
