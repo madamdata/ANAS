@@ -874,7 +874,7 @@ OutPanel {
 }
 
 ClockPanel {
-	var parent, <bounds, <>nDef, <anasGui, <composite, <blinker, bpmField, <clock, <bpm, <syncButton;
+	var parent, <bounds, <>nDef, <anasGui, <composite, <blinker, <counter, <>count, bpmField, <clock, <bpm, <syncButton;
 
 	*new {
 		arg parent, bounds, nDef, anasGui;
@@ -883,21 +883,35 @@ ClockPanel {
 
 	initClockPanel {
 		bpm = 120;
+		count = 0;
 		clock = TempoClock.new(bpm/60, 4);
 		composite = CompositeView.new(parent, bounds);
 		composite.background_(Color.new255(150,150,220,185));
 		blinker = CompositeView.new(composite, Rect(2,2,20,20)).background_(Color.new255(100,100,100,125));
+		counter = StaticText.new(composite, Rect(2,2,20,20)).background_(Color.new255(100,100,100,0))
+		.string_("0")
+		.align_(\center)
+		.stringColor_(Color.white)
+		.font_(Font("Helvetica", 13, true));
 		bpmField = TextField.new(composite, Rect(23, 1, 50, 22));
 		bpmField.background_(Color.new255(190, 100, 50, 140));
-		bpmField.stringColor_(Color.white).string_("BPM").align_(\center);
+		bpmField.stringColor_(Color.white).string_("120").align_(\center);
 		bpmField.mouseDownAction_({bpmField.string = ""});
 		bpmField.action_({|field| bpm = field.value.asFloat; clock.tempo = bpm/60; nDef.set(\bpm, bpm)});
 		clock.sched(0, {
 			{
-				{blinker.background_(Color.new255(210, 30, 30, 190))}.defer;
+				{
+					var countString = count.asString;
+					if (((countString.size > 3) && (counter.font.size > 11)), {
+						counter.font_(Font("Helvetica", 9, true));
+					});
+					counter.string_(count.asString);
+					blinker.background_(Color.new255(210, 30, 30, 190))
+				}.defer;
 				(12/bpm).wait;
 				{blinker.background_(Color.new255(100,100,100,125))}.defer;
 			}.fork;
+			count = count + 1;
 			1;
 		});
 		syncButton = Button.new(composite, Rect(72, 1, 27, 22));

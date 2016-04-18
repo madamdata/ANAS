@@ -1,5 +1,5 @@
 OscPanel : ANASPanel {
-	var <clockPanel, <>labelKnob1, <>labelKnob2, <>labelKnob3, <>labelKnob4, <>labelKnob5, <>labelKnob6, <labelKnob7, <labelKnob8, <>selector1, <>selector2, <>outputButtons, <>freqButton, <>oscType, <resetButton, <syncButton, <>lockButton, <>type, <>fadeTime, <>noteArrayField, <>transposeField, <>noteArray, <>transpose, <>distort, <>distortSelector, <>lock, <>syncToClock;
+	var <clockPanel, <labelKnobs, <>selector1, <>selector2, <>outputButtons, <>freqButton, <>oscType, <resetButton, <syncButton, <>lockButton, <>type, <>fadeTime, <>noteArrayField, <>transposeField, <>noteArray, <>transpose, <>distort, <>distortSelector, <>lock, <>syncToClock;
 	*new {
 		arg parent, bounds, nDef, outs, clockPanel;
 		^super.newCopyArgs(parent, bounds, nDef, outs).initOscPanel(clockPanel);
@@ -9,13 +9,18 @@ OscPanel : ANASPanel {
 		arg clockPanelArg;
 		clockPanel = clockPanelArg;
 		this.initANASPanel;
+
+		// ------------------------- INITIALIZE VARIABLES -------------------------
 		focus = 0;
 		syncToClock = 0;
-		type = \DSaw;
+		type = \Sine;
 		lock = 0; //lock prevents this panel from loading a save file if set to 1.
 		noteArray = [0];
 		transpose = 0;
 		distort = 0;
+		// ------------------------- !! INITIALIZE VARIABLES -------------------------
+
+		// ------------------------- KEY COMMANDS -------------------------
 		composite.keyDownAction_({|v,c,m,u,k|
 			var keys = [m, k];
 			switch(keys,
@@ -38,11 +43,13 @@ OscPanel : ANASPanel {
 				[0,1], {oscType.valueAction = (oscType.value - 1) % 10},
 				[0,7], {distortSelector.valueAction = (distortSelector.value - 1) % 5},
 				[0,8], {distortSelector.valueAction = (distortSelector.value + 1) % 5}
-
-
 			);
 			true;
 		});
+		// -------------------------!! KEY COMMANDS -------------------------
+
+
+		// ------------------------- Label -------------------------
 		label2 = StaticText.new(composite, Rect(0, 0, 190, 20));
 		label2.string = nDef.key.asString;
 		label2.font = Font("Arial", 22, true);
@@ -58,14 +65,22 @@ For LFNoiseA, controls speed of internal rate oscillator. Left = more consistent
 distort: Applies the selected distortion type. Knob controls pre-distortion gain. (tanh will distort even at knob = 0) \n
 postFilter: Resonant low pass filter post distortion, pre-amplitude. \n
 Q: postFilter resonance value \n");
-		labelKnob1 = LabelKnob.new(composite, 2, 20, "freq", this);
-		labelKnob2 = LabelKnob.new(composite, 49, 20, "amp", this);
-		labelKnob3 = LabelKnob.new(composite, 96, 20, "preFilter", this);
-		labelKnob4 = LabelKnob.new(composite, 143, 20, "tone", this);
-		labelKnob5 = LabelKnob.new(composite, 2, 117, "width", this);
-		labelKnob6 = LabelKnob.new(composite, 49, 117, "distort", this);
-		labelKnob7 = LabelKnob.new(composite, 96, 117, "postFilter", this, 1, [40,19000, \exp].asSpec, 0.8);
-		labelKnob8 = LabelKnob.new(composite, 143, 117, "Q", this, 1, [1, 0.05].asSpec, 0.5);
+		// ------------------------- !! Label -------------------------
+
+		// ------------------------- DEFINE KNOBS  -------------------------
+		labelKnobs = 0!8;
+		labelKnobs[0] = LabelKnob.new(composite, 2, 20, "freq", this);
+		labelKnobs[1] = LabelKnob.new(composite, 49, 20, "amp", this);
+		labelKnobs[2] = LabelKnob.new(composite, 96, 20, "preFilter", this);
+		labelKnobs[3] = LabelKnob.new(composite, 143, 20, "tone", this);
+		labelKnobs[4] = LabelKnob.new(composite, 2, 117, "width", this);
+		labelKnobs[5] = LabelKnob.new(composite, 49, 117, "distort", this);
+		labelKnobs[6] = LabelKnob.new(composite, 96, 117, "postFilter", this, 1, [40,19000, \exp].asSpec, 0.8);
+		labelKnobs[7] = LabelKnob.new(composite, 143, 117, "Q", this, 1, [1, 0.05].asSpec, 0.5);
+		// ------------------------- !!DEFINE KNOBS  -------------------------
+
+		// ------------------------- DEFINE BUTTONS -------------------------
+		//// Lock button
 		lockButton = Button.new(composite, Rect(155, 212, 35, 15));
 		lockButton.font_(Font("Helvetica", 11));
 		lockButton.states_([
@@ -74,6 +89,8 @@ Q: postFilter resonance value \n");
 		]);
 		lockButton.action_({|button| lock = button.value});
 		lockButton.toolTip_("When active, this button prevents the entire panel from loading presets. \n All other unlocked panels will change when a preset is loaded.");
+
+		////Reset button
 		resetButton = Button.new(composite, Rect(155, 228, 35, 15));
 		resetButton.font_(Font("Helvetica", 11));
 		resetButton.states_([
@@ -81,11 +98,15 @@ Q: postFilter resonance value \n");
 		]);
 		resetButton.action_({this.reset});
 		resetButton.toolTip_("Resets this panel to its default state");
+
+		////Output buttons
 		outputButtons = Array.newClear(outs.size);
 		outs.do({|whichOut, index|
 			outputButtons[index] = OutputButton.new(composite, 2+((110/outs.size)*index), 263, (110/outs.size), nDef, whichOut);
 
 		});
+
+		////Frequency range button
 		freqButton = Button.new(composite, Rect(114, 263, 40, 15));
 		freqButton.states_([
 			["Audio", Color.black, Color.new255(100, 100, 150, 100)],
@@ -103,9 +124,15 @@ Q: postFilter resonance value \n");
 AUDIO: 40 - 12000 hz \n
 LFO: 0.1-55hz \n
 SYNC: Multiples and divisions of the clock time. NOTE: as of v1.0, only LFSaw is phase resettable");
+		// ------------------------- !! DEFINE BUTTONS -------------------------
+
+		// ------------------------- DEFINE FIELDS AND SELECTORS -------------------------
+		//// Fade time
 		fadeTime = FadeField.new(composite,Rect(155,263,35,15), nDef, 11);
 		fadeTime.field.toolTip_("Use this field to set the Ndef's fade time in seconds.\n Fade time will be applied whenever you change an input source, the oscillator type,\n the note array field, or the distortion type. It will not be applied for transpose, knob movements, or setting outputs.\n
 To fade output sends in, use the fadetime field on the output panel instead.");
+
+		////Note array
 		noteArrayField = TextField.new(composite, Rect(2, 245, 152, 16));
 		noteArrayField.action_({|item|
 			noteArray = item.value.tr($ , $/).split.asFloat;
@@ -113,6 +140,8 @@ To fade output sends in, use the fadetime field on the output panel instead.");
 		});
 		noteArrayField.background_(Color.new255(200, 140, 130, 95));
 		noteArrayField.toolTip_("For polyphony, enter notes in semitones, separated by spaces - e.g. '0 3 7 10 14' \n Applies fade time.");
+
+		////Transpose
 		transposeField = TextField.new(composite, Rect(155, 245, 35, 16));
 		transposeField.background = Color.new255(200, 110, 70, 130);
 		transposeField.mouseDownAction_({|item| item.string = ""});
@@ -122,15 +151,20 @@ To fade output sends in, use the fadetime field on the output panel instead.");
 			Ndef(nDef.key).set(\transpose, item.value.asFloat);
 		});
 		transposeField.toolTip_("Type in a number here to offset the frequency of this oscillator by \n that number of semitones. Fast compared to the note array field and does not apply\n fade time.");
+
+		////Oscillator type
 		oscType = PopUpMenu.new(composite, Rect(2, 280, 105, 17));
-		oscType.items_(["DSaw", "DPulse", "LFSaw", "Sine", "LFPulse", "LFNoise0", "LFNoise1", "LFNoiseA", "WhiteNoise", "PinkNoise"]);
-		oscType.action_({|selector|
+		oscType.items_(["DSaw", "DPulse", "LFSaw", "Sine", "LFPulse", "LFNoise0", "LFNoise1", "LFNoiseA", "WhiteNoise", "PinkNoise"])
+		.action_({|selector|
 			type = selector.item.asSymbol;
 			this.rebuild;
-		});
-		oscType.toolTip_("Use this menu to select the oscillator type.");
-		oscType.allowsReselection = true;
-		oscType.background = (~colourList.at(nDef.key) ?? {Color.new(0.7, 0.5, 0.5, 0.8)}).blend(Color.grey, 0.4);
+		})
+		.value_(3)
+		.toolTip_("Use this menu to select the oscillator type.")
+		.allowsReselection_(true)
+		.background = (~colourList.at(nDef.key) ?? {Color.new(0.7, 0.5, 0.5, 0.8)}).blend(Color.grey, 0.4);
+
+		////Distortion type
 		distortSelector = PopUpMenu.new(composite, Rect(109, 280, 81, 17));
 		distortSelector.background = Color.new255(217, 51, 90, 155).blend(Color.grey, 0.8);
 		distortSelector.items_(["no dist", "tanh", "clip2", "distort", "fold2"]);
@@ -138,8 +172,10 @@ To fade output sends in, use the fadetime field on the output panel instead.");
 			if (selector.value == 0, {distort = 0}, {distort = selector.item.asSymbol});
 			this.rebuild;
 		});
-		focusList = [labelKnob1, labelKnob2, labelKnob3, labelKnob4, labelKnob5, labelKnob6, noteArrayField, transposeField, fadeTime];
-		//label2.front;
+		// ------------------------- !! DEFINE FIELDS AND SELECTORS -------------------------
+
+		//define list of things for keyboard focus switching
+		focusList = labelKnobs ++ [noteArrayField, transposeField, fadeTime];
 	}
 
 	rebuild {
@@ -153,20 +189,20 @@ To fade output sends in, use the fadetime field on the output panel instead.");
 				(Ndef(\clock)*(
 					Select.kr(knobfreq*7, [0.25,0.5,1,2,3,4,6,8])
 			))]);
-			labelKnob1.modList.do({|item|
+			labelKnobs[0].modList.do({|item|
 				freqIn = freqIn + Ndef(item);
 			});
 			freqIn = LinExp.ar(freqIn, -1, 1, 0.1, 2.5) * 2;
 			freqIn =(knobFreqIn.lag(0.07) * freqIn);
 			freqIn = (freqIn * (noteArray + transpose).midiratio).min(19000);
-			labelKnob2.modList.do({|item, index|
+			labelKnobs[1].modList.do({|item, index|
 				if(index == 2, {ampIn = ampIn - Ndef(item)}, {ampIn = ampIn + Ndef(item)});
 			});
 			ampIn = LinLin.ar(ampIn, -1, 1, 0, 1);
 			ampIn = (knobamp * 2 * ampIn).max(0).min(1);
 			if (((type == \DSaw) || (type == \DPulse)), {
 				knobpreFilterIn = knobpreFilter.linexp(0, 1, 100, 10000);
-				labelKnob3.modList.do({|item|
+				labelKnobs[2].modList.do({|item|
 					preFilterIn = preFilterIn + Ndef(item);
 				});
 				preFilterIn = LinExp.ar(preFilterIn, -1, 1, 0.5, 2);
@@ -175,7 +211,7 @@ To fade output sends in, use the fadetime field on the output panel instead.");
 			});
 			if (((type == \DPulse)||(type == \LFPulse)||(type == \LFNoiseA)), {
 				knobwidthIn = knobwidth.linlin(0,1, 0.02, 0.98);
-				labelKnob5.modList.do({|item|
+				labelKnobs[4].modList.do({|item|
 					widthIn = widthIn + Ndef(item);
 				});
 				widthIn = LinLin.ar(widthIn, -1, 1, 0.5, 1.5);
@@ -183,19 +219,19 @@ To fade output sends in, use the fadetime field on the output panel instead.");
 			});
 			if (distort != 0, {
 			knobdistortIn = knobdistort.linlin(0, 1, 1, 20);
-			labelKnob6.modList.do({|item|
+			labelKnobs[5].modList.do({|item|
 				distortIn = distortIn + Ndef(item);
 			});
 			distortIn = LinLin.ar(distortIn, -1, 1, 0.5, 1.5);
 			distortIn = (knobdistortIn * distortIn).max(1).min(20);
 			});
 
-			labelKnob7.modList.do({|item|
+			labelKnobs[6].modList.do({|item|
 				postFilterIn = postFilterIn + Ndef(item);
 			});
 			postFilterIn = LinLin.ar(postFilterIn, -1, 1, 0.3, 1.7);
 			postFilterIn = (knobpostFilter * postFilterIn).max(30).min(20000);
-			labelKnob8.modList.do({|item|
+			labelKnobs[7].modList.do({|item|
 				qIn = qIn + Ndef(item);
 			});
 			qIn = LinLin.ar(qIn, -1, 1, 1.5, 0.5); //q has to be inverted because the ugen uses the reciprocal
@@ -250,12 +286,7 @@ To fade output sends in, use the fadetime field on the output panel instead.");
 
 	}
 	reset {
-		labelKnob1.reset;
-		labelKnob2.reset;
-		labelKnob3.reset;
-		labelKnob4.reset;
-		labelKnob5.reset;
-		labelKnob6.reset;
+		labelKnobs.do({|knob| knob.reset});
 		noteArray = [0];
 		distort = 0;
 		this.rebuild;
@@ -268,15 +299,8 @@ To fade output sends in, use the fadetime field on the output panel instead.");
 
 	save {
 		var saveList = Dictionary.new;
+		labelKnobs.do({|item| saveList.put(item.string.asSymbol, item.save)});
 		saveList.putPairs([
-			\labelKnob1, labelKnob1.save,
-			\labelKnob2, labelKnob2.save,
-			\labelKnob3, labelKnob3.save,
-			\labelKnob4, labelKnob4.save,
-			\labelKnob5, labelKnob5.save,
-			\labelKnob6, labelKnob6.save,
-			\labelKnob7, labelKnob7.save,
-			\labelKnob8, labelKnob8.save,
 			\outputButton, outputButtons.collect{|button| button.value},
 			\freqButton, freqButton.value,
 			\oscType, oscType.value,
@@ -285,31 +309,16 @@ To fade output sends in, use the fadetime field on the output panel instead.");
 			\noteArrayField, noteArrayField.value,
 			\transpose, transpose,
 			\transposeField, transposeField.value,
-			\distort, distort,
+			\distortVar, distort,
 			\distortSelector, distortSelector.value,
 		]);
 		^saveList;
 	}
-
 	load {
 		arg loadList;
+		nDef.key.postln;
+		loadList.at(\freq).postln;
 		if (lock != 1, {
-			if (loadList.at(\type).notNil, {
-				type = loadList.at(\type).asSymbol;
-				if (type == \dSaw, {type = \DSaw}); //backward compatibility
-				{oscType.value = loadList.at(\oscType)}.defer;
-			}, {
-				oscType.valueAction = (loadList.at(\oscType));
-				"deprecated save file".postln;
-			});
-			labelKnob1.load(loadList.at(\labelKnob1) ?? {nil});
-			labelKnob2.load(loadList.at(\labelKnob2) ?? {nil});
-			labelKnob3.load(loadList.at(\labelKnob3) ?? {nil});
-			labelKnob4.load(loadList.at(\labelKnob4) ?? {nil});
-			labelKnob5.load(loadList.at(\labelKnob5) ?? {nil});
-			labelKnob6.load(loadList.at(\labelKnob6) ?? {nil});
-			labelKnob7.load(loadList.at(\labelKnob7) ?? {nil});
-			labelKnob8.load(loadList.at(\labelKnob8) ?? {nil});
 			outputButtons.do({|item, index|
 				var isOn = (loadList.at(\outputButton).asArray[index]) ?? {0};
 				if (isOn == 1, {item.isOn = 1; item.doAction});
@@ -320,6 +329,7 @@ To fade output sends in, use the fadetime field on the output panel instead.");
 				1, {nDef.set(\freqMin, 0.1, \freqMax, 55);this.unSync},
 				2, {this.sync}
 			);
+			labelKnobs.do({|item| item.load(loadList.at(item.string.asSymbol))});
 			{freqButton.value_(loadList.at(\freqButton))}.defer;
 			noteArray = loadList.at(\noteArray);
 			{
@@ -332,7 +342,7 @@ To fade output sends in, use the fadetime field on the output panel instead.");
 			transpose = loadList.at(\transpose) ?? {0};
 			Ndef(nDef.key).set(\transpose, loadList.at(\transpose) ?? {0});
 			{transposeField.value = loadList.at(\transposeField) ?? {0}}.defer;
-			distort = loadList.at(\distort) ?? {0};
+			distort = loadList.at(\distortVar) ?? {0};
 			{distortSelector.value  = loadList.at(\distortSelector) ?? {0}}.defer;
 			this.rebuild;
 		});

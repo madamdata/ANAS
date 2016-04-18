@@ -1,5 +1,5 @@
 ModuleSocket {
-	var parent, <bounds, <anasGui, <composite, <>panel, panelField, <module;
+	var parent, <bounds, <anasGui, <composite, <weaverComposite, <>panel, <weaverPanel, panelField, <module, <weaverModule;
 
 	*new {
 		arg parent, bounds, anasGui;
@@ -9,6 +9,8 @@ ModuleSocket {
 	initModuleSocket {
 		composite = CompositeView.new(parent, bounds);
 		composite.background_(Color.new(1,1,1,0));
+		weaverComposite = CompositeView.new(anasGui.weaverComposite, bounds);
+		weaverComposite.background_(Color.new(1,1,1,0));
 		panelField = TextField.new(composite, Rect(120, 2, 70, 17)).background_(Color.new(0.5,0.5,0.5,0.5));
 		panelField.font_(Font("Helvetica", 11, true)).stringColor_(Color.new(1,1,1,1));
 		panelField.action_({|thisField|
@@ -37,7 +39,7 @@ ModuleSocket {
 		module = whatKind; //store the module type in variable 'module'
 		Ndef(nDefName).mold(1, \audio);
 		if (panel.notNil) {panel.composite.close; panel.nDef.free};
-			panel = whatKind.new(composite, Rect(0, 0, composite.bounds.width, composite.bounds.height), Ndef(nDefName), ~outPuts);
+			panel = whatKind.new(this, Rect(0, 0, composite.bounds.width, composite.bounds.height), Ndef(nDefName), ~outPuts);
 		panelField.front;
 	}
 
@@ -45,6 +47,14 @@ ModuleSocket {
 		arg whatKind, nDefName;
 		this.loadPanel(whatKind, nDefName);
 		anasGui.updateModuleList;
+	}
+
+	loadWeaverPanel {
+		arg whatKind;
+		weaverModule = whatKind;
+		weaverPanel = whatKind.new(weaverComposite, Rect(0, 0, composite.bounds.width, composite.bounds.height), panel);
+
+
 	}
 
 	save {
@@ -60,7 +70,6 @@ ModuleSocket {
 			if (module.asString != loadModule) {
 				this.loadPanel(loadModule.interpret, loadName);
 			}
-
 
 		};
 		panel.load(loadList);

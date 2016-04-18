@@ -16,7 +16,7 @@ AnasGui {
 	<>osc5, <>out1, <>out2, <>out3,
 	<>out4, <>del1, <>mult1, <>adsr1,
 	<>adsr2, <>filt1, <>midipanel, <>sampler,
-	<>in1, <in2, <>patterns, composite,
+	<>in1, <in2, <>patterns, composite, <weaverComposite, <weaverMode,
 	<>saveList, <>savePath, <>whichFolder, <>fileName,
 	fileNameField, saveButton, recordButton, openRecordingsButton,
 	recordFileName, <>recordPanel, <>loadMenu, <>menuEntries,
@@ -110,6 +110,7 @@ AnasGui {
 		~midiLock = 0;
 		~updateInputSelectors = Condition.new(false);
 		~allInputSelectors = List.new;
+		weaverMode = 0;
 
 		//define OSC communications addresses
 		//// send OSC messages to localhost:9090
@@ -154,7 +155,7 @@ AnasGui {
 					[0,53], {window.visible = false;},
 					//tab key - reset focus
 					[0, 48], {composite.focus(true); "composite focus".postln;this.updateFocus},
-					[524288, 48], {composite.visible_(false)},
+					[524288, 48], {this.switchWeaver},
 					//cmd+enter - activate sampler record
 					[1048576, 36], {sampler.recordButton.button.valueAction = (1-sampler.recordButton.button.value)},
 					[524288, 36], {sampler.overdubButton.button.valueAction = (1-sampler.overdubButton.button.value)},
@@ -246,6 +247,11 @@ AnasGui {
 				//////create composite view to contain panels
 				composite = CompositeView.new(window, Rect(2, 2, 1100, 725));
 
+				//////create Weaver Compositee to contain Weaver panels
+				weaverComposite = CompositeView.new(window, Rect(2, 2, 1100, 725))
+				.visible_(false)
+				.background_(Color.new255(190, 20, 40, 100));
+
 				////keyboard control - shortcuts to select panels
 				composite.canFocus_(true).keyDownAction_({|v,c,m,u,k|
 					var keys = [m, k];
@@ -301,7 +307,7 @@ www.adamadhiyatma.com \n agargara.bandcamp.com");
 
 				/////Define moduleSockets - containers for panels.
 				moduleSockets = 0!13;
-				13.do({|i| moduleSockets[i] = ModuleSocket.new(composite, guiBounds[i], this)});
+				moduleSockets.size.do({|i| moduleSockets[i] = ModuleSocket.new(composite, guiBounds[i], this)});
 
 				///// @@@@@@@@@@  Load panels into moduleSockets - CHANGE DEFAULT PANELS HERE @@@@@@@@@
 				[
@@ -414,7 +420,6 @@ www.adamadhiyatma.com \n agargara.bandcamp.com");
 				);
 				folderMenu.items_(folderEntries).background_(Color.new255(150, 135, 135, 180)).toolTip_("Use this menu to select a folder of presets.");
 				folderMenu.action_({|menu|
-					menu.value.postln;
 					whichFolder = loadPathFolders[menu.value];
 					this.updateMenuEntries;
 				});
@@ -458,6 +463,12 @@ www.adamadhiyatma.com \n agargara.bandcamp.com");
 			0.05.wait;
 		}.fork;
 
+	}
+
+	switchWeaver {
+		if (weaverMode == 0, {composite.visible_(false); weaverComposite.visible_(true); weaverMode = 1},
+			{composite.visible_(true); weaverComposite.visible_(false); weaverMode = 0}
+		);
 	}
 
 	updateMenuEntries {
@@ -598,7 +609,7 @@ www.adamadhiyatma.com \n agargara.bandcamp.com");
 		var loadList;
 		loadList = saves.at(file.asSymbol); //load dictionary
 		~outPuts.do({|out, index|
-			var outSymbol = ("out"++(index+1)).asSymbol.postln;
+			var outSymbol = ("out"++(index+1)).asSymbol;
 			out.outList = List.new;
 			out.load(loadList.at(outSymbol));
 		});

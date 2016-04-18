@@ -9,9 +9,6 @@ FilterPanel : ANASPanel {
 
 	initFilterPanel {
 		this.initANASPanel;
-		composite = CompositeView.new(parent, bounds);
-		composite.background = ~colourList.at(nDef.key) ?? {Color.new255(50, 50, 50, 50)};
-		composite.canFocus_(true);
 		inputList = \none!4;
 		spec = ControlSpec(0, 3.9);
 		freqSpec = ControlSpec(40, 18000, \exp);

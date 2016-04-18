@@ -1,5 +1,5 @@
 ANASPanel {
-	var parent, <bounds, <nDef, <outs, <outputButtons, <composite, subunits, <label1, <label2, <focusList, <focus, <lock,  <thingsToSave, keyRoutine, standardAction, setInputAction, <whichPanel, <inputList, <inputBank;
+	var parent, <bounds, <nDef, <outs, <outputButtons, <composite, <weaverComposite, subunits, <label1, <label2, <focusList, <focus, <lock,  <thingsToSave, keyRoutine, standardAction, setInputAction, <whichPanel, <inputList, <inputBank, <anasGui;
 
 	*new {
 		arg parent, bounds, nDef;
@@ -7,9 +7,13 @@ ANASPanel {
 	}
 
 	initANASPanel {
-		composite = CompositeView.new(parent, bounds);
+		anasGui = ~a;
+		composite = CompositeView.new(parent.composite, bounds);
 		composite.background = ~colourList.at(nDef.key) ?? {Color.grey};
 		composite.canFocus_(true);
+		weaverComposite = CompositeView.new(parent.weaverComposite, bounds);
+		weaverComposite.background = ~colourList.at(nDef.key) ?? {Color.grey};
+		weaverComposite.canFocus_(true);
 		inputList = \none!4;
 		//label1 = StaticText.new(composite, Rect(10, 10, 50, 10));
 		keyRoutine = Routine{
