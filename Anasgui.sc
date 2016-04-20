@@ -325,7 +325,7 @@ www.adamadhiyatma.com \n agargara.bandcamp.com");
 					[InputPanel, \in1],
 					[InputPanel, \in2]
 				].do({|item, index|
-					moduleSockets[index].loadPanel(item[0], item[1]);
+					moduleSockets[index].loadPanel(item[0], [item[1]]);
 				});
 				///// @@@@@@@@@@  !! Load panels into moduleSockets - CHANGE DEFAULT PANELS HERE @@@@@@@@@
 
@@ -479,9 +479,10 @@ www.adamadhiyatma.com \n agargara.bandcamp.com");
 	updateModuleList {
 		~moduleList =  //this is how all the input selectors know what their menu items are, and more
 		[\none] ++
-		moduleSockets.collect({|item| item.nDefNames}).flatten ++   //flatten in anticipation of future updates where module sockets may contain multiple panels and return an array of keys rather than just one.
+		moduleSockets.collect({|item| item.nDefNames}).flatten(2) ++   //flatten in anticipation of future updates where module sockets may contain multiple panels and return an array of keys rather than just one.
 		[\out1, \out2, \out3, \out4] ++
 		[\pattern1, \pattern2, \pattern3, \noteBus];
+		~allSocketModules = moduleSockets.collect({|item| item.panel}).flatten;
 		{
 			selectorMenu.updateItems;
 			~allInputSelectors.do({|item|
@@ -498,8 +499,8 @@ www.adamadhiyatma.com \n agargara.bandcamp.com");
 		{
 			0.005.wait;
 			{
-				moduleSockets.do({|socket|
-					var item = socket.panel;
+				~allSocketModules.do({|panel|
+					var item = panel;
 					if (item.notNil) {
 						if (item.composite.hasFocus, {
 							var size1, size2;

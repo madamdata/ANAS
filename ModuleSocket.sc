@@ -1,5 +1,5 @@
 ModuleSocket {
-	var parent, <bounds, <anasGui, <composite, <weaverComposite, <>panel, <weaverPanel, panelField, <module, <weaverModule;
+	var parent, <bounds, <anasGui, <composite, <weaverComposite, <>panel, <weaverPanel, panelField, <module, <moduleStrings, <weaverModule;
 
 	*new {
 		arg parent, bounds, anasGui;
@@ -14,34 +14,39 @@ ModuleSocket {
 		panelField = TextField.new(composite, Rect(120, 2, 70, 17)).background_(Color.new(0.5,0.5,0.5,0.5));
 		panelField.font_(Font("Helvetica", 11, true)).stringColor_(Color.new(1,1,1,1));
 		panelField.action_({|thisField|
-			var whatKind, nDefName;
-			#whatKind, nDefName =  thisField.value.tr($ , $/).split;
-		    (case
-				{whatKind == "adsr"} {whatKind = "ADSRPanel"}
-				{whatKind == "osc"} {whatKind = "OscPanel"}
-				{whatKind == "samp"} {whatKind = "SamplerPanel"}
-				{whatKind == "mult"} {whatKind = "MultiPlexPanel"}
-				{whatKind == "filt"} {whatKind = "FilterPanel"}
-				{whatKind == "del"} {whatKind = "DelayPanel"}
-				{whatKind == "drum"} {whatKind = "DrumPanel"}
-				{whatKind == "comp"} {whatKind = "CompPanel"}
-			);
-			panel.composite.close;
-			this.loadPanelWithUpdate(whatKind.interpret, nDefName.asSymbol)
+			var whatKind, nDefName, whatKind2 = nil, nDefName2 = nil;
+			#whatKind, nDefName, whatKind2, nDefName2 =  thisField.value.tr($ , $/).split;
+			whatKind = this.convertShortcut(whatKind);
+			whatKind2 = this.convertShortcut(whatKind2);
+			panel.do({|thispanel| thispanel.composite.close});
+			if (whatKind2.isNil, {this.loadPanelWithUpdate(whatKind.interpret, [nDefName.asSymbol])}, {
+				this.loadPanelWithUpdate([whatKind.interpret, whatKind2.interpret], [nDefName.asSymbol, nDefName2.asSymbol]);
+			});
 		});
 		panelField.front;
-
 
 	}
 
 	loadPanel {
 		arg whatKind, nDefName;
-		module = whatKind; //store the module type in variable 'module'
-		Ndef(nDefName).mold(1, \audio);
-		if (panel.notNil) {panel.composite.close; panel.nDef.free};
-			panel = whatKind.new(this, Rect(0, 0, composite.bounds.width, composite.bounds.height), Ndef(nDefName), ~outPuts);
+		module = [whatKind].flatten; //store the module type in variable 'module'
+		moduleStrings = module.collect({|item| item.asString}).asString; //store an array of strings naming each module
+		nDefName.do({|name| Ndef(name).mold(1, \audio)});
+		//a string is an array! convert to symbol first.
+
+		if (panel.notNil) {
+			panel.do({|thispanel|
+				thispanel.composite.close;
+				thispanel.nDef.free;
+			});
+		};
+		if (whatKind.isArray, {panel = 0!(whatKind.size)}, {panel = [0]});
+		whatKind.do({|thispanel, index|
+			panel[index] = thispanel.new(this, Rect(0, 150*index, composite.bounds.width, composite.bounds.height), Ndef(nDefName[index]), ~outPuts);
+		});
 		panelField.front;
 	}
+
 
 	loadPanelWithUpdate { //same as above, but updates all the inputselectors. Use this for selecting panels manually, use the above for loading entire layouts in presets.
 		arg whatKind, nDefName;
@@ -58,32 +63,55 @@ ModuleSocket {
 	}
 
 	save {
-		var saveList = panel.save;
-		saveList.putPairs([\moduleType, module.asString, \moduleName, panel.nDef.key]); //add an entry to the saveList with module type and name
+		var saveList = Dictionary.new;
+		panel.do({|thispanel| saveList.put(thispanel.nDef.key, thispanel.save)});
+		saveList.putPairs([
+			\moduleTypes, moduleStrings,
+			\moduleNames, this.nDefNames.postln,
+			\numPanels, panel.size
+		]); //add an entry to the saveList with module type and name
 		^saveList;
 	}
 
 	load {arg loadList;
-		var loadModule = loadList.at(\moduleType);
-		var loadName = loadList.at(\moduleName);
-		if (loadModule.notNil) {
-			if (module.asString != loadModule) {
+		var loadModule = loadList.at(\moduleTypes);
+		var loadName = loadList.at(\moduleNames).postln;
+			if (moduleStrings != loadModule) {
 				this.loadPanel(loadModule.interpret, loadName);
-			}
-
 		};
-		panel.load(loadList);
+		panel.do({|thispanel|
+				thispanel.load(loadList.at(thispanel.nDef.key));
+			});
 	}
 
 	focus {arg bool; //passes the 'focus' method to panel (will have to modify for multiple panels)
-		panel.composite.focus(bool);
+		panel[0].composite.focus(bool);
+	}
+
+	convertShortcut {
+		arg string;
+		var output = string;
+		(case
+					{string == "adsr"} {output = "ADSRPanel"}
+					{string == "osc"} {output = "OscPanel"}
+					{string == "samp"} {output = "SamplerPanel"}
+					{string == "mult"} {output = "MultiPlexPanel"}
+					{string == "filt"} {output = "FilterPanel"}
+					{string == "del"} {output = "DelayPanel"}
+					{string == "drum"} {output = "DrumPanel"}
+					{string == "comp"} {output = "CompPanel"}
+			);
+		^output;
 	}
 
 	rebuild {
-		panel.rebuild;
+		panel.do({|item| item.rebuild});
 	}
 	nDef {^panel.nDef}
-	nDefNames {^panel.nDefNames}
+	nDefNames {
+		^panel.collect({|item| item.nDefNames});
+
+	}
 
 
 }

@@ -1,5 +1,5 @@
 OscPanel : ANASPanel {
-	var <clockPanel, <labelKnobs, <>selector1, <>selector2, <>outputButtons, <>freqButton, <>oscType, <resetButton, <syncButton, <>lockButton, <>type, <>fadeTime, <>noteArrayField, <>transposeField, <>noteArray, <>transpose, <>distort, <>distortSelector, <>lock, <>syncToClock;
+	var <clockPanel, <>selector1, <>selector2, <>freqButton, <>oscType, <resetButton, <syncButton, <>lockButton, <>type, <>fadeTime, <>noteArrayField, <>transposeField, <>noteArray, <>transpose, <>distort, <>distortSelector, <>lock, <>syncToClock,step, task, wSeqField, wDurField, transpPat, durPat;
 	*new {
 		arg parent, bounds, nDef, outs, clockPanel;
 		^super.newCopyArgs(parent, bounds, nDef, outs).initOscPanel(clockPanel);
@@ -174,6 +174,32 @@ To fade output sends in, use the fadetime field on the output panel instead.");
 		});
 		// ------------------------- !! DEFINE FIELDS AND SELECTORS -------------------------
 
+		// ------------------------- DEFINE WEAVER PARTS -------------------------
+		transpPat = [0];
+		durPat = [0.25];
+		wSeqField = TextField.new(weaverComposite, Rect(2,2, 140, 20))
+		.background_(composite.background.blend(Color.new255(250, 180, 160, 255), 0.5))
+		.action_({|thisField| transpPat = thisField.value.interpret});
+
+		wDurField = TextField.new(weaverComposite, Rect(2,22, 140, 20))
+		.background_(composite.background.blend(Color.new255(250, 180, 160, 255), 0.5))
+		.action_({|thisField| durPat = thisField.value.interpret});
+
+		task = Task{
+			step = 0;
+			loop{
+				var ramp = 0;
+				var val = transpPat[step];
+				if (val.isArray, {ramp = val[1];val=val[0]});
+				nDef.set(\tRamp, ramp);
+				nDef.set(\transpose, val);
+				durPat[step].wait;
+				step = step + 1 % durPat.size;
+			}
+
+		}.play(anasGui.clock.clock);
+		// ------------------------- !! DEFINE WEAVER PARTS -------------------------
+
 		//define list of things for keyboard focus switching
 		focusList = labelKnobs ++ [noteArrayField, transposeField, fadeTime];
 	}
@@ -181,8 +207,8 @@ To fade output sends in, use the fadetime field on the output panel instead.");
 	rebuild {
 		nDef.reshaping = \elastic;
 		Ndef(nDef.key.asSymbol, {
-			arg knobfreq = 0.5, knobamp = 0.5, knobtone = 0.5, knobpreFilter = 0.5, knobwidth = 0.5,  knobdistort = 0, knobpostFilter = 15000, knobQ = 0.5, freqMin = 40, freqMax = 12000, transpose, t_reset = 0, sync = 0;
-			var sig, freqIn = 0, ampIn=0, toneIn=0, preFilterIn=0, knobFreqIn = 0, knobpreFilterIn = 0, knobwidthIn = 0, knobdistortIn = 0, widthIn = 0, distortIn = 0, postFilterIn = 0, qIn = 0, sr = SampleRate.ir;
+			arg knobfreq = 0.5, knobamp = 0.5, knobtone = 0.5, knobpreFilter = 0.5, knobwidth = 0.5,  knobdistort = 0, knobpostFilter = 15000, knobQ = 0.5, freqMin = 40, freqMax = 12000, transpose =0, tRamp =0.1, t_reset = 0, sync = 0;
+			var sig, freqIn = 0, ampIn=0, toneIn=0, preFilterIn=0, knobFreqIn = 0, knobpreFilterIn = 0, knobwidthIn = 0, knobdistortIn = 0, widthIn = 0, distortIn = 0, postFilterIn = 0, qIn = 0, sr = SampleRate.ir, transposeIn;
 
 			toneIn = (knobtone.linlin(0,1,1, 15)).min(20000);
 			knobFreqIn = Select.kr(sync, [knobfreq.linexp(0, 1, freqMin, freqMax),
@@ -192,9 +218,10 @@ To fade output sends in, use the fadetime field on the output panel instead.");
 			labelKnobs[0].modList.do({|item|
 				freqIn = freqIn + Ndef(item);
 			});
+			transposeIn = Lag.kr(transpose, tRamp);
 			freqIn = LinExp.ar(freqIn, -1, 1, 0.1, 2.5) * 2;
 			freqIn =(knobFreqIn.lag(0.07) * freqIn);
-			freqIn = (freqIn * (noteArray + transpose).midiratio).min(19000);
+			freqIn = (freqIn * (noteArray + transposeIn).midiratio).min(19000);
 			labelKnobs[1].modList.do({|item, index|
 				if(index == 2, {ampIn = ampIn - Ndef(item)}, {ampIn = ampIn + Ndef(item)});
 			});
@@ -262,6 +289,13 @@ To fade output sends in, use the fadetime field on the output panel instead.");
 			sig;
 			});
 
+
+	}
+
+	setNoteArray {
+		arg array;
+		noteArray = array;
+		this.rebuild;
 
 	}
 
@@ -341,7 +375,10 @@ To fade output sends in, use the fadetime field on the output panel instead.");
 			}.defer;
 			transpose = loadList.at(\transpose) ?? {0};
 			Ndef(nDef.key).set(\transpose, loadList.at(\transpose) ?? {0});
-			{transposeField.value = loadList.at(\transposeField) ?? {0}}.defer;
+			type = loadList.at(\type);
+			{transposeField.value = loadList.at(\transposeField) ?? {0};
+				oscType.value = loadList.at(\oscType);
+			}.defer;
 			distort = loadList.at(\distortVar) ?? {0};
 			{distortSelector.value  = loadList.at(\distortSelector) ?? {0}}.defer;
 			this.rebuild;

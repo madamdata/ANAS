@@ -1,5 +1,5 @@
 ANASPanel {
-	var parent, <bounds, <nDef, <outs, <outputButtons, <composite, <weaverComposite, subunits, <label1, <label2, <focusList, <focus, <lock,  <thingsToSave, keyRoutine, standardAction, setInputAction, <whichPanel, <inputList, <inputBank, <anasGui;
+	var parent, <bounds, <nDef, <outs, <outputButtons, <composite, <labelKnobs, <weaverComposite, subunits, <label1, <label2, <focusList, <focus, <lock,  <thingsToSave, keyRoutine, standardAction, setInputAction, <whichPanel, <inputList, <inputBank, <anasGui;
 
 	*new {
 		arg parent, bounds, nDef;
@@ -93,6 +93,28 @@ ANASPanel {
 
 	nDefNames {
 		^nDef.key.asSymbol;
+	}
+
+	setArgs {
+		arg array;
+		if (labelKnobs.notNil, {
+			array.do({|item, index|
+				labelKnobs[index].doActionPlusUpdate(item);
+			})
+		});
+	}
+
+	setOut {
+		arg whichOut, value;
+		outputButtons[whichOut];
+	}
+
+	setOuts {
+		arg input;
+		input.do({|item, index|
+			outputButtons[index].valueAction_(item);
+		})
+
 	}
 
 	save {

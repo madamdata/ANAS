@@ -115,9 +115,9 @@ ADSRPanel : ANASPanel {
 					\saw, {lfo = LFSaw.kr(lfoIn)},
 					\tri, {lfo = LFTri.kr(lfoIn)},
 					\sq, {lfo = LFPulse.kr(lfoIn).bipolar * 0.8},
-					\noise0, {lfo = LFNoise0.kr(lfoIn)},
-					\noise1, {lfo = LFNoise1.kr(lfoIn)},
-					\noise2, {lfo = LFNoise2.kr(lfoIn)},
+					\noise0, {lfo = LFDNoise0.kr(lfoIn)},
+					\noise1, {lfo = LFDNoise1.kr(lfoIn)},
+					\noise2, {lfo = LFDNoise3.kr(lfoIn)},
 					\noiseA, {lfo = LFNoiseA.kr(-1,1, lfoIn, 1)};
 				);
 				trig = trig + lfo;

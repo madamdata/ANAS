@@ -70,7 +70,6 @@ OutputButton {
 			button.value_(isOn);
 		}
 		);
-
 	}
 
 }
@@ -749,6 +748,11 @@ FadeField {
 
 	}
 
+	valueAction_ {
+		arg val;
+		field.valueAction_(val);
+	}
+
 
 }
 
@@ -930,7 +934,7 @@ ClockPanel {
 			item.sync;
 		});
 		anasGui.moduleSockets.do({|item|
-			if (item.module == DrumPanel, {item.panel.sync})
+			if (item.module == DrumPanel, {item.panel.do({|item| item.sync})});
 		});
 	}
 	rebuild {

@@ -70,6 +70,7 @@ DrumPanel : ANASPanel {
 				0.5.wait;
 			}
 		}.play(~a.clock.clock, false, quant);
+
 		task = Task{
 			step = 0;
 			presetStep = 0;
