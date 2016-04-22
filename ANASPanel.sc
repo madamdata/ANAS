@@ -95,6 +95,10 @@ ANASPanel {
 		^nDef.key.asSymbol;
 	}
 
+	panelName {
+		^nDef.key.asSymbol;
+	}
+
 	setArgs {
 		arg array;
 		if (labelKnobs.notNil, {

@@ -208,6 +208,10 @@ AnasGui {
 				\osc4, Color.new255(110,75,242, 140),
 				\osc5, Color.new255(18,50,155, 140),
 				\osc6, Color.new255(120, 40, 200, 150),
+				\ctrl1, Color.new255(220, 100, 00, 160),
+				'ctrl1-0', Color.new255(10, 150, 250, 150),
+				'ctrl1-1', Color.new255(250, 200, 80, 150),
+				'ctrl1-2', Color.new255(90, 250, 200, 150),
 				\drum1, Color.new255(230, 190, 180, 170),
 				\drum2, Color.new255(250, 80, 30, 160),
 				\comp1, Color.new255(240, 170, 150, 165),
@@ -318,14 +322,14 @@ www.adamadhiyatma.com \n agargara.bandcamp.com");
 					[DrumPanel, \drum1],
 					[ReverbPanel, \rev1],
 					[NoisePanel, \noise1],
-					[ADSRPanel, \adsr1],
+					[[ControlPanel, DelayPanel], [\ctrl1, \del1]],
 					[ADSRPanel, \adsr2],
 					[FilterPanel, \filt1],
-					[DelayPanel, \del1],
+					[DrumPanel, \drum2],
 					[InputPanel, \in1],
 					[InputPanel, \in2]
 				].do({|item, index|
-					moduleSockets[index].loadPanel(item[0], [item[1]]);
+					moduleSockets[index].loadPanel(item[0], [item[1]].flatten);
 				});
 				///// @@@@@@@@@@  !! Load panels into moduleSockets - CHANGE DEFAULT PANELS HERE @@@@@@@@@
 

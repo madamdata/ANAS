@@ -185,7 +185,7 @@ To fade output sends in, use the fadetime field on the output panel instead.");
 		.background_(composite.background.blend(Color.new255(250, 180, 160, 255), 0.5))
 		.action_({|thisField| durPat = thisField.value.interpret});
 
-		task = Task{
+/*		task = Task{
 			step = 0;
 			loop{
 				var ramp = 0;
@@ -197,7 +197,7 @@ To fade output sends in, use the fadetime field on the output panel instead.");
 				step = step + 1 % durPat.size;
 			}
 
-		}.play(anasGui.clock.clock);
+		}.play(anasGui.clock.clock);*/
 		// ------------------------- !! DEFINE WEAVER PARTS -------------------------
 
 		//define list of things for keyboard focus switching
@@ -207,7 +207,7 @@ To fade output sends in, use the fadetime field on the output panel instead.");
 	rebuild {
 		nDef.reshaping = \elastic;
 		Ndef(nDef.key.asSymbol, {
-			arg knobfreq = 0.5, knobamp = 0.5, knobtone = 0.5, knobpreFilter = 0.5, knobwidth = 0.5,  knobdistort = 0, knobpostFilter = 15000, knobQ = 0.5, freqMin = 40, freqMax = 12000, transpose =0, tRamp =0.1, t_reset = 0, sync = 0;
+			arg knobfreq = 0.5, knobamp = 0.5, knobtone = 0.5, knobpreFilter = 0.5, knobwidth = 0.5,  knobdistort = 0, knobpostFilter = 15000, knobQ = 0.5, freqMin = 40, freqMax = 12000, transpose =0, tRamp =0.01, t_reset = 0, sync = 0;
 			var sig, freqIn = 0, ampIn=0, toneIn=0, preFilterIn=0, knobFreqIn = 0, knobpreFilterIn = 0, knobwidthIn = 0, knobdistortIn = 0, widthIn = 0, distortIn = 0, postFilterIn = 0, qIn = 0, sr = SampleRate.ir, transposeIn;
 
 			toneIn = (knobtone.linlin(0,1,1, 15)).min(20000);

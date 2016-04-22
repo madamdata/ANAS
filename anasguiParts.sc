@@ -75,10 +75,10 @@ OutputButton {
 }
 
 LabelKnob {
-	var parent, left, top, <>string, oscPanel, scale, <>spec, <>default, <>numSelectors, <composite, <>knob1, <>knob1label, <>action, param, <>selector1, <>selector2, <>selector3, <>selectors, <>saveList, <>modList, <modInputs, <>midiFunc, <>mapped, <keyRoutine, <whichPanel, <automationList, prevTime, <recording, <automationRoutine, startTime, <oscFunc, oscString;
+	var parent, left, top, <>string, oscPanel, scale, <>spec, <>default, <>numSelectors, <index, <composite, <>knob1, <>knob1label, <>action, param, <>selector1, <>selector2, <>selector3, <>selectors, <>saveList, <>modList, <modInputs, <>midiFunc, <>mapped, <keyRoutine, <whichPanel, <automationList, prevTime, <recording, <automationRoutine, startTime, <oscFunc, oscString;
 	*new {
-		arg parent, left, top, string, oscPanel, scale = 1, spec = ControlSpec(0,1), default = 0.5, numSelectors = 3;
-		^super.newCopyArgs(parent, left, top, string, oscPanel, scale, spec, default, numSelectors).initLabelKnob;
+		arg parent, left, top, string, oscPanel, scale = 1, spec = ControlSpec(0,1), default = 0.5, numSelectors = 3, index = 0;
+		^super.newCopyArgs(parent, left, top, string, oscPanel, scale, spec, default, numSelectors, index).initLabelKnob;
 	}
 
 	initLabelKnob {
@@ -102,7 +102,7 @@ LabelKnob {
 		modList = \none!(numSelectors);
 		modInputs = Ndef(\none);
 		composite = CompositeView.new(parent, Rect(left, top, 47*scale, (15*numSelectors+47)*scale));
-		composite.background_(Color.new255(85, 55, 155, 50));
+		composite.background_(Color.new255(85, 55, 155, 0));
 		knob1label = StaticText.new(composite, Rect(2*scale, 2*scale, 40*scale, 15*scale));
 		knob1label.align = \left;
 		knob1label.font = (Font("Helvetica", 11*scale));
@@ -362,7 +362,8 @@ Ctrl-shift-click to remove automation.");
 		loadList = loadList ?? {Dictionary.new};
 		modList = loadList.at(\modList) ?? {[\none, \none, \none]};
 		modInputs = modList.sum({|item| Ndef(item.asSymbol)});
-		oscPanel.nDef.set(("knob"++param.asString).asSymbol, (spec.map(loadList.at(\knob) ?? {default}))); //set ndef param
+		//oscPanel.nDef.set(("knob"++param.asString).asSymbol, (spec.map(loadList.at(\knob) ?? {default}))); //set ndef param
+		this.doAction(loadList.at(\knob) ?? {default});
 		if (~midiLock == 0, { //don't load MIDI mapping if midilock is on
 		if(midiFunc.notNil, {this.deMap}); //if there is already a midifunc, free it.\
 		if (loadList.at(\msgNum).notNil, { //load the midi mapping from the loadlist
@@ -1045,7 +1046,7 @@ SelectorMenu {
 	initSelectorMenu {
 		var bounds;
 		this.class.instances.add(this);
-		bounds= Rect.new(0,0,238,128);
+		bounds= Rect.new(0,0,238,158);
 		window = FlowView.new(parent, bounds, 3@3, 3@3).visible_(false);
 		window.mouseDownAction_({|view|
 			window.visible_(false);

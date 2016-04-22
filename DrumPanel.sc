@@ -398,9 +398,11 @@ DrumPanel : ANASPanel {
 
 	nDefNames {
 		^[nDef.key.asSymbol, controlKey];
-
 	}
 
+	panelName {
+		^nDef.key;
+	}
 
 	save {
 		var saveList = Dictionary.new;
@@ -424,8 +426,8 @@ DrumPanel : ANASPanel {
 		loadList = loadList ?? {Dictionary.new};
 		presets = loadList[\presets];
 		durPat = this.interpretString(loadList.at(\patternField));
-		presetPat =  this.interpretString(loadList.at(\presetField)).postln;
-		presetPat = if (presetPat.last.postln == "u", {unlink = 1; presetPat.drop(-1)},  {unlink = 0; presetPat});
+		presetPat =  this.interpretString(loadList.at(\presetField));
+		presetPat = if (presetPat.last == "u", {unlink = 1; presetPat.drop(-1)},  {unlink = 0; presetPat});
 		lagPat = loadList[\lagField].asFloat;
 		lag = 0;
 		mult = loadList[\multField].interpret;

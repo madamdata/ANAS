@@ -20,10 +20,10 @@ ANASLauncher {
 			Server.local.options.inDevice = (AnasGui.config.at(\inDevice));
 			Server.local.options.numOutputBusChannels_(2);
 			Server.local.options.sampleRate = 48000;
-			Server.local.options.hardwareBufferSize_(256);
+			Server.local.options.hardwareBufferSize_(64);
 			Server.local.options.memSize = (2**16);
-			Server.local.options.blockSize_(256);
-			Server.local.latency = 0.05;
+			Server.local.options.blockSize_(64);
+			Server.local.latency = 0.01;
 			Server.local.waitForBoot({
 				//replace the paths below with your own path for a save folder and a recordings folder. (don't make them the same folder)
 				//b = Buffer.read(Server.local,"/Users/adamadhiyatma/Music/SuperCollider Recordings/livesamples/Anas/Samples/STE-093BellRapid.wav", 0, -1);

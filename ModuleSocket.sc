@@ -67,7 +67,7 @@ ModuleSocket {
 		panel.do({|thispanel| saveList.put(thispanel.nDef.key, thispanel.save)});
 		saveList.putPairs([
 			\moduleTypes, moduleStrings,
-			\moduleNames, this.nDefNames.postln,
+			\moduleNames, this.panelNames,
 			\numPanels, panel.size
 		]); //add an entry to the saveList with module type and name
 		^saveList;
@@ -77,7 +77,7 @@ ModuleSocket {
 		var loadModule = loadList.at(\moduleTypes);
 		var loadName = loadList.at(\moduleNames).postln;
 			if (moduleStrings != loadModule) {
-				this.loadPanel(loadModule.interpret, loadName);
+				this.loadPanel(loadModule.interpret, loadName.flatten);
 		};
 		panel.do({|thispanel|
 				thispanel.load(loadList.at(thispanel.nDef.key));
@@ -92,15 +92,16 @@ ModuleSocket {
 		arg string;
 		var output = string;
 		(case
-					{string == "adsr"} {output = "ADSRPanel"}
-					{string == "osc"} {output = "OscPanel"}
-					{string == "samp"} {output = "SamplerPanel"}
-					{string == "mult"} {output = "MultiPlexPanel"}
-					{string == "filt"} {output = "FilterPanel"}
-					{string == "del"} {output = "DelayPanel"}
-					{string == "drum"} {output = "DrumPanel"}
-					{string == "comp"} {output = "CompPanel"}
-			);
+			{string == "adsr"} {output = "ADSRPanel"}
+			{string == "osc"} {output = "OscPanel"}
+			{string == "samp"} {output = "SamplerPanel"}
+			{string == "mult"} {output = "MultiPlexPanel"}
+			{string == "filt"} {output = "FilterPanel"}
+			{string == "del"} {output = "DelayPanel"}
+			{string == "drum"} {output = "DrumPanel"}
+			{string == "comp"} {output = "CompPanel"}
+			{string == "ctrl"} {output = "ControlPanel"}
+		);
 		^output;
 	}
 
@@ -108,10 +109,12 @@ ModuleSocket {
 		panel.do({|item| item.rebuild});
 	}
 	nDef {^panel.nDef}
-	nDefNames {
+	nDefNames { //used for setting the input selector menu - returns all ndefs contained within all the panels
 		^panel.collect({|item| item.nDefNames});
-
 	}
 
+	panelNames { //used for loading panels - returns only the name of the panel
+		^panel.collect({|item| item.panelName});
+	}
 
 }
